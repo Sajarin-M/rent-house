@@ -1,0 +1,27 @@
+{
+  "name": "rent-house",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "build": "turbo build",
+    "clean": "turbo clean",
+    "prepare": "husky install",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.1.1",
+    "@rent-house/tsconfig": "workspace:*",
+    "prettier": "^3.1.0",
+    "prettier-plugin-tailwindcss": "^0.5.7",
+    "turbo": "latest"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "bun@1.0.11",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

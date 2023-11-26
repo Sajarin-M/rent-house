@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@layer tailwindBase, mantine, mantine-datatable, tailwindComponents, tailwindUtilities;
+
+@layer tailwindBase {
+  @tailwind base;
+  :root {
+    --h-navbar: 3.8rem;
+    --h-content: calc(100vh - var(--h-navbar));
+    --w-action-btn: 7rem;
+    --w-sidebar-open: 210px;
+    --w-sidebar-closed: 47px;
+    --w-scrollbar: 8px;
+  }
+}
+@layer tailwindComponents {
+  @tailwind components;
+}
+
+@layer components {
+  /* @-moz-document url-prefix() {
+    :root {
+      --w-scrollbar: 0px;
+    }
+  }
+
+  *::-webkit-scrollbar-track {
+    @apply rounded-md bg-gray-3/50 dark:bg-gray-8/50;
+  }
+
+  *::-webkit-scrollbar {
+    @apply rounded-md;
+    width: var(--w-scrollbar);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply rounded-md bg-black/30 hover:bg-black/40 dark:bg-white/30 dark:hover:bg-white/40;
+  } */
+}
+
+@layer tailwindUtilities {
+  @tailwind utilities;
+}
+
+body {
+  font-family: 'Onest', sans-serif;
+}

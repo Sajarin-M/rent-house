@@ -1,0 +1,9 @@
+{
+  "version": "0.2",
+  "ignorePaths": [],
+  "dictionaryDefinitions": [],
+  "dictionaries": [],
+  "words": ["tailwind", "tailwindcss", "trpc", "mantine", "elysia", "elysiajs"],
+  "ignoreWords": [],
+  "import": []
+}

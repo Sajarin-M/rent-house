@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  name        String
+  image       String
+  quantity    Int
+  rentPerDay  Float
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  RentOutItem RentOutItem[]
+}
+
+model Customer {
+  id          String    @id @default(uuid())
+  name        String
+  phoneNumber String
+  address     String
+  images      String[]
+  rentOuts    RentOut[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model RentOut {
+  id         String        @id @default(uuid())
+  customer   Customer      @relation(fields: [customerId], references: [id])
+  customerId String
+  items      RentOutItem[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model RentOutItem {
+  id         String   @id @default(uuid())
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  rentPerDay Float
+  quantity   Int
+  rentOut    RentOut? @relation(fields: [rentOutId], references: [id])
+  rentOutId  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
