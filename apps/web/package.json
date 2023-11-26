@@ -8,7 +8,7 @@
     "lint": "tsc",
     "preview": "vite preview",
     "build": "tsc && vite build",
-    "clean": "rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
     "@mantine/core": "^7.2.1",

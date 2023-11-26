@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
+      "type": "bun",
       "label": "Dev Server All",
       "script": "dev",
       "detail": "turbo run dev",
@@ -12,7 +12,7 @@
     {
       "type": "shell",
       "label": "Prisma Generate",
-      "command": "pnpm dlx prisma generate",
+      "command": "bunx prisma generate",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
@@ -22,7 +22,7 @@
     {
       "type": "shell",
       "label": "Prisma Studio",
-      "command": "pnpm dlx prisma studio",
+      "command": "bunx prisma studio",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
@@ -36,7 +36,7 @@
     {
       "type": "shell",
       "label": "Prisma Migrate",
-      "command": "pnpm dlx prisma migrate dev --name ${input:migrationName}",
+      "command": "bunx prisma migrate dev --name ${input:migrationName}",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
@@ -46,7 +46,7 @@
     {
       "type": "shell",
       "label": "Prisma Push",
-      "command": "pnpm dlx prisma db push ${input:pushOptions}",
+      "command": "bunx prisma db push ${input:pushOptions}",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
@@ -54,21 +54,21 @@
       "problemMatcher": []
     },
     {
-      "type": "npm",
+      "type": "bun",
       "script": "install",
       "problemMatcher": [],
       "label": "Install Deps",
-      "detail": "pnpm install"
+      "detail": "bun install"
     },
     {
-      "type": "npm",
+      "type": "bun",
       "script": "outdated",
       "problemMatcher": [],
       "label": "Check Deps Update",
-      "detail": "pnpm outdated"
+      "detail": "bun outdated"
     },
     {
-      "type": "npm",
+      "type": "bun",
       "script": "clean",
       "problemMatcher": [],
       "label": "Clean Modules",
@@ -90,22 +90,11 @@
     },
     {
       "type": "shell",
-      "label": "Dev Server Cms",
-      "isBackground": true,
-      "command": "pnpm dev",
-      "options": {
-        "cwd": "${cwd}/apps/cms"
-      },
-      "detail": "start cms dev server",
-      "problemMatcher": []
-    },
-    {
-      "type": "shell",
       "label": "Dev Server Web",
-      "command": "pnpm dev",
       "isBackground": true,
+      "command": "bun dev",
       "options": {
-        "cwd": "${cwd}/apps/user"
+        "cwd": "${cwd}/apps/web"
       },
       "detail": "start web dev server",
       "problemMatcher": []
@@ -114,7 +103,7 @@
       "type": "shell",
       "label": "Dev Server Server",
       "isBackground": true,
-      "command": "pnpm dev",
+      "command": "bun dev",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
