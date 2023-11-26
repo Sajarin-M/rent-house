@@ -1,0 +1,5 @@
+{
+  "npm.packageManager": "pnpm",
+  "tailwindCSS.classAttributes": ["class", "className", "classNames"],
+  "tailwindCSS.experimental.configFile": "./apps/web/tailwind.config.cjs"
+}

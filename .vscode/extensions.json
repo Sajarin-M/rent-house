@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "prisma.prisma",
+    "esbenp.prettier-vscode",
+    "yoavbls.pretty-ts-errors",
+    "formulahendry.auto-rename-tag",
+    "dsznajder.es7-react-js-snippets",
+    "meganrogge.template-string-converter",
+    "streetsidesoftware.code-spell-checker",
+    "bradlc.vscode-tailwindcss",
+    "usernamehw.errorlens"
+  ]
+}

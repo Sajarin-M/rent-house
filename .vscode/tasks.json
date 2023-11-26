@@ -1,0 +1,139 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "label": "Dev Server All",
+      "script": "dev",
+      "detail": "turbo run dev",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Prisma Generate",
+      "command": "pnpm dlx prisma generate",
+      "options": {
+        "cwd": "${cwd}/apps/server"
+      },
+      "detail": "generate prisma models",
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Prisma Studio",
+      "command": "pnpm dlx prisma studio",
+      "options": {
+        "cwd": "${cwd}/apps/server"
+      },
+      "isBackground": true,
+      "detail": "start prisma studio",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "Prisma Migrate",
+      "command": "pnpm dlx prisma migrate dev --name ${input:migrationName}",
+      "options": {
+        "cwd": "${cwd}/apps/server"
+      },
+      "detail": "migrate database",
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Prisma Push",
+      "command": "pnpm dlx prisma db push ${input:pushOptions}",
+      "options": {
+        "cwd": "${cwd}/apps/server"
+      },
+      "detail": "push changes to database",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
+      "script": "install",
+      "problemMatcher": [],
+      "label": "Install Deps",
+      "detail": "pnpm install"
+    },
+    {
+      "type": "npm",
+      "script": "outdated",
+      "problemMatcher": [],
+      "label": "Check Deps Update",
+      "detail": "pnpm outdated"
+    },
+    {
+      "type": "npm",
+      "script": "clean",
+      "problemMatcher": [],
+      "label": "Clean Modules",
+      "detail": "turbo run clean"
+    },
+    {
+      "label": "Setup Repo",
+      "detail": "setup repo",
+      "dependsOn": ["Install Deps", "Prisma Generate"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean & Setup",
+      "detail": "clean modules & resetup",
+      "dependsOn": ["Clean Modules", "Setup Repo"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Dev Server Cms",
+      "isBackground": true,
+      "command": "pnpm dev",
+      "options": {
+        "cwd": "${cwd}/apps/cms"
+      },
+      "detail": "start cms dev server",
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Dev Server Web",
+      "command": "pnpm dev",
+      "isBackground": true,
+      "options": {
+        "cwd": "${cwd}/apps/user"
+      },
+      "detail": "start web dev server",
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Dev Server Server",
+      "isBackground": true,
+      "command": "pnpm dev",
+      "options": {
+        "cwd": "${cwd}/apps/server"
+      },
+      "detail": "start server dev server",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "migrationName",
+      "description": "Migration Name",
+      "default": "init",
+      "type": "promptString"
+    },
+    {
+      "id": "pushOptions",
+      "description": "Options",
+      "default": "--accept-data-loss",
+      "type": "promptString"
+    }
+  ]
+}
