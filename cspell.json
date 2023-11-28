@@ -3,7 +3,16 @@
   "ignorePaths": [],
   "dictionaryDefinitions": [],
   "dictionaries": [],
-  "words": ["tailwind", "tailwindcss", "trpc", "mantine", "elysia", "elysiajs"],
+  "words": [
+    "clsx",
+    "elysia",
+    "elysiajs",
+    "mantine",
+    "tabler",
+    "tailwind",
+    "tailwindcss",
+    "trpc"
+  ],
   "ignoreWords": [],
   "import": []
 }
