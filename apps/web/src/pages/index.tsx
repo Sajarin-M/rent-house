@@ -2,9 +2,9 @@ import { useLocation } from 'react-router-dom';
 import { Code } from '@mantine/core';
 import {
   Icon2fa,
-  IconBellRinging,
   IconDatabaseImport,
   IconFingerprint,
+  IconHome,
   IconKey,
   IconLogout,
   IconReceipt2,
@@ -12,7 +12,7 @@ import {
 } from '@tabler/icons-react';
 
 const sidebarItems = [
-  { href: '', label: 'Notifications', icon: IconBellRinging },
+  { href: '', label: 'Home', icon: IconHome },
   { href: '', label: 'Billing', icon: IconReceipt2 },
   { href: '', label: 'Security', icon: IconFingerprint },
   { href: '', label: 'SSH Keys', icon: IconKey },

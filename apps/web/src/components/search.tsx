@@ -1,6 +1,6 @@
 import { ComponentProps, forwardRef } from 'react';
-// import { TbSearch } from 'react-icons/tb';
 import { TextInput, Tooltip } from '@mantine/core';
+import { IconSearch } from '@tabler/icons-react';
 
 type SearchProps = ComponentProps<typeof TextInput> & {
   tooltip?: string;
@@ -23,7 +23,7 @@ const Search = forwardRef<HTMLInputElement, SearchProps>(
           radius='md'
           variant='filled'
           leftSectionWidth={48}
-          //   leftSection={<TbSearch />}
+          leftSection={<IconSearch size='1.3rem' />}
           w={!fullWidth ? '20rem' : undefined}
           classNames={{
             input: 'border-default-border border',
