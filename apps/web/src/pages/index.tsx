@@ -26,7 +26,7 @@ export default function Pages() {
 
   const links = data.map((item) => (
     <a
-      className='text-gray-7 hover:bg-gray-0 data-[active]:bg-blue data-[active]:text-blue  dark:text-dark-1 dark:hover:bg-dark-6 group flex items-center rounded-sm px-2 py-1 text-sm font-medium no-underline hover:text-black dark:hover:text-white'
+      className='text-gray-7 hover:bg-gray-0 data-[active]:bg-blue data-[active]:text-blue  dark:text-dark-1 dark:hover:bg-dark-6 px-sm py-xs group flex items-center rounded-sm text-sm font-medium no-underline hover:text-black dark:hover:text-white'
       data-active={item.label === active || undefined}
       href={item.link}
       key={item.label}
