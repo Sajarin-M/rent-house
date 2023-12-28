@@ -1,7 +1,9 @@
+import { existsSync } from 'fs';
 import { cors } from '@elysiajs/cors';
 import { trpc } from '@elysiajs/trpc';
 import { Elysia } from 'elysia';
 import { env } from './lib/env';
+import { ensureDirExistsSync } from './lib/utils';
 import { authRouter } from './routers/auth';
 import { customersRouter } from './routers/customers';
 import { productsRouter } from './routers/products';
@@ -14,6 +16,13 @@ const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+
+ensureDirExistsSync(env.FILES_DIRECTORY);
+ensureDirExistsSync(env.IMAGES_DIRECTORY);
+
+if (!existsSync(env.PASSWORD_FILE)) {
+  await Bun.write(env.PASSWORD_FILE, 'password');
+}
 
 const app = new Elysia()
   .use(cors())

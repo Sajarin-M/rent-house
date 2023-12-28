@@ -1,3 +1,4 @@
+import { existsSync, mkdirSync } from 'fs';
 import { z } from 'zod';
 
 export const infiniteSchema = z.object({
@@ -21,4 +22,10 @@ export function infiniteResult<T>(items: T[], limit: number, key: keyof T) {
     nextCursor = nextItem![key] as string;
   }
   return { items, nextCursor };
+}
+
+export function ensureDirExistsSync(path: string) {
+  if (!existsSync(path)) {
+    mkdirSync(path, { recursive: true });
+  }
 }
