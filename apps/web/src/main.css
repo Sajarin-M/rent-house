@@ -5,27 +5,18 @@
 @layer tailwindBase {
   @tailwind base;
   :root {
-    --h-navbar: 3.8rem;
-    --h-content: calc(100vh - var(--h-navbar));
+    --h-toolbar: 4.2rem;
+    --h-content: calc(100vh - var(--h-toolbar));
     --w-action-btn: 7rem;
-    --w-sidebar-open: 210px;
-    --w-sidebar-closed: 47px;
+    --w-sidebar: 230px;
     --w-scrollbar: 8px;
   }
 }
+
 @layer tailwindComponents {
   @tailwind components;
-}
-
-@layer components {
-  /* @-moz-document url-prefix() {
-    :root {
-      --w-scrollbar: 0px;
-    }
-  }
-
-  *::-webkit-scrollbar-track {
-    @apply rounded-md bg-gray-3/50 dark:bg-gray-8/50;
+  /* *::-webkit-scrollbar-track {
+    @apply bg-gray-3/50 dark:bg-gray-8/50 rounded-md;
   }
 
   *::-webkit-scrollbar {

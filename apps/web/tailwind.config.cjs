@@ -1,12 +1,11 @@
 const heights = {
-  navbar: 'var(--h-navbar)',
+  toolbar: 'var(--h-toolbar)',
   content: 'var(--h-content)',
 };
 
 const widths = {
   'action-btn': 'var(--w-action-btn)',
-  'sidebar-open': 'var(--w-sidebar-open)',
-  'sidebar-closed': 'var(--w-sidebar-closed)',
+  sidebar: 'var(--w-sidebar)',
   scrollbar: 'var(--w-scrollbar)',
 };
 

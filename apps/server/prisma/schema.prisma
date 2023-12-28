@@ -10,7 +10,7 @@ datasource db {
 model Product {
   id          String        @id @default(uuid())
   name        String
-  image       String
+  image       String?
   quantity    Int
   rentPerDay  Float
   createdAt   DateTime      @default(now())
@@ -19,14 +19,18 @@ model Product {
 }
 
 model Customer {
-  id          String    @id @default(uuid())
-  name        String
-  phoneNumber String
-  address     String
-  images      String[]
-  rentOuts    RentOut[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  name          String
+  phoneNumber   String
+  addressLine1  String?
+  addressLine2  String?
+  city          String?
+  image         String?
+  documentImage String?
+  rentOuts      RentOut[]
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model RentOut {

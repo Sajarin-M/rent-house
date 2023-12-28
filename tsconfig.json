@@ -1,3 +1,7 @@
 {
-  "extends": "@rent-house/tsconfig/base.json"
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "exclude": ["node_modules"]
 }

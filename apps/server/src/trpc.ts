@@ -1,18 +1,25 @@
-// trpc.ts
 import { initTRPC } from '@trpc/server';
-import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
-import { z } from 'zod';
+import { ZodError } from 'zod';
+import { isDev } from './lib/env';
 
-export const createContext = async (_: FetchCreateContextFnOptions) => {
-  return {
-    name: 'elysia',
-  };
-};
-
-const t = initTRPC.context<Awaited<ReturnType<typeof createContext>>>().create();
-
-export const router = t.router({
-  mirror: t.procedure.input(z.string()).query(({ input }) => input),
+export const t = initTRPC.create({
+  isDev: isDev,
+  errorFormatter(opts) {
+    const { shape, error } = opts;
+    if (error.cause instanceof ZodError) {
+      return {
+        ...shape,
+        message: error.cause.issues[0]?.message ?? 'Some validation error occurred',
+      };
+    } else {
+      console.log('❌ Internal server error : ', error);
+      return {
+        ...shape,
+        message: 'Internal server error',
+      };
+    }
+  },
 });
 
-export type Router = typeof router;
+export const router = t.router;
+export const publicProcedure = t.procedure;

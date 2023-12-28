@@ -8,9 +8,11 @@
     "elysia",
     "elysiajs",
     "mantine",
+    "Scroller",
     "tabler",
     "tailwind",
     "tailwindcss",
+    "tanstack",
     "trpc"
   ],
   "ignoreWords": [],

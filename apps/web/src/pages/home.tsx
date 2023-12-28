@@ -1,11 +1,10 @@
 import { Button } from '@mantine/core';
-import Search from '@/components/search';
+import Content from '@/components/content';
 
 export default function Home() {
   return (
-    <>
-      <Search className='m-4 ml-auto' />
-      <div className='m-10 grid grid-cols-4 gap-4'>
+    <Content>
+      <div className='grid grid-cols-4 gap-4'>
         <Button
           className='flex h-24 flex-col items-center shadow-lg'
           // component={Link}
@@ -55,6 +54,6 @@ export default function Home() {
           </div>
         </Button>
       </div>
-    </>
+    </Content>
   );
 }

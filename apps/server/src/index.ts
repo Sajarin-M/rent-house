@@ -1,17 +1,22 @@
 import { cors } from '@elysiajs/cors';
 import { trpc } from '@elysiajs/trpc';
 import { Elysia } from 'elysia';
-import { env } from '@/lib/env';
-import { createContext, router } from './trpc';
+import { env } from './lib/env';
+import { customersRouter } from './routers/customers';
+import { productsRouter } from './routers/products';
+import { router } from './trpc';
+
+const appRouter = router({
+  products: productsRouter,
+  customers: customersRouter,
+});
+
+export type AppRouter = typeof appRouter;
 
 const app = new Elysia()
   .use(cors())
   .get('/', () => 'Hello Elysia')
-  .use(
-    trpc(router, {
-      createContext,
-    }),
-  )
+  .use(trpc(appRouter))
   .listen(env.PORT);
 
 console.log(
