@@ -5,6 +5,7 @@ const schema = z.object({
   DATABASE_URL: z.string().min(1),
   IMAGES_DIRECTORY: z.string().min(1),
   FILES_DIRECTORY: z.string().min(1),
+  PASSWORD_FILE: z.string().min(1),
   NODE_ENV: z.enum(['development', 'production']).default('development'),
 });
 

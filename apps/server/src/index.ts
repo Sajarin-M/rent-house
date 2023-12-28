@@ -2,11 +2,13 @@ import { cors } from '@elysiajs/cors';
 import { trpc } from '@elysiajs/trpc';
 import { Elysia } from 'elysia';
 import { env } from './lib/env';
+import { authRouter } from './routers/auth';
 import { customersRouter } from './routers/customers';
 import { productsRouter } from './routers/products';
 import { router } from './trpc';
 
 const appRouter = router({
+  auth: authRouter,
   products: productsRouter,
   customers: customersRouter,
 });

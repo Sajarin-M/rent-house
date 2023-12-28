@@ -1,6 +1,6 @@
-import { initTRPC } from '@trpc/server';
-import { ZodError } from 'zod';
-import { isDev } from './lib/env';
+import { initTRPC, TRPCError } from '@trpc/server';
+import { z, ZodError } from 'zod';
+import { env, isDev } from './lib/env';
 
 export const t = initTRPC.create({
   isDev: isDev,
@@ -11,6 +11,8 @@ export const t = initTRPC.create({
         ...shape,
         message: error.cause.issues[0]?.message ?? 'Some validation error occurred',
       };
+    } else if (error instanceof TRPCError) {
+      return shape;
     } else {
       console.log('❌ Internal server error : ', error);
       return {
@@ -21,5 +23,31 @@ export const t = initTRPC.create({
   },
 });
 
+const confirmSchema = z.object({ password: z.string().min(3).max(50) });
+
+const isUserConfirmed = t.middleware(async ({ next, ctx, rawInput }) => {
+  const result = confirmSchema.safeParse(rawInput);
+  if (!result.success) {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: 'Please verify password' });
+  }
+
+  let password = '';
+
+  try {
+    password = await Bun.file(env.PASSWORD_FILE).text();
+  } catch (error) {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: 'Please verify password' });
+  }
+
+  if (!password || password !== result.data.password) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid password' });
+  }
+
+  return next({
+    ctx,
+  });
+});
+
 export const router = t.router;
 export const publicProcedure = t.procedure;
+export const confirmedProcedure = t.procedure.use(isUserConfirmed);

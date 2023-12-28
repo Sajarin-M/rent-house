@@ -36,7 +36,11 @@ export const queryClient = new QueryClient({
     mutations: {
       networkMode: 'always',
       onError: (error: any) => {
-        if ('message' in error && typeof error.message === 'string') {
+        if (
+          'message' in error &&
+          typeof error.message === 'string' &&
+          error.message !== 'Invalid password'
+        ) {
           notification.error({ message: error.message });
         }
       },

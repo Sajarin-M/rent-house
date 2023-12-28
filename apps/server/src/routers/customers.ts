@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
-import { publicProcedure, router } from '../trpc';
+import { confirmedProcedure, publicProcedure, router } from '../trpc';
 
 const customerSchema = z.object({
   name: z.string().min(1),
@@ -43,7 +43,7 @@ export const customersRouter = router({
         .catch(createNotFound('Customer'));
     }),
 
-  deleteCustomer: publicProcedure
+  deleteCustomer: confirmedProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
       await prisma.customer

@@ -8,6 +8,7 @@ import Search from '@/components/search';
 import { Table } from '@/components/table';
 import Toolbar from '@/components/toolbar';
 import EditCustomer from '@/pages/customers/edit-customer';
+import notification from '@/utils/notification';
 import { useConfirmedDeletion } from '@/utils/queries';
 
 export default function Customers() {
@@ -32,6 +33,7 @@ export default function Customers() {
     trpc.customers.deleteCustomer.useMutation({
       onSuccess: () => {
         utils.customers.getAllCustomers.invalidate();
+        notification.deleted('Customer');
       },
     }).mutateAsync,
     {
