@@ -110,9 +110,9 @@ export const ImageUpload = {
 
 export async function uploadImage(file: File): Promise<string> {
   const formData = new FormData();
-  formData.append('files', file);
+  formData.append('file', file);
 
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/images/upload`, {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
     method: 'POST',
     body: formData,
   });
@@ -128,7 +128,7 @@ export async function uploadImage(file: File): Promise<string> {
 }
 
 export function getImageUrl(name: string) {
-  return `${import.meta.env.VITE_API_URL}/images/${name}`;
+  return `${import.meta.env.VITE_API_URL}/api/images/${name}`;
 }
 
 export function isImageCached(src: string) {
@@ -182,7 +182,10 @@ export function useImageUpload(props: UseImageUploadProps = {}) {
 
   const remoteUrl = imageName ? getImageUrl(imageName) : undefined;
 
-  const localUrl = useMemo(() => (file ? URL.createObjectURL(file) : undefined), [file]);
+  const localUrl = useMemo(
+    () => (file && file.type.startsWith('image') ? URL.createObjectURL(file) : undefined),
+    [file],
+  );
 
   const previewUrl = cleared ? '' : localUrl || remoteUrl;
 
@@ -195,10 +198,15 @@ export function useImageUpload(props: UseImageUploadProps = {}) {
   }
 
   function validate() {
-    if (file && file.type.startsWith('image')) {
-      return true;
-    }
-    if (required) {
+    if (file) {
+      if (file.type.startsWith('image')) {
+        return true;
+      } else {
+        uploadRef.current?.focus();
+        setError('File format is not supported');
+        return false;
+      }
+    } else if (required) {
       uploadRef.current?.focus();
       setError('Please select a image');
       return false;
@@ -238,8 +246,15 @@ export function useImageUpload(props: UseImageUploadProps = {}) {
 
   const ClearButton = useMemo(
     () => () => {
-      const { clearImage } = (ClearButton as any).api as Api;
-      return <ImageUpload.ClearButton onClick={clearImage} />;
+      const { clearImage, setError } = (ClearButton as any).api as Api;
+      return (
+        <ImageUpload.ClearButton
+          onClick={() => {
+            clearImage();
+            setError('');
+          }}
+        />
+      );
     },
     [],
   );
@@ -253,9 +268,13 @@ export function useImageUpload(props: UseImageUploadProps = {}) {
           resetRef={resetRef}
           onChange={(file) => {
             if (file) {
-              setFile(file);
-              if (error) {
-                setError('');
+              if (file.type.startsWith('image')) {
+                setFile(file);
+                if (error) {
+                  setError('');
+                }
+              } else {
+                setError('File format not supported');
               }
             }
           }}

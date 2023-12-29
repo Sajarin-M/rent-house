@@ -38,6 +38,7 @@ model RentOut {
   customer   Customer      @relation(fields: [customerId], references: [id])
   customerId String
   items      RentOutItem[]
+  discount   Float
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 }

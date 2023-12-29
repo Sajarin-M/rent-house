@@ -1,7 +1,19 @@
 import { PropsWithChildren } from 'react';
-import { createTheme, Loader, MantineProvider as MMantineProvider, Modal } from '@mantine/core';
+import {
+  createTheme,
+  Loader,
+  MantineProvider as MMantineProvider,
+  Modal,
+  MultiSelect,
+  Select,
+} from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
+
+const selectProps = {
+  searchable: true,
+  clearable: true,
+} as const;
 
 export const theme = createTheme({
   components: {
@@ -17,6 +29,12 @@ export const theme = createTheme({
         type: 'dots',
         size: 'xs',
       },
+    }),
+    Select: Select.extend({
+      defaultProps: selectProps,
+    }),
+    MultiSelect: MultiSelect.extend({
+      defaultProps: selectProps,
     }),
   },
 });

@@ -6,4 +6,6 @@ export { default as Select } from './select';
 export { default as PasswordInput } from './password-input';
 export { default as Textarea } from './text-area';
 export { default as NumberInput } from './number-input';
+export { default as PriceInput } from './price-input';
+export { default as DatePickerInput } from './date-picker-input';
 export { default as validation } from './validation';

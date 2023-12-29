@@ -1,10 +1,11 @@
-import { TbHome, TbLogout, TbUsers } from 'react-icons/tb';
+import { TbHome, TbLogout, TbShoppingBag, TbUsers } from 'react-icons/tb';
 import { Link, useLocation } from 'react-router-dom';
 import { Code } from '@mantine/core';
 
 const sidebarItems = [
   { href: '/', label: 'Home', icon: TbHome },
   { href: '/customers', label: 'Customers', icon: TbUsers, size: '1.3rem' },
+  { href: '/rent-outs', label: 'Rent Outs', icon: TbShoppingBag },
 ];
 export default function Sidebar() {
   const { pathname } = useLocation();

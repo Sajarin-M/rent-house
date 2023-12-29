@@ -31,7 +31,7 @@ export default function ModalForm({
       <form className='contents' onSubmit={onSubmit}>
         <ModalContent isLoading={isLoading}>{children}</ModalContent>
         <ModalFooter>
-          <Button w='7rem' variant='light' onClick={onCancel} type='button'>
+          <Button w='7rem' variant='default' onClick={onCancel} type='button'>
             Cancel
           </Button>
           {control ? (

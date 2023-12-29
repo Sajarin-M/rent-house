@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Group, Stack } from '@mantine/core';
-import pick from 'lodash/pick';
+import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import { TextInput, validation } from '@/components/form';
 import { Modal, ModalFormProps } from '@/components/modal';
@@ -36,7 +35,6 @@ function EditCustomerForm({ id, onClose }: EditCustomerProps) {
 
   useEffect(() => {
     if (data) {
-      pick(data, ['name', 'addressLine1', 'addressLine2', 'city', 'phoneNumber']);
       reset({
         name: data.name,
         phoneNumber: data.phoneNumber,
@@ -62,8 +60,9 @@ function EditCustomerForm({ id, onClose }: EditCustomerProps) {
       checkDirty={(formDirty) => formDirty || imageUpload.isDirty}
       onSubmit={handleSubmit(async (values) => {
         try {
-          imageUpload.validate();
-          documentImageUpload.validate();
+          if (!imageUpload.validate() || !documentImageUpload.validate()) {
+            return;
+          }
           const imageInfo = await imageUpload.upload();
           const documentImageInfo = await documentImageUpload.upload();
           if (isEditing) {
@@ -90,20 +89,20 @@ function EditCustomerForm({ id, onClose }: EditCustomerProps) {
       })}
     >
       <Stack>
-        <Group gap='5rem'>
-          <ImageUpload.Wrapper
-            label='Profile Image'
-            preview={<imageUpload.Preview />}
-            clear={<imageUpload.ClearButton />}
-            select={<imageUpload.SelectButton />}
-          />
-          <ImageUpload.Wrapper
-            label='Document Image'
-            preview={<documentImageUpload.Preview />}
-            clear={<documentImageUpload.ClearButton />}
-            select={<documentImageUpload.SelectButton />}
-          />
-        </Group>
+        <ImageUpload.Wrapper
+          label='Profile Image'
+          error={imageUpload.error}
+          preview={<imageUpload.Preview />}
+          clear={<imageUpload.ClearButton />}
+          select={<imageUpload.SelectButton />}
+        />
+        <ImageUpload.Wrapper
+          label='Document Image'
+          error={documentImageUpload.error}
+          preview={<documentImageUpload.Preview />}
+          clear={<documentImageUpload.ClearButton />}
+          select={<documentImageUpload.SelectButton />}
+        />
 
         <TextInput
           withAsterisk

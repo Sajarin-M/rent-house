@@ -4,6 +4,8 @@ import Customers from '@/pages/customers';
 import Home from '@/pages/home';
 import Login from '@/pages/login';
 import Logout from '@/pages/logout';
+import RentOuts from '@/pages/rent-outs';
+import Test from '@/pages/test';
 
 export default function Pages() {
   return (
@@ -11,9 +13,11 @@ export default function Pages() {
       <Route path='/' element={<Dashboard />}>
         <Route index element={<Home />} />
         <Route path='/customers' element={<Customers />} />
+        <Route path='/rent-outs' element={<RentOuts />} />
       </Route>
       <Route path='/login' element={<Login />} />
       <Route path='/logout' element={<Logout />} />
+      <Route path='/test' element={<Test />} />
     </Routes>
   );
 }
