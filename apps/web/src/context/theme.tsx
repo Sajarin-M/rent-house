@@ -5,6 +5,7 @@ import {
   MantineProvider as MMantineProvider,
   Modal,
   MultiSelect,
+  ScrollArea,
   Select,
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
@@ -35,6 +36,16 @@ export const theme = createTheme({
     }),
     MultiSelect: MultiSelect.extend({
       defaultProps: selectProps,
+    }),
+    ScrollArea: ScrollArea.extend({
+      defaultProps: {
+        scrollbarSize: '0.45rem',
+      },
+    }),
+    ScrollAreaAutosize: ScrollArea.Autosize.extend({
+      defaultProps: {
+        scrollbarSize: '0.45rem',
+      },
     }),
   },
 });
