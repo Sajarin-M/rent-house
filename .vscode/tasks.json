@@ -2,14 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "bun",
-      "label": "Dev Server All",
-      "script": "dev",
-      "detail": "turbo run dev",
-      "isBackground": true,
-      "problemMatcher": []
-    },
-    {
       "type": "shell",
       "label": "Prisma Generate",
       "command": "bunx prisma generate",
@@ -86,6 +78,13 @@
       "detail": "clean modules & resetup",
       "dependsOn": ["Clean Modules", "Setup Repo"],
       "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev Server All",
+      "detail": "start bot dev server",
+      "dependsOn": ["Dev Server Server", "Dev Server Web"],
+      "dependsOrder": "parallel",
       "problemMatcher": []
     },
     {
