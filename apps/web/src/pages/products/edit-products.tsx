@@ -79,14 +79,14 @@ function EditProductForm({ id, onClose }: EditProductProps) {
             });
             notification.created('Customer');
           }
-          utils.customers.getAllCustomers.invalidate();
+          utils.products.getAllProducts.invalidate();
           onClose();
         } catch (error) {}
       })}
     >
       <Stack>
         <ImageUpload.Wrapper
-          label='Profile Image'
+          label='Product Image'
           error={imageUpload.error}
           preview={<imageUpload.Preview />}
           clear={<imageUpload.ClearButton />}
@@ -109,7 +109,12 @@ function EditProductForm({ id, onClose }: EditProductProps) {
           rules={validation().required().build()}
         />
 
-        <TextInput name='rentPerDay' control={control} label='Rent Per Day' />
+        <TextInput
+          name='rentPerDay'
+          control={control}
+          label='Rent Per Day'
+          rules={validation().required().build()}
+        />
       </Stack>
     </Modal.Form>
   );
