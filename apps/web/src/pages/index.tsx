@@ -15,7 +15,7 @@ export default function Pages() {
         <Route index element={<Home />} />
         <Route path='/customers' element={<Customers />} />
         <Route path='/rent-outs' element={<RentOuts />} />
-        <Route path='/add-products' element={<Products />} />
+        <Route path='/products' element={<Products />} />
       </Route>
       <Route path='/login' element={<Login />} />
       <Route path='/logout' element={<Logout />} />
