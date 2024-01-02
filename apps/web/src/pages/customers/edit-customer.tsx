@@ -65,22 +65,21 @@ function EditCustomerForm({ id, onClose }: EditCustomerProps) {
           }
           const imageInfo = await imageUpload.upload();
           const documentImageInfo = await documentImageUpload.upload();
+
+          const submitValues = {
+            ...values,
+            image: imageInfo,
+            documentImage: documentImageInfo,
+          };
+
           if (isEditing) {
             await editCustomer({
               id,
-              data: {
-                ...values,
-                image: imageInfo,
-                documentImage: documentImageInfo,
-              },
+              data: submitValues,
             });
             notification.edited('Customer');
           } else {
-            await createCustomer({
-              ...values,
-              image: imageInfo,
-              documentImage: documentImageInfo,
-            });
+            await createCustomer(submitValues);
             notification.created('Customer');
           }
           utils.customers.getAllCustomers.invalidate();
