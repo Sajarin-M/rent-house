@@ -1,7 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { trpc } from '@/context/trpc';
-import { DatePickerInput, PriceInput, Select, validation } from '@/components/form';
+import { DatePickerInput, Select, validation } from '@/components/form';
 import { Modal, ModalFormProps } from '@/components/modal';
+import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { getFormTItle } from '@/utils/fns';
 import notification from '@/utils/notification';
 
@@ -28,13 +29,13 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
   //   { enabled: isEditing },
   // );
 
+  const { data: products = [] } = trpc.products.getAllProducts.useQuery();
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
 
   const { control, handleSubmit } = useForm<FormValues>({
     defaultValues: {
       createdAt: new Date().toISOString(),
       customerId: '',
-      discount: '',
       items: [],
     },
   });
@@ -90,8 +91,8 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
         } catch (error) {}
       })}
     >
-      <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_20rem] grid-rows-[auto_1fr]'>
-        <div className='border-default-border p-md gap-md grid grid-cols-3 rounded-md border'>
+      <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
+        <div className='border-default-border p-md gap-md grid grid-cols-2 rounded-md border'>
           <DatePickerInput
             withAsterisk
             label='Date'
@@ -108,37 +109,16 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
             rules={validation().required().build()}
             data={customers.map((c) => ({ label: c.name, value: c.id }))}
           />
-          <PriceInput
-            min={0}
-            name='discount'
-            label='Discount'
-            control={control}
-            rules={validation().min(0).build()}
-            classNames={{ input: 'text-end' }}
-          />
         </div>
         <div className='border-default-border rounded-md border'></div>
         <div className='border-default-border rounded-md border'></div>
-        <div className='border-default-border rounded-md border'></div>
-        {/* <TextInput
-          withAsterisk
-          name='name'
-          data-autofocus
-          control={control}
-          label='Name'
-          rules={validation().required().build()}
+        <UncontrolledSearchableList
+          keyPath='id'
+          items={products}
+          title={(p) => p.name}
+          avatar={{ name: (p) => p.name, image: (p) => p.image || '' }}
+          filter={(query, p) => p.name.toLowerCase().includes(query.toLowerCase())}
         />
-        <TextInput
-          withAsterisk
-          name='phoneNumber'
-          control={control}
-          label='Phone Number'
-          rules={validation().required().build()}
-        />
-
-        <TextInput name='addressLine1' control={control} label='Address Line 1' />
-        <TextInput name='addressLine2' control={control} label='Address Line 2' />
-        <TextInput name='city' control={control} label='City' /> */}
       </div>
     </Modal.Form>
   );

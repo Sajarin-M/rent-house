@@ -59,31 +59,41 @@ mantineColors['primary-light'] = `var(--mantine-primary-color-light)`;
 mantineColors['primary-light-hover'] = `var(--mantine-primary-color-light-hover)`;
 mantineColors['primary-light-color'] = `var(--mantine-primary-color-light-color)`;
 
-const pluginMantine = plugin(function () {}, {
-  darkMode: ['class', '[data-mantine-color-scheme="dark"]'],
-  theme: {
-    colors: {
-      ...mantineColors,
-      white: '#fff',
-      black: '#000',
-      current: 'currentColor',
-      transparent: 'transparent',
-    },
-    extend: {
-      spacing: mantineTheme.spacing,
-      lineHeight: mantineTheme.lineHeights,
-      borderRadius: {
-        ...mantineTheme.radius,
-        DEFAULT: 'var(--mantine-radius-default)',
+const pluginMantine = plugin(
+  function ({ addUtilities }) {
+    addUtilities({
+      '.outline-mantine-default': {
+        outline: 'calc(0.125rem * var(--mantine-scale)) solid var(--mantine-primary-color-filled)',
+        'outline-offset': 'calc(0.125rem * var(--mantine-scale))',
       },
-      boxShadow: {
-        ...mantineTheme.shadows,
-        DEFAULT: mantineTheme.shadows.xs,
-      },
-    },
-    fontSize: mantineTheme.fontSizes,
-    breakpoints: mantineTheme.breakpoints,
+    });
   },
-});
+  {
+    darkMode: ['class', '[data-mantine-color-scheme="dark"]'],
+    theme: {
+      colors: {
+        ...mantineColors,
+        white: '#fff',
+        black: '#000',
+        current: 'currentColor',
+        transparent: 'transparent',
+      },
+      extend: {
+        spacing: mantineTheme.spacing,
+        lineHeight: mantineTheme.lineHeights,
+        borderRadius: {
+          ...mantineTheme.radius,
+          DEFAULT: 'var(--mantine-radius-default)',
+        },
+        boxShadow: {
+          ...mantineTheme.shadows,
+          DEFAULT: mantineTheme.shadows.xs,
+        },
+      },
+      fontSize: mantineTheme.fontSizes,
+      breakpoints: mantineTheme.breakpoints,
+    },
+  },
+);
 
 export default pluginMantine;
