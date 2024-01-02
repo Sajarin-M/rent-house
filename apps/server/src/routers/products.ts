@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Prisma, prisma } from '../lib/prisma';
+import { createNotFound, Prisma, prisma } from '../lib/prisma';
 import { publicProcedure, router } from '../trpc';
 
 const productSchema = z.object({
@@ -35,6 +35,16 @@ export const productsRouter = router({
         select: productSelect,
       });
       return product;
+    }),
+  getProducts: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const products = await prisma.product
+        .findFirstOrThrow({
+          where: { id: input.id },
+        })
+        .catch(createNotFound('Product'));
+      return products;
     }),
 
   getAllProducts: publicProcedure.query(async () => {
