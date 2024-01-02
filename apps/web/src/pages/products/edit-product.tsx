@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
-import { TextInput, validation } from '@/components/form';
+import { NumberInput, PriceInput, TextInput, validation } from '@/components/form';
 import { Modal, ModalFormProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
 import { ImageUpload, useImageUpload } from '@/utils/images';
@@ -21,13 +21,12 @@ function EditProductForm({ id, onClose }: EditProductProps) {
   );
 
   const imageUpload = useImageUpload({ initialValue: data?.image });
-  //   const documentImageUpload = useImageUpload({ initialValue: data?.documentImage });
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
       name: '',
-      quantity: 0,
-      rentPerDay: 0,
+      quantity: '',
+      rentPerDay: '',
     },
   });
 
@@ -35,8 +34,8 @@ function EditProductForm({ id, onClose }: EditProductProps) {
     if (data) {
       reset({
         name: data.name,
-        quantity: data.quantity,
-        rentPerDay: data.rentPerDay,
+        quantity: data.quantity.toString(),
+        rentPerDay: data.rentPerDay.toString(),
       });
     }
   }, [data]);
@@ -52,7 +51,7 @@ function EditProductForm({ id, onClose }: EditProductProps) {
       onCancel={onClose}
       disableOnFresh={isEditing}
       isLoading={isEditing && isLoading}
-      title={getFormTItle('Products', isEditing)}
+      title={getFormTItle('Product', isEditing)}
       checkDirty={(formDirty) => formDirty || imageUpload.isDirty}
       onSubmit={handleSubmit(async (values) => {
         try {
@@ -60,24 +59,21 @@ function EditProductForm({ id, onClose }: EditProductProps) {
             return;
           }
           const imageInfo = await imageUpload.upload();
-          //   const documentImageInfo = await documentImageUpload.upload();
+          const submitValues = {
+            ...values,
+            image: imageInfo,
+            quantity: Number(values.quantity),
+            rentPerDay: Number(values.rentPerDay),
+          };
           if (isEditing) {
             await editProduct({
               id,
-              data: {
-                ...values,
-                image: imageInfo,
-                // documentImage: documentImageInfo,
-              },
+              data: submitValues,
             });
-            notification.edited('Customer');
+            notification.edited('Product');
           } else {
-            await createProduct({
-              ...values,
-              image: imageInfo,
-              //   documentImage: documentImageInfo,
-            });
-            notification.created('Customer');
+            await createProduct(submitValues);
+            notification.created('Product');
           }
           utils.products.getAllProducts.invalidate();
           onClose();
@@ -101,15 +97,15 @@ function EditProductForm({ id, onClose }: EditProductProps) {
           label='Name'
           rules={validation().required().build()}
         />
-        <TextInput
+        <NumberInput
           withAsterisk
           name='quantity'
           control={control}
-          label='Quantity'
+          label='Total Quantity'
           rules={validation().required().build()}
         />
 
-        <TextInput
+        <PriceInput
           name='rentPerDay'
           control={control}
           label='Rent Per Day'

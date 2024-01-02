@@ -7,7 +7,7 @@ import { menuItems } from '@/components/menu';
 import Search from '@/components/search';
 import { Table } from '@/components/table';
 import Toolbar from '@/components/toolbar';
-import EditProduct from './edit-products';
+import EditProduct from './edit-product';
 
 export default function Products() {
   const [searchQuery, setSearchQuery] = useInputState('');
@@ -21,15 +21,15 @@ export default function Products() {
     c.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // const deleteCustomer = useConfirmedDeletion(
-  //   trpc.customers.deleteCustomer.useMutation({
+  // const deleteProduct = useConfirmedDeletion(
+  //   trpc.products.deleteProduct.useMutation({
   //     onSuccess: () => {
-  //       utils.customers.getAllCustomers.invalidate();
-  //       notification.deleted('Customer');
+  //       utils.products.getAllProducts.invalidate();
+  //       notification.deleted('Product');
   //     },
   //   }).mutateAsync,
   //   {
-  //     entityName: 'Customer',
+  //     entityName: 'Product',
   //   },
   // );
 
@@ -48,7 +48,7 @@ export default function Products() {
           className='ml-auto'
           value={searchQuery}
           onChange={setSearchQuery}
-          tooltip='Search by name, address or phone'
+          tooltip='Search by name'
         />
       </Toolbar>
 
@@ -58,16 +58,16 @@ export default function Products() {
         keyPath='id'
         data={filteredProducts}
         columns={[
-          { header: 'Name', cell: (c) => c.name, cellWidth: '2fr' },
+          { header: 'Name', cell: (c) => c.name, cellWidth: '1fr' },
           {
             header: 'Quantity',
             cell: (c) => c.quantity,
-            cellWidth: '2fr',
+            cellWidth: '1fr',
           },
           {
             header: 'Rent Per Day',
             cell: (c) => c.rentPerDay,
-            cellWidth: '2fr',
+            cellWidth: '1fr',
           },
         ]}
         menu={(c) => [
@@ -75,7 +75,7 @@ export default function Products() {
             setSelectedProductId(c.id);
             handlers.open();
           }),
-          // menuItems.delete(() => deleteCustomer({ id: c.id })),
+          // menuItems.delete(() => deleteProduct({ id: c.id })),
         ]}
       />
     </Content>

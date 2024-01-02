@@ -6,7 +6,7 @@ const sidebarItems = [
   { href: '/', label: 'Home', icon: TbHome },
   { href: '/customers', label: 'Customers', icon: TbUsers, size: '1.3rem' },
   { href: '/rent-outs', label: 'Rent Outs', icon: TbShoppingBag },
-  { href: '/add-products', label: 'Add Products', icon: TbShoppingBag },
+  { href: '/add-products', label: 'Products', icon: TbShoppingBag },
 ];
 export default function Sidebar() {
   const { pathname } = useLocation();
