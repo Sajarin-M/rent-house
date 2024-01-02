@@ -34,23 +34,53 @@ model Customer {
 }
 
 model RentOut {
-  id         String        @id @default(uuid())
-  customer   Customer      @relation(fields: [customerId], references: [id])
-  customerId String
-  items      RentOutItem[]
-  discount   Float
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  id           String        @id @default(uuid())
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  customerId   String
+  rentOutItems RentOutItem[]
+  rentPayments RentPayment[]
+  rentReturns  RentReturn[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model RentPayment {
+  id             String   @id @default(uuid())
+  rentOut        RentOut  @relation(fields: [rentOutId], references: [id])
+  rentOutId      String
+  discountAmount Float    @default(0)
+  receivedAmount Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model RentReturn {
+  id        String       @id @default(uuid())
+  items     ReturnItem[]
+  rentOut   RentOut?     @relation(fields: [rentOutId], references: [id])
+  rentOutId String?
+}
+
+model ReturnItem {
+  id            String      @id @default(uuid())
+  rentOutItem   RentOutItem @relation(fields: [rentOutItemId], references: [id])
+  rentOutItemId String
+  quantity      Int
+  total         Float
+  createdAt     DateTime    @default(now())
+  rentReturn    RentReturn? @relation(fields: [rentReturnId], references: [id])
+  rentReturnId  String?
 }
 
 model RentOutItem {
-  id         String   @id @default(uuid())
-  product    Product  @relation(fields: [productId], references: [id])
+  id         String       @id @default(uuid())
+  product    Product      @relation(fields: [productId], references: [id])
   productId  String
   rentPerDay Float
   quantity   Int
-  rentOut    RentOut? @relation(fields: [rentOutId], references: [id])
+  rentOut    RentOut?     @relation(fields: [rentOutId], references: [id])
   rentOutId  String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  returns    ReturnItem[]
 }
