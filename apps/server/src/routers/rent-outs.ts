@@ -8,8 +8,7 @@ import { productSelect } from './products';
 const rentOutSchema = z.object({
   createdAt: z.string(),
   customerId: z.string().min(1),
-  discount: z.number().nonnegative(),
-  items: z.array(
+  rentOutItems: z.array(
     z.object({
       productId: z.string().min(1),
       quantity: z.number().positive(),
@@ -20,9 +19,8 @@ const rentOutSchema = z.object({
 
 export const rentOutSelect = {
   id: true,
-  discount: true,
   customer: { select: customerSelect },
-  items: {
+  rentOutItems: {
     select: { id: true, quantity: true, rentPerDay: true, product: { select: productSelect } },
   },
 } satisfies Prisma.RentOutSelect;
@@ -30,7 +28,7 @@ export const rentOutSelect = {
 export const rentOutsRouter = router({
   createRentOut: publicProcedure.input(rentOutSchema).mutation(async ({ input }) => {
     await prisma.rentOut.create({
-      data: { ...input, items: { create: input.items } },
+      data: { ...input, rentOutItems: { create: input.rentOutItems } },
       select: { id: true },
     });
   }),
@@ -50,19 +48,23 @@ export const rentOutsRouter = router({
           where: { id: input.id },
           data: {
             ...input.data,
-            items: {
+            rentOutItems: {
               deleteMany: {
                 id: {
-                  in: rentOut.items
+                  in: rentOut.rentOutItems
                     .filter(
                       (item) =>
-                        !input.data.items.find((newItem) => newItem.productId === item.product.id),
+                        !input.data.rentOutItems.find(
+                          (newItem) => newItem.productId === item.product.id,
+                        ),
                     )
                     .map((item) => item.id),
                 },
               },
-              update: input.data.items.reduce((acc, newItem) => {
-                const oldItem = rentOut.items.find((item) => item.product.id === newItem.productId);
+              update: input.data.rentOutItems.reduce((acc, newItem) => {
+                const oldItem = rentOut.rentOutItems.find(
+                  (item) => item.product.id === newItem.productId,
+                );
                 if (oldItem) {
                   acc.push({
                     where: { id: oldItem.id },
@@ -71,9 +73,10 @@ export const rentOutsRouter = router({
                 }
                 return acc;
               }, [] as Prisma.RentOutItemUpdateWithWhereUniqueWithoutRentOutInput[]),
-              create: input.data.items
+              create: input.data.rentOutItems
                 .filter(
-                  (newItem) => !rentOut.items.find((item) => newItem.productId === item.product.id),
+                  (newItem) =>
+                    !rentOut.rentOutItems.find((item) => newItem.productId === item.product.id),
                 )
                 .map((item) => item),
             },
@@ -134,7 +137,7 @@ export const rentOutsRouter = router({
                 { customer: { city: { contains: searchQuery, mode: 'insensitive' } } },
                 { customer: { phoneNumber: { contains: searchQuery, mode: 'insensitive' } } },
                 {
-                  items: {
+                  rentOutItems: {
                     some: { product: { name: { contains: searchQuery, mode: 'insensitive' } } },
                   },
                 },

@@ -14,7 +14,7 @@ type FormValues = {
   createdAt: string;
   customerId: string;
   discount: string;
-  items: {
+  rentOutItems: {
     productId: string;
     quantity: string;
     rentPerDay: string;
@@ -36,7 +36,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
     defaultValues: {
       createdAt: new Date().toISOString(),
       customerId: '',
-      items: [],
+      rentOutItems: [],
     },
   });
 
@@ -69,7 +69,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
           const submitValues = {
             ...values,
             discount: Number(values.discount),
-            items: values.items.map((item) => ({
+            rentOutItems: values.rentOutItems.map((item) => ({
               ...item,
               quantity: Number(item.quantity),
               rentPerDay: Number(item.rentPerDay),
