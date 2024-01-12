@@ -43,7 +43,7 @@ export default function Sidebar() {
 type SidebarItemProps = {
   isActive?: boolean;
   href: string;
-  icon: React.FC<{ className?: string; stroke?: number; size: string }>;
+  icon: React.FC<{ className?: string; size?: string | number }>;
   label: string;
   size?: string;
 };

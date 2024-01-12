@@ -5,6 +5,7 @@ import { Menu, MenuButton, MenuItem } from '@/components/menu';
 import { cn } from '@/utils/fns';
 import { useElementHeight } from '@/utils/use-element-size';
 import classes from './table.module.css';
+import { ColumnSizes } from './types';
 
 export type TableColumn<TData extends Record<any, any>> = {
   key?: string;
@@ -36,13 +37,6 @@ export type TableProps<TData extends Record<any, any>, TContext = unknown> = Omi
   components?: Omit<Components<TData, TContext>, 'Item'>;
   onRowClick?: (rowData: TData) => void;
 };
-
-export enum ColumnSizes {
-  Menu = '2rem',
-  Serial = '2.6rem',
-  Avatar = '3.8rem',
-  Checkbox = '1rem',
-}
 
 const TableRow = memo((props: ComponentProps<'div'>) => (
   <div
@@ -91,7 +85,7 @@ function ScrollingMenu() {
   );
 }
 
-export function Table<TData extends Record<any, any>, TContext = unknown>({
+export default function Table<TData extends Record<any, any>, TContext = unknown>({
   data,
   menu,
   columns,
@@ -108,6 +102,8 @@ export function Table<TData extends Record<any, any>, TContext = unknown>({
 }: TableProps<TData, TContext>) {
   const { ref, height } = useElementHeight([data.length]);
   const [isScrolling, setIsScrolling] = useState(false);
+
+  console.log(isLoading);
 
   if (isLoading) {
     return (

@@ -142,7 +142,7 @@ type Api = {
   props: UseImageUploadProps;
   file: File | null;
   isError: boolean;
-  isLoading: boolean;
+  isPending: boolean;
   upload: VoidFunction;
   failureCount: number;
   revokeUrl: VoidFunction;
@@ -178,7 +178,9 @@ export function useImageUpload(props: UseImageUploadProps = {}) {
 
   const resetRef = useRef<VoidFunction>(() => {});
 
-  const { mutateAsync, isError, isLoading, failureCount } = useMutation(uploadImage);
+  const { mutateAsync, isError, isPending, failureCount } = useMutation({
+    mutationFn: uploadImage,
+  });
 
   const remoteUrl = imageName ? getImageUrl(imageName) : undefined;
 
@@ -292,7 +294,7 @@ export function useImageUpload(props: UseImageUploadProps = {}) {
     upload,
     isError,
     resetRef,
-    isLoading,
+    isPending,
     revokeUrl,
     previewUrl,
     failureCount,

@@ -4,14 +4,14 @@ import { Button, Group, Loader } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import type { UseTRPCInfiniteQueryResult } from '@trpc/react-query/shared';
 import { getCombinedData, PageVm } from '@/utils/queries';
-import { Table, TableProps } from './table';
+import Table, { TableProps } from './table';
 
 export type InfiniteTableProps<TData extends Record<any, any>> = Omit<
   TableProps<TData>,
   'data' | 'context'
 > & {
   data?: readonly TData[];
-  queryResult: UseTRPCInfiniteQueryResult<PageVm<TData>, unknown>;
+  queryResult: UseTRPCInfiniteQueryResult<PageVm<TData>, unknown, unknown>;
   components?: Omit<Components<TData, InfiniteTableContext>, 'Item' | 'Footer'>;
 };
 
@@ -24,13 +24,12 @@ export type InfiniteTableContext = {
   };
 };
 
-export function InfiniteTable<TData extends Record<any, any>>({
+export default function InfiniteTable<TData extends Record<any, any>>({
   data,
   queryResult,
   resetError: extendedResetError,
   isError: extendedError,
   isLoading: extendedLoading,
-  rowHeight = 48,
   atBottomStateChange,
   atBottomThreshold = 400,
   components,
@@ -38,7 +37,7 @@ export function InfiniteTable<TData extends Record<any, any>>({
 }: InfiniteTableProps<TData>) {
   const {
     data: queryData,
-    isLoading,
+    isPending,
     hasNextPage,
     isFetching,
     isFetchingNextPage,
@@ -61,12 +60,11 @@ export function InfiniteTable<TData extends Record<any, any>>({
 
   return (
     <Table<TData, InfiniteTableContext>
-      rowHeight={rowHeight}
       resetError={() => {
         refetch();
         extendedResetError?.();
       }}
-      isLoading={isLoading || extendedLoading}
+      isLoading={isPending || extendedLoading}
       isError={isLoadingError || extendedError}
       data={data || getCombinedData(queryData?.pages)}
       context={{ loadMore }}

@@ -25,8 +25,8 @@ export const t = initTRPC.create({
 
 const confirmSchema = z.object({ password: z.string().min(3).max(50) });
 
-const isUserConfirmed = t.middleware(async ({ next, ctx, rawInput }) => {
-  const result = confirmSchema.safeParse(rawInput);
+const isUserConfirmed = t.middleware(async ({ next, ctx, getRawInput }) => {
+  const result = confirmSchema.safeParse(getRawInput());
   if (!result.success) {
     throw new TRPCError({ code: 'BAD_REQUEST', message: 'Please verify password' });
   }

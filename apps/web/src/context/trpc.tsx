@@ -17,7 +17,7 @@ const trpcClient = trpc.createClient({
 });
 
 const ReactQueryDevtoolsProduction = lazy(() =>
-  import('@tanstack/react-query-devtools/build/lib/index.prod.js').then((d) => ({
+  import('@tanstack/react-query-devtools/build/modern/production.js').then((d) => ({
     default: d.ReactQueryDevtools,
   })),
 );
@@ -27,11 +27,12 @@ export const queryClient = new QueryClient({
     queries: {
       networkMode: 'always',
       refetchOnWindowFocus: false,
-      onError: (error: any) => {
-        if ('message' in error && typeof error.message === 'string') {
-          notification.error({ message: error.message });
-        }
-      },
+
+      // onError: (error: any) => {
+      //   if ('message' in error && typeof error.message === 'string') {
+      //     notification.error({ message: error.message });
+      //   }
+      // },
     },
     mutations: {
       networkMode: 'always',

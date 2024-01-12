@@ -17,20 +17,22 @@ export function useDebouncedQuery<TQueryFn extends (input: any, opts: any) => an
 
   const queryResult = tRouter.useInfiniteQuery(modifiedInput, opts);
 
-  let isLoading = queryResult.isLoading;
+  let isPending = queryResult.isPending;
 
   let isDebouncing = input.searchQuery !== modifiedInput.searchQuery;
-  const cached = queryClient.getQueryCache().find(getQueryKey(tRouter as any, input, 'infinite'));
-  isLoading = isLoading || isDebouncing;
+  const cached = queryClient.getQueryState(getQueryKey(tRouter as any, input, 'infinite'));
+  //
+
+  isPending = isPending || isDebouncing;
 
   if (isDebouncing && cached) {
     return {
       ...queryResult,
-      ...cached.state,
+      ...cached,
     };
   }
 
-  return { ...queryResult, isLoading };
+  return { ...queryResult, isPending };
 }
 
 export function useConfirmedDeletion<TData, TInput, TOpts>(

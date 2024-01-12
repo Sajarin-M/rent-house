@@ -5,7 +5,7 @@ import AddButton from '@/components/add-button';
 import Content from '@/components/content';
 import { menuItems } from '@/components/menu';
 import Search from '@/components/search';
-import { Table } from '@/components/table';
+import { QueryTable } from '@/components/table';
 import Toolbar from '@/components/toolbar';
 import EditProduct from './edit-product';
 
@@ -15,7 +15,8 @@ export default function Products() {
   const [opened, handlers] = useDisclosure(false);
   const [selectedProductId, setSelectedProductId] = useState<string>();
 
-  const { data: products = [] } = trpc.products.getAllProducts.useQuery();
+  const queryResult = trpc.products.getAllProducts.useQuery();
+  const { data: products = [] } = queryResult;
 
   const filteredProducts = products.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -54,8 +55,9 @@ export default function Products() {
 
       <EditProduct modalProps={{ opened, onClose: handlers.close }} id={selectedProductId} />
 
-      <Table
+      <QueryTable
         keyPath='id'
+        queryResult={queryResult}
         data={filteredProducts}
         columns={[
           { header: 'Name', cell: (c) => c.name, cellWidth: '1fr' },

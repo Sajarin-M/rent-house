@@ -5,7 +5,7 @@ import AddButton from '@/components/add-button';
 import Content from '@/components/content';
 import { menuItems } from '@/components/menu';
 import Search from '@/components/search';
-import { Table } from '@/components/table';
+import { QueryTable } from '@/components/table';
 import Toolbar from '@/components/toolbar';
 import EditCustomer from '@/pages/customers/edit-customer';
 import notification from '@/utils/notification';
@@ -18,7 +18,8 @@ export default function Customers() {
   const [opened, handlers] = useDisclosure(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>();
 
-  const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
+  const queryResult = trpc.customers.getAllCustomers.useQuery();
+  const { data: customers = [] } = queryResult;
 
   const filteredCustomers = customers.filter(
     (c) =>
@@ -62,9 +63,10 @@ export default function Customers() {
 
       <EditCustomer modalProps={{ opened, onClose: handlers.close }} id={selectedCustomerId} />
 
-      <Table
+      <QueryTable
         keyPath='id'
         data={filteredCustomers}
+        queryResult={queryResult}
         columns={[
           { header: 'Name', cell: (c) => c.name, cellWidth: '2fr' },
           {
