@@ -44,7 +44,7 @@ export default function Products() {
             handlers.open();
           }}
         >
-          Create Products
+          Create Product
         </AddButton>
         <Search
           className='ml-auto'
