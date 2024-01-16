@@ -14,14 +14,14 @@
     "@elysiajs/cors": "^0.8.0",
     "@elysiajs/static": "^0.8.1",
     "@elysiajs/trpc": "^0.8.0",
-    "@prisma/client": "^5.8.0",
+    "@prisma/client": "^5.8.1",
     "@trpc/server": "next",
-    "elysia": "^0.8.8",
-    "prisma": "^5.8.0",
+    "elysia": "^0.8.9",
+    "prisma": "^5.8.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/bun": "^1.0.0",
+    "@types/bun": "^1.0.1",
     "typescript": "^5.3.3"
   }
 }
