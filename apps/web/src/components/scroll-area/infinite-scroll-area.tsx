@@ -9,7 +9,7 @@ export type InfiniteScrollAreaProps = Omit<
   onEndReached?: VoidFunction;
 };
 
-export const InfiniteScrollArea = forwardRef<HTMLDivElement, InfiniteScrollAreaProps>(
+const InfiniteScrollArea = forwardRef<HTMLDivElement, InfiniteScrollAreaProps>(
   ({ onEndReached, ...rest }, ref) => {
     const innerRef = useRef<HTMLDivElement>(null);
     const mergedRef = useMergedRef(ref, innerRef) as unknown as RefObject<HTMLDivElement>;
@@ -31,10 +31,4 @@ export const InfiniteScrollArea = forwardRef<HTMLDivElement, InfiniteScrollAreaP
   },
 );
 
-export const FlexScrollArea = forwardRef<HTMLDivElement, InfiniteScrollAreaProps>(
-  ({ style, ...rest }, ref) => {
-    return (
-      <InfiniteScrollArea ref={ref} style={{ ...style, height: '1px', flexGrow: 1 }} {...rest} />
-    );
-  },
-);
+export default InfiniteScrollArea;

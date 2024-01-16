@@ -1,6 +1,8 @@
+import { FaMoon, FaSun } from 'react-icons/fa6';
 import { TbHome, TbLogout, TbShoppingBag, TbUsers } from 'react-icons/tb';
 import { Link, useLocation } from 'react-router-dom';
-import { Code } from '@mantine/core';
+import { Button, Code, useMantineColorScheme } from '@mantine/core';
+import { useHotkeys } from '@mantine/hooks';
 
 const sidebarItems = [
   { href: '/', label: 'Home', icon: TbHome },
@@ -10,6 +12,9 @@ const sidebarItems = [
 ];
 export default function Sidebar() {
   const { pathname } = useLocation();
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+
+  useHotkeys([['mod+k', () => toggleColorScheme()]]);
 
   return (
     <nav className='border-default-border p-sm w-sidebar flex h-screen flex-col border-r border-solid'>
@@ -32,6 +37,15 @@ export default function Sidebar() {
           );
         })}
       </div>
+
+      <Button
+        variant='outline'
+        onClick={() => toggleColorScheme()}
+        leftSection={colorScheme === 'dark' ? <FaSun /> : <FaMoon />}
+        color={colorScheme === 'dark' ? 'yellow.7' : 'dark'}
+      >
+        {colorScheme === 'dark' ? 'Light' : 'Dark'} Mode
+      </Button>
 
       <div className='border-default-border mt-sm py-sm -mb-sm border-t border-solid'>
         <SidebarItem icon={TbLogout} href='/logout' label='Logout' />

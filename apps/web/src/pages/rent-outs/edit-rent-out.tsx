@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { trpc } from '@/context/trpc';
 import { DatePickerInput, Select, validation } from '@/components/form';
+import ItemTable from '@/components/item-table';
 import { Modal, ModalFormProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { getFormTItle } from '@/utils/fns';
@@ -111,7 +112,12 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
           />
         </div>
         <div className='border-default-border rounded-md border'></div>
-        <div className='border-default-border rounded-md border'></div>
+        <ItemTable.TableWrapper gridTemplateColumns='1fr 1fr 1fr'>
+          <ItemTable.HeadRow></ItemTable.HeadRow>
+          <ItemTable.DataWrapper>
+            <ItemTable.DataRow></ItemTable.DataRow>
+          </ItemTable.DataWrapper>
+        </ItemTable.TableWrapper>
         <UncontrolledSearchableList
           keyPath='id'
           items={products}

@@ -1,5 +1,5 @@
 import { ChangeEvent, ComponentPropsWithoutRef, useRef, useState } from 'react';
-import { Loader, Text } from '@mantine/core';
+import { Loader, px, Text, useMantineTheme } from '@mantine/core';
 import { useDidUpdate, useInputState, useScrollIntoView } from '@mantine/hooks';
 import Avatar from '@/components/avatar';
 import { FlexScrollArea } from '@/components/scroll-area';
@@ -44,15 +44,16 @@ export function SearchableList<T>({
 }: SearchableListProps<T>) {
   const [hovered, setHovered] = useState(-1);
   const itemsRefs = useRef<Record<string, HTMLDivElement>>({});
+  const theme = useMantineTheme();
 
   const { scrollIntoView, targetRef, scrollableRef } = useScrollIntoView<
     HTMLDivElement,
     HTMLDivElement
   >({
     duration: 0,
-    offset: 5,
-    cancelable: false,
     isList: true,
+    cancelable: false,
+    offset: Number(px(theme.spacing.sm)),
   });
 
   useDidUpdate(() => {
@@ -71,7 +72,7 @@ export function SearchableList<T>({
         autoFocus={autoFocus}
         className='border-default-border border-b'
         classNames={{
-          input: 'py-lg rounded-b-none rounded-t-md',
+          input: 'py-lg h-12 rounded-b-none rounded-t-md',
         }}
         onBlur={() => {
           setHovered(-1);
