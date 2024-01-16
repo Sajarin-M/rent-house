@@ -4,7 +4,7 @@ import { Button, ButtonProps, createPolymorphicComponent } from '@mantine/core';
 type Props = Omit<ButtonProps, 'leftSection'>;
 
 function _AddButton({ className, ...rest }: Props) {
-  return <Button radius='md' leftSection={<TbCirclePlus size='1.4rem' />} {...rest} />;
+  return <Button radius='sm' leftSection={<TbCirclePlus size='1.4rem' />} {...rest} />;
 }
 
 const AddButton = createPolymorphicComponent<'button', Props>(_AddButton);

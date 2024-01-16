@@ -7,6 +7,7 @@ import { menuItems } from '@/components/menu';
 import Search from '@/components/search';
 import { QueryTable } from '@/components/table';
 import Toolbar from '@/components/toolbar';
+import { formatCurrency } from '@/utils/fns';
 import EditProduct from './edit-product';
 
 export default function Products() {
@@ -60,16 +61,16 @@ export default function Products() {
         queryResult={queryResult}
         data={filteredProducts}
         columns={[
-          { header: 'Name', cell: (c) => c.name, cellWidth: '1fr' },
+          { header: 'Name', cell: (c) => c.name, cellWidth: '3fr' },
           {
             header: 'Quantity',
             cell: (c) => c.quantity,
-            cellWidth: '1fr',
+            cellWidth: '2fr',
           },
           {
             header: 'Rent Per Day',
-            cell: (c) => c.rentPerDay,
-            cellWidth: '1fr',
+            cell: (c) => formatCurrency(c.rentPerDay),
+            cellWidth: '2fr',
           },
         ]}
         menu={(c) => [

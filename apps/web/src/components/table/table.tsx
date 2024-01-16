@@ -187,7 +187,7 @@ export default function Table<TData extends Record<any, any>, TContext = unknown
         {...rest}
         className={cn(
           classes.table,
-          'border-default-border !h-[var(--height)] rounded-md border text-sm [scrollbar-gutter:stable]',
+          'border-default-border !h-[var(--height)] rounded-sm border text-sm [scrollbar-gutter:stable]',
         )}
         components={{
           Item: TableRowWrapper,

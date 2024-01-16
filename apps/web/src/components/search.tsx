@@ -20,7 +20,7 @@ const Search = forwardRef<HTMLInputElement, SearchProps>(
       >
         <TextInput
           ref={ref}
-          radius='md'
+          radius='sm'
           variant='filled'
           leftSectionWidth={48}
           leftSection={<TbSearch />}

@@ -4,11 +4,11 @@
 }
 
 .rowWrapper {
-  @apply border-t border-default-border;
+  @apply border-default-border border-t;
 }
 
 .infoWrapper {
-  @apply flex grow flex-col items-center justify-center gap-md rounded-md border border-default-border bg-gray-0 dark:bg-dark-6;
+  @apply gap-md border-default-border bg-gray-0 dark:bg-dark-6 flex grow flex-col items-center justify-center rounded-sm border;
 }
 
 .table {

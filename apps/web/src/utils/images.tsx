@@ -27,7 +27,7 @@ import { useMutation } from '@tanstack/react-query';
 
 function Preview({ src }: ComponentPropsWithoutRef<'img'>) {
   return (
-    <div className='border-default-border dark:bg-dark-6 flex h-28 w-28 items-center justify-center overflow-hidden rounded-md border'>
+    <div className='border-default-border dark:bg-dark-6 flex h-28 w-28 items-center justify-center overflow-hidden rounded-sm border'>
       {src ? <img className='h-full w-full object-cover' src={src} /> : <FaImage size='3.2rem' />}
     </div>
   );
@@ -43,7 +43,7 @@ const SelectButton = forwardRef<HTMLButtonElement, Omit<FileButtonProps, 'childr
               {...props}
               ref={ref}
               size='md'
-              radius='md'
+              radius='sm'
               variant='default'
               className='text-blue-filled'
             >
@@ -65,7 +65,7 @@ function ClearButton(
         {...props}
         color='red'
         size='md'
-        radius='md'
+        radius='sm'
         variant='default'
         className='text-red-7'
       >

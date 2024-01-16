@@ -63,7 +63,7 @@ export function SearchableList<T>({
   return (
     <div
       {...rest}
-      className={cn('border-default-border flex flex-col rounded-md border', className)}
+      className={cn('border-default-border flex flex-col rounded-sm border', className)}
     >
       <Search
         fullWidth
@@ -72,7 +72,7 @@ export function SearchableList<T>({
         autoFocus={autoFocus}
         className='border-default-border border-b'
         classNames={{
-          input: 'py-lg h-12 rounded-b-none rounded-t-md',
+          input: 'py-lg h-12 rounded-b-none rounded-t-sm',
         }}
         onBlur={() => {
           setHovered(-1);
@@ -124,7 +124,7 @@ export function SearchableList<T>({
               return (
                 <div
                   className={cn(
-                    'border-default-border bg-gray-1 hover:bg-gray-2 dark:bg-dark-5 dark:hover:bg-dark-5 grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-x-4 rounded-md border px-4 py-2',
+                    'border-default-border bg-gray-1 hover:bg-gray-2 dark:bg-dark-5 dark:hover:bg-dark-5 px-md py-xs gap-x-xs grid cursor-pointer grid-cols-[auto_1fr_auto] items-center rounded-sm border',
                     hovered === index && `bg-gray-2 outline-mantine-default dark:bg-dark-4`,
                   )}
                   // @ts-ignore

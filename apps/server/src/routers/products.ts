@@ -36,12 +36,14 @@ export const productsRouter = router({
       });
       return product;
     }),
-  getProducts: publicProcedure
+
+  getProduct: publicProcedure
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ input }) => {
       const products = await prisma.product
         .findFirstOrThrow({
           where: { id: input.id },
+          select: productSelect,
         })
         .catch(createNotFound('Product'));
       return products;

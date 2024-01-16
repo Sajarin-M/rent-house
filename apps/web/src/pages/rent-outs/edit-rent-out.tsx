@@ -1,11 +1,13 @@
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { trpc } from '@/context/trpc';
+import Avatar from '@/components/avatar';
 import { DatePickerInput, Select, validation } from '@/components/form';
 import ItemTable from '@/components/item-table';
 import { Modal, ModalFormProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { getFormTItle } from '@/utils/fns';
 import notification from '@/utils/notification';
+import { ProductVm } from '@/types';
 
 type EditRentOutProps = ModalFormProps & {
   id?: string;
@@ -16,9 +18,9 @@ type FormValues = {
   customerId: string;
   discount: string;
   rentOutItems: {
-    productId: string;
-    quantity: string;
-    rentPerDay: string;
+    quantity: string | number;
+    rentPerDay: string | number;
+    product: ProductVm;
   }[];
 };
 
@@ -33,13 +35,15 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
   const { data: products = [] } = trpc.products.getAllProducts.useQuery();
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
 
-  const { control, handleSubmit } = useForm<FormValues>({
+  const { control, handleSubmit, setFocus } = useForm<FormValues>({
     defaultValues: {
       createdAt: new Date().toISOString(),
       customerId: '',
       rentOutItems: [],
     },
   });
+
+  const rentOutItems = useFieldArray({ control, name: 'rentOutItems', keyName: 'key' });
 
   // useEffect(() => {
   //   if (data) {
@@ -71,7 +75,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
             ...values,
             discount: Number(values.discount),
             rentOutItems: values.rentOutItems.map((item) => ({
-              ...item,
+              productId: item.product.id,
               quantity: Number(item.quantity),
               rentPerDay: Number(item.rentPerDay),
             })),
@@ -93,7 +97,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
       })}
     >
       <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
-        <div className='border-default-border p-md gap-md grid grid-cols-2 rounded-md border'>
+        <div className='border-default-border p-md gap-md grid grid-cols-2 rounded-sm border'>
           <DatePickerInput
             withAsterisk
             label='Date'
@@ -111,11 +115,16 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
             data={customers.map((c) => ({ label: c.name, value: c.id }))}
           />
         </div>
-        <div className='border-default-border rounded-md border'></div>
-        <ItemTable.TableWrapper gridTemplateColumns='1fr 1fr 1fr'>
+        <div className='border-default-border rounded-sm border'></div>
+        <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr'>
           <ItemTable.HeadRow></ItemTable.HeadRow>
           <ItemTable.DataWrapper>
-            <ItemTable.DataRow></ItemTable.DataRow>
+            {rentOutItems.fields.map((field, index) => (
+              <ItemTable.DataRow key={field.key}>
+                <div className='text-xs'>{index + 1}</div>
+                <Avatar text={field.product.name} name={field.product.image ?? ''} size={40} />
+              </ItemTable.DataRow>
+            ))}
           </ItemTable.DataWrapper>
         </ItemTable.TableWrapper>
         <UncontrolledSearchableList
@@ -124,6 +133,23 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
           title={(p) => p.name}
           avatar={{ name: (p) => p.name, image: (p) => p.image || '' }}
           filter={(query, p) => p.name.toLowerCase().includes(query.toLowerCase())}
+          onItemClicked={(p) => {
+            const index = rentOutItems.fields.findIndex((f) => f.product.id === p.id);
+            if (index === -1) {
+              rentOutItems.append(
+                {
+                  quantity: 1,
+                  product: p,
+                  rentPerDay: p.rentPerDay,
+                },
+                {
+                  focusName: `rentOutItems.${rentOutItems.fields.length}.quantity`,
+                },
+              );
+            } else {
+              setFocus(`rentOutItems.${index}.quantity`);
+            }
+          }}
         />
       </div>
     </Modal.Form>

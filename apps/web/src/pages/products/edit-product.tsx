@@ -15,7 +15,7 @@ type EditProductProps = ModalFormProps & {
 function EditProductForm({ id, onClose }: EditProductProps) {
   const isEditing = id !== undefined;
 
-  const { data, isLoading } = trpc.products.getProducts.useQuery(
+  const { data, isLoading } = trpc.products.getProduct.useQuery(
     { id: id! },
     { enabled: isEditing },
   );

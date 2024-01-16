@@ -40,7 +40,7 @@ export default function Login() {
       >
         <PasswordInput
           autoFocus
-          radius='md'
+          radius='sm'
           withAsterisk
           name='password'
           label='Password'

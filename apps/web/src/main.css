@@ -16,16 +16,16 @@
 @layer tailwindComponents {
   @tailwind components;
   *::-webkit-scrollbar-track {
-    @apply bg-gray-3/50 dark:bg-gray-8/50 rounded-md;
+    @apply bg-gray-3/50 dark:bg-gray-8/50 rounded-sm;
   }
 
   *::-webkit-scrollbar {
-    @apply rounded-md;
+    @apply rounded-sm;
     width: var(--w-scrollbar);
   }
 
   *::-webkit-scrollbar-thumb {
-    @apply rounded-md bg-black/30 hover:bg-black/40 dark:bg-white/30 dark:hover:bg-white/40;
+    @apply rounded-sm bg-black/30 hover:bg-black/40 dark:bg-white/30 dark:hover:bg-white/40;
   }
 }
 
