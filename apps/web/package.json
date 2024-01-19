@@ -8,7 +8,7 @@
     "lint": "tsc",
     "preview": "vite preview",
     "build": "tsc && vite build",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist && rm -f tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@mantine/core": "^7.4.2",

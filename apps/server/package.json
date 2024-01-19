@@ -8,7 +8,7 @@
     "dev": "bun run --watch src/index.ts",
     "lint": "tsc",
     "build": "bun build ./src/index.ts --outdir ./dist --target bun --format esm",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist && rm -f tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@elysiajs/cors": "^0.8.0",
