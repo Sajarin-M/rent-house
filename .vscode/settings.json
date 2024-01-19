@@ -1,5 +1,5 @@
 {
-  "npm.packageManager": "pnpm",
+  "npm.packageManager": "bun",
   "tailwindCSS.classAttributes": ["class", "className", "classNames"],
   "tailwindCSS.experimental.configFile": "./apps/web/tailwind.config.cjs"
 }
