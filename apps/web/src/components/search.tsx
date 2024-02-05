@@ -2,7 +2,7 @@ import { ComponentProps, forwardRef } from 'react';
 import { TbSearch } from 'react-icons/tb';
 import { TextInput, Tooltip } from '@mantine/core';
 
-type SearchProps = ComponentProps<typeof TextInput> & {
+export type SearchProps = ComponentProps<typeof TextInput> & {
   tooltip?: string;
   fullWidth?: boolean;
 };

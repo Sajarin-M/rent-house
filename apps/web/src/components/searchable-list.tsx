@@ -23,6 +23,7 @@ export type SearchableListProps<T> = Omit<ComponentPropsWithoutRef<'div'>, 'titl
   onItemClicked?: (item: T) => void;
   keyPath: keyof T;
   autoFocus?: boolean;
+  'data-autofocus'?: boolean;
 };
 
 export function SearchableList<T>({
@@ -40,6 +41,7 @@ export function SearchableList<T>({
   onItemClicked,
   autoFocus,
   className,
+  'data-autofocus': dataAutoFocus,
   ...rest
 }: SearchableListProps<T>) {
   const [hovered, setHovered] = useState(-1);
@@ -71,6 +73,7 @@ export function SearchableList<T>({
         onChange={setSearchKey}
         autoFocus={autoFocus}
         className='border-default-border border-b'
+        {...(dataAutoFocus ? { 'data-autofocus': true } : {})}
         classNames={{
           input: 'py-lg h-12 rounded-b-none rounded-t-sm',
         }}

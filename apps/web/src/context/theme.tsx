@@ -5,6 +5,7 @@ import {
   MantineProvider as MMantineProvider,
   Modal,
   MultiSelect,
+  NumberInput,
   ScrollArea,
   Select,
 } from '@mantine/core';
@@ -46,6 +47,12 @@ export const theme = createTheme({
     ScrollAreaAutosize: ScrollArea.Autosize.extend({
       defaultProps: {
         scrollbarSize: '0.45rem',
+      },
+    }),
+    NumberInput: NumberInput.extend({
+      defaultProps: {
+        hideControls: true,
+        clampBehavior: 'strict',
       },
     }),
   },
