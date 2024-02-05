@@ -1,7 +1,14 @@
 import { useFieldArray, useForm } from 'react-hook-form';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
-import { DatePickerInput, Select, validation } from '@/components/form';
+import {
+  DatePickerInput,
+  NumberInput,
+  PriceInput,
+  Select,
+  validation,
+  Watcher,
+} from '@/components/form';
 import ItemTable from '@/components/item-table';
 import { Modal, ModalFormProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
@@ -116,13 +123,35 @@ function EditRentOutForm({ id, onClose }: EditRentOutProps) {
           />
         </div>
         <div className='border-default-border rounded-sm border'></div>
-        <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr'>
+        <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem'>
           <ItemTable.HeadRow></ItemTable.HeadRow>
           <ItemTable.DataWrapper>
             {rentOutItems.fields.map((field, index) => (
               <ItemTable.DataRow key={field.key}>
                 <div className='text-xs'>{index + 1}</div>
-                <Avatar text={field.product.name} name={field.product.image ?? ''} size={40} />
+                <Watcher
+                  control={control}
+                  name={[`rentOutItems.${index}.product`]}
+                  render={([product]) => (
+                    <>
+                      <Avatar text={product.name} name={product.image ?? ''} size={40} />
+                      <div className='font-semibold'>{product.name}</div>
+                    </>
+                  )}
+                />
+                <NumberInput
+                  size='xs'
+                  hideControls
+                  control={control}
+                  name={`rentOutItems.${index}.quantity`}
+                  classNames={{ input: 'text-end' }}
+                />
+                <PriceInput
+                  size='xs'
+                  control={control}
+                  name={`rentOutItems.${index}.rentPerDay`}
+                  classNames={{ input: 'text-end' }}
+                />
               </ItemTable.DataRow>
             ))}
           </ItemTable.DataWrapper>

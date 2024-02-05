@@ -147,4 +147,19 @@ export const rentOutsRouter = router({
       });
       return infiniteResult(rentOuts, limit, 'id');
     }),
+
+  // receivePayment: publicProcedure
+  //   .input(
+  //     z.object({
+  //       rentOutId: z.string().min(1),
+  //       discountAmount: z.number().nonnegative(),
+  //       receivedAmount: z.number().nonnegative(),
+  //     }),
+  //   )
+  //   .mutation(async ({ input }) => {
+  //     await prisma.rentPayment.create({
+  //       data: {},
+  //       select: { id: true },
+  //     });
+  //   }),
 });
