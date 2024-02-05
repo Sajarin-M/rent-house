@@ -162,4 +162,19 @@ export const rentOutsRouter = router({
   //       select: { id: true },
   //     });
   //   }),
+
+  addRentPayment: publicProcedure
+    .input(
+      z.object({
+        createdAt: z.string(),
+        rentOutId: z.string().min(1),
+        amount: z.number().nonnegative(),
+      }),
+    )
+    .query(async ({ input }) => {
+      await prisma.rentPayment.create({
+        data: input,
+        select: { id: true },
+      });
+    }),
 });
