@@ -171,7 +171,7 @@ export const rentOutsRouter = router({
         amount: z.number().nonnegative(),
       }),
     )
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       await prisma.rentPayment.create({
         data: input,
         select: { id: true },
