@@ -5,14 +5,14 @@ import { DatePickerInput, PriceInput, validation } from '@/components/form';
 import { Modal, ModalFormProps } from '@/components/modal';
 import notification from '@/utils/notification';
 
-type AddRentProps = ModalFormProps & {
+type AddRentPaymentProps = ModalFormProps & {
   rentOutId: string;
 };
 
-function AddRentPayment({ rentOutId, onClose }: AddRentProps) {
+function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentProps) {
   const { control, handleSubmit } = useForm({
     defaultValues: {
-      createdAt: '',
+      createdAt: new Date().toISOString(),
       amount: '',
     },
   });
@@ -23,6 +23,7 @@ function AddRentPayment({ rentOutId, onClose }: AddRentProps) {
     <Modal.Form
       control={control}
       onCancel={onClose}
+      title='Add Payment'
       onSubmit={handleSubmit(async (values) => {
         try {
           const submitValues = {
@@ -48,8 +49,11 @@ function AddRentPayment({ rentOutId, onClose }: AddRentProps) {
         />
         <PriceInput
           name='amount'
+          withAsterisk
+          data-autofocus
           control={control}
           label='Received Amount'
+          classNames={{ input: 'text-end' }}
           rules={validation().required().build()}
         />
       </Stack>
@@ -57,5 +61,7 @@ function AddRentPayment({ rentOutId, onClose }: AddRentProps) {
   );
 }
 
-const AddRent = Modal.generateFormModal(AddRentPayment, { size: 'lg' });
-export default AddRent;
+const AddRentPayment = Modal.generateFormModal(AddRentPaymentForm, {
+  size: 'calc(30rem*var(--mantine-scale))',
+});
+export default AddRentPayment;

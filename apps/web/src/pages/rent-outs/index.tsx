@@ -10,7 +10,7 @@ import { InfiniteTable } from '@/components/table';
 import Toolbar from '@/components/toolbar';
 import EditRentOut from '@/pages/rent-outs/edit-rent-out';
 import { useDebouncedQuery } from '@/utils/queries';
-import AddRent from './add-rent-payment';
+import AddRentPayment from './add-rent-payment';
 
 export default function RentOuts() {
   // const utils = trpc.useUtils();
@@ -53,14 +53,6 @@ export default function RentOuts() {
         >
           Create Rent Out
         </AddButton>
-        {/* <AddButton
-          onClick={() => {
-            setSelectedRentOutIdForPayment(undefined);
-            handlers.open();
-          }}
-        >
-          Add Rent Payment
-        </AddButton> */}
         <Search
           className='ml-auto'
           value={searchQuery}
@@ -72,8 +64,7 @@ export default function RentOuts() {
         modalProps={{ opened: editModalOpened, onClose: editModalHandlers.close }}
         id={selectedRentOutId}
       />
-      paymentModalOpened
-      <AddRent
+      <AddRentPayment
         modalProps={{ opened: paymentModalOpened, onClose: paymentModalHandlers.close }}
         rentOutId={selectedRentOutIdForPayment}
       />

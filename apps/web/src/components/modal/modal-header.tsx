@@ -25,7 +25,7 @@ export default function ModalHeader({
     >
       {typeof title === 'string' ? <div className='font-semibold'>{title}</div> : title}
 
-      {withCloseButton && <CloseButton iconSize={16} onClick={onClose} className='-mr-2' />}
+      {withCloseButton && <CloseButton iconSize={16} onClick={onClose} className='-mr-2 ml-auto' />}
     </div>
   );
 }
