@@ -21,7 +21,6 @@ export function useDebouncedQuery<TQueryFn extends (input: any, opts: any) => an
 
   let isDebouncing = input.searchQuery !== modifiedInput.searchQuery;
   const cached = queryClient.getQueryState(getQueryKey(tRouter as any, input, 'infinite'));
-  //
 
   isPending = isPending || isDebouncing;
 
