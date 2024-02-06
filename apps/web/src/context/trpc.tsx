@@ -61,8 +61,8 @@ export function TrpcProvider({ children }: PropsWithChildren) {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         {children}
-        <ReactQueryDevtools />
-        {showDevtools && <ReactQueryDevtoolsProduction />}
+        <ReactQueryDevtools buttonPosition='bottom-left' />
+        {showDevtools && <ReactQueryDevtoolsProduction buttonPosition='bottom-left' />}
       </QueryClientProvider>
     </trpc.Provider>
   );
