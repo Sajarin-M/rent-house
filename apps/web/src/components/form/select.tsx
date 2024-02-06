@@ -10,14 +10,26 @@ export type SelectProps<
 export default function Select<
   T extends FieldValues = FieldValues,
   U extends FieldPath<T> = FieldPath<T>,
->({ name, control, rules, ...rest }: SelectProps<T, U>) {
+>({ name, control, rules, onChange, onBlur, ...rest }: SelectProps<T, U>) {
   return (
     <Controller
       name={name}
       rules={rules}
       control={control}
       render={({ field, fieldState }) => (
-        <MSelect {...rest} {...field} error={fieldState.error?.message} />
+        <MSelect
+          {...rest}
+          {...field}
+          error={fieldState.error?.message}
+          onBlur={(e) => {
+            field.onBlur();
+            onBlur?.(e);
+          }}
+          onChange={(v, option) => {
+            field.onChange(v === null ? '' : v);
+            onChange?.(v, option);
+          }}
+        />
       )}
     />
   );

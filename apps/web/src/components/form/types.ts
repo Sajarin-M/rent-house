@@ -1,4 +1,4 @@
-import { ComponentProps, JSXElementConstructor } from 'react';
+import { ComponentPropsWithoutRef, JSXElementConstructor } from 'react';
 import { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
 
 export type Props<
@@ -8,4 +8,4 @@ export type Props<
 
 export type OmittedComponentProps<
   T extends keyof JSX.IntrinsicElements | JSXElementConstructor<any>,
-> = Omit<ComponentProps<T>, 'onChange' | 'onBlur' | 'checked' | 'value' | 'ref'>;
+> = Omit<ComponentPropsWithoutRef<T>, 'checked' | 'value'>;

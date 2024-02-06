@@ -48,8 +48,10 @@ model RentPayment {
   id             String   @id @default(uuid())
   rentOut        RentOut  @relation(fields: [rentOutId], references: [id])
   rentOutId      String
+  description    String?
   discountAmount Float    @default(0)
-  receivedAmount Float    @default(0)
+  receivedAmount Float
+  totalAmount    Float
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

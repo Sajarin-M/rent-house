@@ -20,3 +20,8 @@ export function formatCurrency(amount: number) {
     maximumFractionDigits: 2,
   });
 }
+
+export function numberOrZero(value: number | string) {
+  const number = Number(value);
+  return isNaN(number) ? 0 : number;
+}

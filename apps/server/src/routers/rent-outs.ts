@@ -8,6 +8,8 @@ import { productSelect } from './products';
 const rentOutSchema = z.object({
   createdAt: z.string(),
   customerId: z.string().min(1),
+  discountAmount: z.number().nonnegative().optional().default(0),
+  description: z.string().optional(),
   rentOutItems: z.array(
     z.object({
       productId: z.string().min(1),
@@ -28,7 +30,10 @@ export const rentOutSelect = {
 export const rentOutsRouter = router({
   createRentOut: publicProcedure.input(rentOutSchema).mutation(async ({ input }) => {
     await prisma.rentOut.create({
-      data: { ...input, rentOutItems: { create: input.rentOutItems } },
+      data: {
+        ...input,
+        rentOutItems: { create: input.rentOutItems },
+      },
       select: { id: true },
     });
   }),
@@ -148,28 +153,20 @@ export const rentOutsRouter = router({
       return infiniteResult(rentOuts, limit, 'id');
     }),
 
-  // receivePayment: publicProcedure
-  //   .input(
-  //     z.object({
-  //       rentOutId: z.string().min(1),
-  //       discountAmount: z.number().nonnegative(),
-  //       receivedAmount: z.number().nonnegative(),
-  //     }),
-  //   )
-  //   .mutation(async ({ input }) => {
-  //     await prisma.rentPayment.create({
-  //       data: {},
-  //       select: { id: true },
-  //     });
-  //   }),
-
   addRentPayment: publicProcedure
     .input(
-      z.object({
-        createdAt: z.string(),
-        rentOutId: z.string().min(1),
-        amount: z.number().nonnegative(),
-      }),
+      z
+        .object({
+          createdAt: z.string(),
+          rentOutId: z.string().min(1),
+          receivedAmount: z.number().positive(),
+          discountAmount: z.number().nonnegative().optional().default(0),
+          totalAmount: z.number().positive(),
+        })
+        .refine((data) => data.receivedAmount + data.discountAmount === data.totalAmount, {
+          message: 'Total amount should be equal to received amount and discount amount',
+          path: ['receivedAmount', 'discountAmount', 'totalAmount'],
+        }),
     )
     .mutation(async ({ input }) => {
       await prisma.rentPayment.create({

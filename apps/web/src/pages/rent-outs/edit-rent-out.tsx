@@ -14,7 +14,7 @@ import {
 import ItemTable from '@/components/item-table';
 import { Modal, ModalFormProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
-import { formatCurrency, getFormTItle } from '@/utils/fns';
+import { formatCurrency, getFormTItle, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
 import { ProductVm } from '@/types';
 
@@ -25,7 +25,7 @@ type EditRentOutFormProps = ModalFormProps & {
 type FormValues = {
   createdAt: string;
   customerId: string;
-  discount: string;
+  discountAmount: string | number;
   description: string;
   rentOutItems: {
     quantity: string | number;
@@ -49,6 +49,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
     defaultValues: {
       createdAt: new Date().toISOString(),
       description: '',
+      discountAmount: '',
       customerId: '',
       rentOutItems: [],
     },
@@ -84,7 +85,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
         try {
           const submitValues = {
             ...values,
-            discount: Number(values.discount),
+            discountAmount: Number(values.discountAmount),
             rentOutItems: values.rentOutItems.map((item) => ({
               productId: item.product.id,
               quantity: Number(item.quantity),
@@ -125,7 +126,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
             {...(isEditing ? {} : { 'data-autofocus': true })}
           />
           <Input.Label required>Description</Input.Label>
-          <TextInput control={control} name='discount' />
+          <TextInput control={control} name='description' />
         </div>
         <GrandTotal control={control} />
         <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem'>
@@ -202,13 +203,10 @@ type GrandTotalProps = {
 
 function GrandTotal({ control }: GrandTotalProps) {
   const rentOutItems = useWatch({ control, name: 'rentOutItems' });
-  const discount = useWatch({ control, name: 'discount' });
+  const discountAmount = useWatch({ control, name: 'discountAmount' });
 
   const total = rentOutItems.reduce(
-    (acc, item) =>
-      acc +
-      (isNaN(Number(item.quantity)) ? 0 : Number(item.quantity)) *
-        (isNaN(Number(item.rentPerDay)) ? 0 : Number(item.rentPerDay)),
+    (acc, item) => acc + numberOrZero(item.quantity) * numberOrZero(item.rentPerDay),
     0,
   );
 
@@ -221,7 +219,7 @@ function GrandTotal({ control }: GrandTotalProps) {
         size='xs'
         min={0}
         max={total}
-        name='discount'
+        name='discountAmount'
         control={control}
         disabled={total === 0}
         className='ml-auto w-[8rem]'
@@ -229,7 +227,7 @@ function GrandTotal({ control }: GrandTotalProps) {
       />
       <span className='font-semibold'>Grand Total</span>
       <span className='pr-[calc(1.875rem/3)] text-end font-semibold'>
-        {formatCurrency(total - (isNaN(Number(discount)) ? 0 : Number(discount)))}
+        {formatCurrency(total - numberOrZero(discountAmount))}
       </span>
     </div>
   );

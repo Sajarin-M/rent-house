@@ -12,6 +12,8 @@ export default function Textarea<
   minRows = 3,
   maxRows = 6,
   autosize = true,
+  onChange,
+  onBlur,
   ...rest
 }: Props<T, U> & OmittedComponentProps<typeof MTextarea>) {
   return (
@@ -27,6 +29,14 @@ export default function Textarea<
           maxRows={maxRows}
           autosize={autosize}
           error={fieldState.error?.message}
+          onBlur={(e) => {
+            field.onBlur();
+            onBlur?.(e);
+          }}
+          onChange={(e) => {
+            field.onChange(e);
+            onChange?.(e);
+          }}
         />
       )}
     />
