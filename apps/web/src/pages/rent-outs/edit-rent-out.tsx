@@ -223,7 +223,7 @@ function GrandTotal({ control }: GrandTotalProps) {
         control={control}
         disabled={total === 0}
         className='ml-auto w-[8rem]'
-        classNames={{ input: 'text-md text-end' }}
+        classNames={{ input: 'text-end text-sm' }}
       />
       <span className='font-semibold'>Grand Total</span>
       <span className='pr-[calc(1.875rem/3)] text-end font-semibold'>

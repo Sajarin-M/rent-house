@@ -95,12 +95,12 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
           )}
         />
         <div className='flex justify-between'>
-          <div className='font-semibold'>Received Amount</div>
+          <div className='text-sm font-semibold'>Received Amount</div>
           <Watcher
             control={control}
             name={['amount', 'discountAmount']}
             render={([amount, discountAmount]) => (
-              <div className='pr-[calc(1.875rem/3)] text-end font-semibold'>
+              <div className='pr-[calc(1.875rem/3)] text-end text-sm font-semibold'>
                 {formatCurrency(numberOrZero(amount) - numberOrZero(discountAmount))}
               </div>
             )}
