@@ -12,6 +12,9 @@ export const t = initTRPC.create({
         message: error.cause.issues[0]?.message ?? 'Some validation error occurred',
       };
     } else if (error instanceof TRPCError) {
+      if (error.code === 'INTERNAL_SERVER_ERROR') {
+        console.log('❌ Internal server error : ', error);
+      }
       return shape;
     } else {
       console.log('❌ Internal server error : ', error);
