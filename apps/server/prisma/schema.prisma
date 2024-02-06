@@ -34,14 +34,15 @@ model Customer {
 }
 
 model RentOut {
-  id           String        @id @default(uuid())
-  customer     Customer      @relation(fields: [customerId], references: [id])
-  customerId   String
-  rentOutItems RentOutItem[]
-  rentPayments RentPayment[]
-  rentReturns  RentReturn[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String        @id @default(uuid())
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  customerId     String
+  rentOutItems   RentOutItem[]
+  rentPayments   RentPayment[]
+  rentReturns    RentReturn[]
+  discountAmount Float         @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 model RentPayment {
