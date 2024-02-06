@@ -41,6 +41,7 @@ model RentOut {
   rentPayments   RentPayment[]
   rentReturns    RentReturn[]
   discountAmount Float         @default(0)
+  description    String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
