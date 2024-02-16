@@ -92,10 +92,5 @@ export type PageVm<T> = {
 };
 
 export function getCombinedData<T>(pages?: PageVm<T>[]) {
-  return (
-    pages?.reduce((combined, page) => {
-      combined.push(...page.items);
-      return combined;
-    }, [] as T[]) || []
-  );
+  return pages?.flatMap((page) => page.items) || [];
 }
