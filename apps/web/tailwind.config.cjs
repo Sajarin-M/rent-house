@@ -23,5 +23,5 @@ module.exports = {
       scrollMargin: heights,
     },
   },
-  plugins: [require('tailwindcss-animate'), require('@rent-house/tailwind-mantine')],
+  plugins: [require('tailwindcss-animate'), require('@devoss/tailwind-plugin-mantine')],
 };

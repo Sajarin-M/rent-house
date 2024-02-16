@@ -2,7 +2,7 @@ import { TbCheck } from 'react-icons/tb';
 import { CloseIcon } from '@mantine/core';
 import { NotificationData, showNotification } from '@mantine/notifications';
 
-type Props = Omit<NotificationData, 'color' | 'icon'>;
+type Props = NotificationData & { message: string };
 
 const error = (props: Props) =>
   showNotification({ color: 'red', icon: <CloseIcon size='0.9rem' />, ...props });
