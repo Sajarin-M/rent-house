@@ -8,7 +8,6 @@ import {
   PriceInput,
   Select,
   TextInput,
-  validation,
   Watcher,
 } from '@/components/form';
 import ItemTable from '@/components/item-table';
@@ -83,6 +82,34 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
       title={getFormTItle('Rent Out', isEditing)}
       onSubmit={handleSubmit(async (values) => {
         try {
+          if (!values.customerId) {
+            setFocus('customerId');
+            return notification.error({ message: 'Please select a customer' });
+          }
+
+          if (!values.createdAt) {
+            setFocus('createdAt');
+            return notification.error({ message: 'Please select a date' });
+          }
+
+          if (values.rentOutItems.length === 0) {
+            return notification.error({ message: 'Please add at least one item' });
+          }
+
+          for (let i = 0; i < values.rentOutItems.length; i++) {
+            const item = values.rentOutItems[i];
+            if (numberOrZero(item.quantity) <= 0) {
+              return notification.error({
+                message: `Please add a quantity for ${item.product.name.toLowerCase()}`,
+              });
+            }
+            if (numberOrZero(item.rentPerDay) < 0) {
+              return notification.error({
+                message: `Please add a rent per day for ${item.product.name.toLowerCase()}`,
+              });
+            }
+          }
+
           const submitValues = {
             ...values,
             discountAmount: Number(values.discountAmount),
@@ -111,17 +138,12 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
       <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
         <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_auto_var(--mantine-spacing-sm)_6.5rem_auto] grid-rows-[1fr_1fr] items-center rounded-sm border'>
           <Input.Label required>Date</Input.Label>
-          <DatePickerInput
-            name='createdAt'
-            control={control}
-            rules={validation().required().build()}
-          />
+          <DatePickerInput name='createdAt' control={control} />
           <div></div>
           <Input.Label required>Customer</Input.Label>
           <Select
             name='customerId'
             control={control}
-            rules={validation().required().build()}
             data={customers.map((c) => ({ label: c.name, value: c.id }))}
             {...(isEditing ? {} : { 'data-autofocus': true })}
           />
@@ -129,13 +151,14 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
           <TextInput control={control} name='description' />
         </div>
         <GrandTotal control={control} />
-        <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem'>
+        <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem 2rem'>
           <ItemTable.HeadRow>
             <div>#</div>
             <div></div>
             <div>Product</div>
             <div className='text-end'>Rent Per Day</div>
             <div className='text-end'>Quantity</div>
+            <div></div>
           </ItemTable.HeadRow>
           <ItemTable.DataWrapper>
             {rentOutItems.fields.map((field, index) => (
@@ -153,15 +176,23 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
                 />
                 <PriceInput
                   size='xs'
+                  min={0}
                   control={control}
                   name={`rentOutItems.${index}.rentPerDay`}
                   classNames={{ input: 'text-end' }}
                 />
                 <NumberInput
                   size='xs'
+                  min={0}
                   control={control}
                   name={`rentOutItems.${index}.quantity`}
                   classNames={{ input: 'text-end' }}
+                />
+                <ItemTable.RemoveRowButton
+                  className='ml-auto'
+                  onClick={() => {
+                    rentOutItems.remove(index);
+                  }}
                 />
               </ItemTable.DataRow>
             ))}

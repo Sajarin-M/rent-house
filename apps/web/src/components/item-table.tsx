@@ -1,4 +1,6 @@
 import { createContext, PropsWithChildren, useContext } from 'react';
+import { FaMinus } from 'react-icons/fa6';
+import { ActionIcon, ActionIconProps } from '@mantine/core';
 import { FlexScrollArea } from '@/components/scroll-area';
 
 const ItemTableContext = createContext<{ gridTemplateColumns: string } | null>(null);
@@ -49,11 +51,23 @@ function DataWrapper({ children }: PropsWithChildren) {
   );
 }
 
+export type RemoveRowButtonProps = ActionIconProps &
+  Omit<React.ComponentPropsWithoutRef<'button'>, keyof ActionIconProps>;
+
+function RemoveRowButton(props: RemoveRowButtonProps) {
+  return (
+    <ActionIcon tabIndex={-1} size={16} radius='lg' color='red' variant='filled' {...props}>
+      <FaMinus size={9} />
+    </ActionIcon>
+  );
+}
+
 const ItemTable = {
   TableWrapper,
   HeadRow,
   DataRow,
   DataWrapper,
+  RemoveRowButton,
 };
 
 export default ItemTable;
