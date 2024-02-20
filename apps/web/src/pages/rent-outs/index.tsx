@@ -11,12 +11,15 @@ import Toolbar from '@/components/toolbar';
 import EditRentOut from '@/pages/rent-outs/edit-rent-out';
 import { useDebouncedQuery } from '@/utils/queries';
 import AddRentPayment from './add-rent-payment';
+import RentOutInfo from './rent-out-info';
 
 export default function RentOuts() {
   // const utils = trpc.useUtils();
   const [searchQuery, setSearchQuery] = useInputState('');
 
   const [editModalOpened, editModalHandlers] = useDisclosure(false);
+  const [infoModalOpened, infoModalHandlers] = useDisclosure(false);
+
   const [selectedRentOutId, setSelectedRentOutId] = useState<string>();
 
   const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
@@ -71,6 +74,10 @@ export default function RentOuts() {
       <InfiniteTable
         keyPath='id'
         queryResult={queryResult}
+        onRowClick={(order) => {
+          setSelectedRentOutId(order.id);
+          infoModalHandlers.open();
+        }}
         columns={[{ header: 'Customer', cell: (r) => r.customer.name, cellWidth: '1fr' }]}
         menu={(r) => [
           menuItems.edit(() => {
@@ -88,6 +95,13 @@ export default function RentOuts() {
 
           // menuItems.delete(() => deleteRentOut({ id: r.id })),
         ]}
+      />
+      <RentOutInfo
+        rentOutId={selectedRentOutId!}
+        drawerProps={{
+          opened: infoModalOpened && selectedRentOutId !== undefined,
+          onClose: infoModalHandlers.close,
+        }}
       />
     </Content>
   );

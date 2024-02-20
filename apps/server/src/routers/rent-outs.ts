@@ -174,4 +174,15 @@ export const rentOutsRouter = router({
         select: { id: true },
       });
     }),
+  getRentOutInfo: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const info = await prisma.rentOut
+        .findFirstOrThrow({
+          where: { id: input.id },
+          select: rentOutSelect,
+        })
+        .catch(createNotFound('Product'));
+      return info;
+    }),
 });
