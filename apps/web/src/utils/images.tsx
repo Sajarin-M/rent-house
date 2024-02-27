@@ -112,7 +112,7 @@ export async function uploadImage(file: File): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
+  const response = await fetch(`/api/upload`, {
     method: 'POST',
     body: formData,
   });
@@ -128,7 +128,7 @@ export async function uploadImage(file: File): Promise<string> {
 }
 
 export function getImageUrl(name: string) {
-  return `${import.meta.env.VITE_API_URL}/api/images/${name}`;
+  return `/api/images/${name}`;
 }
 
 export function isImageCached(src: string) {
