@@ -21,10 +21,12 @@ const rentOutSchema = z.object({
 
 export const rentOutSelect = {
   id: true,
+  createdAt: true,
   customer: { select: customerSelect },
   rentOutItems: {
     select: { id: true, quantity: true, rentPerDay: true, product: { select: productSelect } },
   },
+  rentPayments: { select: { id: true } },
 } satisfies Prisma.RentOutSelect;
 
 export const rentOutsRouter = router({

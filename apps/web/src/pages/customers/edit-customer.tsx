@@ -7,12 +7,14 @@ import { Modal, ModalFormProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
 import { ImageUpload, useImageUpload } from '@/utils/images';
 import notification from '@/utils/notification';
+import { CustomerVm } from '@/types';
 
 type EditCustomerProps = ModalFormProps & {
   id?: string;
+  onCustomerCreated?: (customer: CustomerVm) => void;
 };
 
-function EditCustomerForm({ id, onClose }: EditCustomerProps) {
+function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerProps) {
   const isEditing = id !== undefined;
 
   const { data, isLoading } = trpc.customers.getCustomer.useQuery(
@@ -79,7 +81,8 @@ function EditCustomerForm({ id, onClose }: EditCustomerProps) {
             });
             notification.edited('Customer');
           } else {
-            await createCustomer(submitValues);
+            const createdCustomer = await createCustomer(submitValues);
+            onCustomerCreated?.(createdCustomer);
             notification.created('Customer');
           }
           utils.customers.getAllCustomers.invalidate();

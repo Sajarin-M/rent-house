@@ -1,5 +1,7 @@
 import { Control, useFieldArray, useForm, useWatch } from 'react-hook-form';
-import { Input, ModalRootProps } from '@mantine/core';
+import { FaPlus } from 'react-icons/fa6';
+import { ActionIcon, Input, ModalRootProps, Tooltip } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
 import {
@@ -16,6 +18,7 @@ import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { formatCurrency, getFormTItle, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
 import { ProductVm } from '@/types';
+import EditCustomer from '../customers/edit-customer';
 
 type EditRentOutFormProps = ModalFormProps & {
   id?: string;
@@ -35,6 +38,8 @@ type FormValues = {
 
 function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
   const isEditing = id !== undefined;
+  const [opened, handlers] = useDisclosure(false);
+  // const [selectedCustomerId, setSelectedCustomerId] = useState<string>();
 
   // const { data, isLoading } = trpc.rentOuts.getRentOut.useQuery(
   //   { id: id! },
@@ -44,7 +49,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
   const { data: products = [] } = trpc.products.getAllProducts.useQuery();
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
 
-  const { control, handleSubmit, setFocus } = useForm<FormValues>({
+  const { control, handleSubmit, setFocus, setValue } = useForm<FormValues>({
     defaultValues: {
       createdAt: new Date().toISOString(),
       description: '',
@@ -74,157 +79,168 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
   const { mutateAsync: editRentOut } = trpc.rentOuts.editRentOut.useMutation();
 
   return (
-    <Modal.Form
-      control={control}
-      onCancel={onClose}
-      disableOnFresh={isEditing}
-      // isLoading={isEditing && isLoading}
-      title={getFormTItle('Rent Out', isEditing)}
-      onSubmit={handleSubmit(async (values) => {
-        try {
-          if (!values.customerId) {
-            setFocus('customerId');
-            return notification.error({ message: 'Please select a customer' });
-          }
+    <>
+      <EditCustomer
+        modalProps={{ opened, onClose: handlers.close }}
+        onCustomerCreated={(customer) => {
+          setValue('createdAt', customer.id);
+        }}
+      />
 
-          if (!values.createdAt) {
-            setFocus('createdAt');
-            return notification.error({ message: 'Please select a date' });
-          }
-
-          if (values.rentOutItems.length === 0) {
-            return notification.error({ message: 'Please add at least one item' });
-          }
-
-          for (let i = 0; i < values.rentOutItems.length; i++) {
-            const item = values.rentOutItems[i];
-            if (numberOrZero(item.quantity) <= 0) {
-              return notification.error({
-                message: `Please add a quantity for ${item.product.name.toLowerCase()}`,
-              });
+      <Modal.Form
+        control={control}
+        onCancel={onClose}
+        disableOnFresh={isEditing}
+        // isLoading={isEditing && isLoading}
+        title={getFormTItle('Rent Out', isEditing)}
+        onSubmit={handleSubmit(async (values) => {
+          try {
+            if (!values.customerId) {
+              setFocus('customerId');
+              return notification.error({ message: 'Please select a customer' });
             }
-            if (numberOrZero(item.rentPerDay) < 0) {
-              return notification.error({
-                message: `Please add a rent per day for ${item.product.name.toLowerCase()}`,
-              });
+            if (!values.createdAt) {
+              setFocus('createdAt');
+              return notification.error({ message: 'Please select a date' });
             }
-          }
-
-          const submitValues = {
-            ...values,
-            discountAmount: Number(values.discountAmount),
-            rentOutItems: values.rentOutItems.map((item) => ({
-              productId: item.product.id,
-              quantity: Number(item.quantity),
-              rentPerDay: Number(item.rentPerDay),
-            })),
-          };
-
-          if (isEditing) {
-            await editRentOut({
-              id,
-              data: submitValues,
-            });
-            notification.edited('Rent Out');
-          } else {
-            await createRentOut(submitValues);
-            notification.created('Rent Out');
-          }
-          utils.rentOuts.getRentOuts.invalidate();
-          onClose();
-        } catch (error) {}
-      })}
-    >
-      <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
-        <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_auto_var(--mantine-spacing-sm)_6.5rem_auto] grid-rows-[1fr_1fr] items-center rounded-sm border'>
-          <Input.Label required>Date</Input.Label>
-          <DatePickerInput name='createdAt' control={control} />
-          <div></div>
-          <Input.Label required>Customer</Input.Label>
-          <Select
-            name='customerId'
-            control={control}
-            data={customers.map((c) => ({ label: c.name, value: c.id }))}
-            {...(isEditing ? {} : { 'data-autofocus': true })}
-          />
-          <Input.Label required>Description</Input.Label>
-          <TextInput control={control} name='description' />
-        </div>
-        <GrandTotal control={control} />
-        <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem 2rem'>
-          <ItemTable.HeadRow>
-            <div>#</div>
-            <div></div>
-            <div>Product</div>
-            <div className='text-end'>Rent Per Day</div>
-            <div className='text-end'>Quantity</div>
-            <div></div>
-          </ItemTable.HeadRow>
-          <ItemTable.DataWrapper>
-            {rentOutItems.fields.map((field, index) => (
-              <ItemTable.DataRow key={field.key}>
-                <div className='text-xs'>{index + 1}</div>
-                <Watcher
-                  control={control}
-                  name={[`rentOutItems.${index}.product`]}
-                  render={([product]) => (
-                    <>
-                      <Avatar text={product.name} name={product.image ?? ''} size={40} />
-                      <div>{product.name}</div>
-                    </>
-                  )}
-                />
-                <PriceInput
-                  size='xs'
-                  min={0}
-                  control={control}
-                  name={`rentOutItems.${index}.rentPerDay`}
-                  classNames={{ input: 'text-end' }}
-                />
-                <NumberInput
-                  size='xs'
-                  min={0}
-                  control={control}
-                  name={`rentOutItems.${index}.quantity`}
-                  classNames={{ input: 'text-end' }}
-                />
-                <ItemTable.RemoveRowButton
-                  className='ml-auto'
-                  onClick={() => {
-                    rentOutItems.remove(index);
-                  }}
-                />
-              </ItemTable.DataRow>
-            ))}
-          </ItemTable.DataWrapper>
-        </ItemTable.TableWrapper>
-        <UncontrolledSearchableList
-          keyPath='id'
-          items={products}
-          title={(p) => p.name}
-          avatar={{ name: (p) => p.name, image: (p) => p.image || '' }}
-          filter={(query, p) => p.name.toLowerCase().includes(query.toLowerCase())}
-          {...(isEditing ? { 'data-autofocus': true } : {})}
-          onItemClicked={(p) => {
-            const index = rentOutItems.fields.findIndex((f) => f.product.id === p.id);
-            if (index === -1) {
-              rentOutItems.append(
-                {
-                  quantity: 1,
-                  product: p,
-                  rentPerDay: p.rentPerDay,
-                },
-                {
-                  focusName: `rentOutItems.${rentOutItems.fields.length}.quantity`,
-                },
-              );
+            if (values.rentOutItems.length === 0) {
+              return notification.error({ message: 'Please add at least one item' });
+            }
+            for (let i = 0; i < values.rentOutItems.length; i++) {
+              const item = values.rentOutItems[i];
+              if (numberOrZero(item.quantity) <= 0) {
+                return notification.error({
+                  message: `Please add a quantity for ${item.product.name.toLowerCase()}`,
+                });
+              }
+              if (numberOrZero(item.rentPerDay) < 0) {
+                return notification.error({
+                  message: `Please add a rent per day for ${item.product.name.toLowerCase()}`,
+                });
+              }
+            }
+            const submitValues = {
+              ...values,
+              discountAmount: Number(values.discountAmount),
+              rentOutItems: values.rentOutItems.map((item) => ({
+                productId: item.product.id,
+                quantity: Number(item.quantity),
+                rentPerDay: Number(item.rentPerDay),
+              })),
+            };
+            if (isEditing) {
+              await editRentOut({
+                id,
+                data: submitValues,
+              });
+              notification.edited('Rent Out');
             } else {
-              setFocus(`rentOutItems.${index}.quantity`);
+              await createRentOut(submitValues);
+              notification.created('Rent Out');
             }
-          }}
-        />
-      </div>
-    </Modal.Form>
+            utils.rentOuts.getRentOuts.invalidate();
+            onClose();
+          } catch (error) {}
+        })}
+      >
+        <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
+          <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_1fr_var(--mantine-spacing-sm)_6.5rem_1fr] grid-rows-[1fr_1fr] items-center rounded-sm border'>
+            <Input.Label required>Date</Input.Label>
+            <DatePickerInput name='createdAt' control={control} />
+            <div></div>
+            <Input.Label required>Customer</Input.Label>
+            <div className='gap-xs grid grid-cols-[1fr_auto] items-center'>
+              <Select
+                name='customerId'
+                control={control}
+                data={customers.map((c) => ({ label: c.name, value: c.id }))}
+                {...(isEditing ? {} : { 'data-autofocus': true })}
+              />
+              <Tooltip label='Create new customer' position='bottom' withArrow>
+                <ActionIcon variant='outline' size='lg' onClick={() => handlers.open()}>
+                  <FaPlus />
+                </ActionIcon>
+              </Tooltip>
+            </div>
+            <Input.Label required>Description</Input.Label>
+            <TextInput control={control} name='description' />
+          </div>
+          <GrandTotal control={control} />
+          <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem 2rem'>
+            <ItemTable.HeadRow>
+              <div>#</div>
+              <div></div>
+              <div>Product</div>
+              <div className='text-end'>Rent Per Day</div>
+              <div className='text-end'>Quantity</div>
+              <div></div>
+            </ItemTable.HeadRow>
+            <ItemTable.DataWrapper>
+              {rentOutItems.fields.map((field, index) => (
+                <ItemTable.DataRow key={field.key}>
+                  <div className='text-xs'>{index + 1}</div>
+                  <Watcher
+                    control={control}
+                    name={[`rentOutItems.${index}.product`]}
+                    render={([product]) => (
+                      <>
+                        <Avatar text={product.name} name={product.image ?? ''} size={40} />
+                        <div>{product.name}</div>
+                      </>
+                    )}
+                  />
+                  <PriceInput
+                    size='xs'
+                    min={0}
+                    control={control}
+                    name={`rentOutItems.${index}.rentPerDay`}
+                    classNames={{ input: 'text-end' }}
+                  />
+                  <NumberInput
+                    size='xs'
+                    min={0}
+                    control={control}
+                    name={`rentOutItems.${index}.quantity`}
+                    classNames={{ input: 'text-end' }}
+                  />
+                  <ItemTable.RemoveRowButton
+                    className='ml-auto'
+                    onClick={() => {
+                      rentOutItems.remove(index);
+                    }}
+                  />
+                </ItemTable.DataRow>
+              ))}
+            </ItemTable.DataWrapper>
+          </ItemTable.TableWrapper>
+          <UncontrolledSearchableList
+            keyPath='id'
+            items={products}
+            title={(p) => p.name}
+            avatar={{ name: (p) => p.name, image: (p) => p.image || '' }}
+            filter={(query, p) => p.name.toLowerCase().includes(query.toLowerCase())}
+            {...(isEditing ? { 'data-autofocus': true } : {})}
+            onItemClicked={(p) => {
+              const index = rentOutItems.fields.findIndex((f) => f.product.id === p.id);
+              if (index === -1) {
+                rentOutItems.append(
+                  {
+                    quantity: 1,
+                    product: p,
+                    rentPerDay: p.rentPerDay,
+                  },
+                  {
+                    focusName: `rentOutItems.${rentOutItems.fields.length}.quantity`,
+                  },
+                );
+              } else {
+                setFocus(`rentOutItems.${index}.quantity`);
+              }
+            }}
+          />
+        </div>
+      </Modal.Form>
+    </>
   );
 }
 

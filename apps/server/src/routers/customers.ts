@@ -25,10 +25,11 @@ export const customerSelect = {
 
 export const customersRouter = router({
   createCustomer: publicProcedure.input(customerSchema).mutation(async ({ input }) => {
-    await prisma.customer.create({
+    const customer = await prisma.customer.create({
       data: input,
-      select: { id: true },
+      select: customerSelect,
     });
+    return customer;
   }),
 
   editCustomer: publicProcedure

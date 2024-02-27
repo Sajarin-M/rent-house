@@ -6,3 +6,4 @@ export type RouterOutput = inferRouterOutputs<AppRouter>;
 export type RouterContext = inferRouterContext<AppRouter>;
 
 export type ProductVm = RouterOutput['products']['getProduct'];
+export type CustomerVm = RouterOutput['customers']['getCustomer'];
