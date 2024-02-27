@@ -26,7 +26,7 @@ const Search = forwardRef<HTMLInputElement, SearchProps>(
           leftSection={<TbSearch />}
           w={!fullWidth ? '20rem' : undefined}
           classNames={{
-            input: 'border-default-border border',
+            input: '[&:not(:focus-within)]:border-default-border border',
             section: 'text-primary-filled pl-1',
           }}
           placeholder='Search...'

@@ -1,5 +1,5 @@
 import { ChangeEvent, ComponentPropsWithoutRef, useRef, useState } from 'react';
-import { Loader, px, Text, useMantineTheme } from '@mantine/core';
+import { Loader, px, useMantineTheme } from '@mantine/core';
 import { useDidUpdate, useInputState, useScrollIntoView } from '@mantine/hooks';
 import Avatar from '@/components/avatar';
 import { FlexScrollArea } from '@/components/scroll-area';
@@ -142,17 +142,17 @@ export function SearchableList<T>({
                   data-hovered={hovered === index}
                 >
                   <Avatar name={avatar.image?.(item)} text={avatar.name(item)} size={40} />
-                  <Text truncate>
-                    <Text truncate title={itemTitle} size='sm'>
+                  <div className='truncate'>
+                    <div className='truncate text-sm' title={itemTitle}>
                       {itemTitle}
-                    </Text>
+                    </div>
                     {itemSubtitle && (
-                      <Text truncate title={itemSubtitle} size='xs'>
+                      <div className='truncate text-xs' title={itemSubtitle}>
                         {itemSubtitle}
-                      </Text>
+                      </div>
                     )}
-                  </Text>
-                  {itemRightSection && <Text size='xs'>{itemRightSection}</Text>}
+                  </div>
+                  {itemRightSection && <div className='text-xs'>{itemRightSection}</div>}
                 </div>
               );
             })}
@@ -163,7 +163,7 @@ export function SearchableList<T>({
           <Loader />
         </div>
       ) : nothingFound ? (
-        <p className='pt-xl text-center text-sm'>{nothingFound}</p>
+        <div className='pt-xl text-center text-sm'>{nothingFound}</div>
       ) : undefined}
     </div>
   );

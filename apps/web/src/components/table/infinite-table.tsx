@@ -95,7 +95,7 @@ const LoadingMoreIndicator: ComponentType<{ context?: InfiniteTableContext }> = 
     <div className='border-default-border grid h-[var(--rowHeight)] place-items-center gap-x-4 border-t px-4 py-2'>
       {context!.loadMore.isError ? (
         <Group>
-          <p className='text-sm'>Something went wrong while loading </p>{' '}
+          <div className='text-sm'>Something went wrong while loading </div>
           <Button size='xs' color='red.6' onClick={() => context!.loadMore.retry()}>
             Retry
           </Button>

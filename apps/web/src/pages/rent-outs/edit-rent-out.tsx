@@ -21,7 +21,7 @@ import { ProductVm } from '@/types';
 import EditCustomer from '../customers/edit-customer';
 
 type EditRentOutFormProps = ModalFormProps & {
-  id?: string;
+  rentOutId?: string;
 };
 
 type FormValues = {
@@ -36,8 +36,8 @@ type FormValues = {
   }[];
 };
 
-function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
-  const isEditing = id !== undefined;
+function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
+  const isEditing = rentOutId !== undefined;
   const [opened, handlers] = useDisclosure(false);
   // const [selectedCustomerId, setSelectedCustomerId] = useState<string>();
 
@@ -130,7 +130,7 @@ function EditRentOutForm({ id, onClose }: EditRentOutFormProps) {
             };
             if (isEditing) {
               await editRentOut({
-                id,
+                id: rentOutId,
                 data: submitValues,
               });
               notification.edited('Rent Out');

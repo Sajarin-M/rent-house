@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaPlus } from 'react-icons/fa6';
+import { FaPlus, FaTurnDown } from 'react-icons/fa6';
 import { useDisclosure, useInputState } from '@mantine/hooks';
 import { trpc } from '@/context/trpc';
 import AddButton from '@/components/add-button';
@@ -11,6 +11,7 @@ import Toolbar from '@/components/toolbar';
 import EditRentOut from '@/pages/rent-outs/edit-rent-out';
 import { useDebouncedQuery } from '@/utils/queries';
 import AddRentPayment from './add-rent-payment';
+import CreateRentReturn from './create-rent-return';
 import RentOutInfo from './rent-out-info';
 
 export default function RentOuts() {
@@ -19,11 +20,10 @@ export default function RentOuts() {
 
   const [editModalOpened, editModalHandlers] = useDisclosure(false);
   const [infoModalOpened, infoModalHandlers] = useDisclosure(false);
+  const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
+  const [returnModalOpened, returnModalHandlers] = useDisclosure(false);
 
   const [selectedRentOutId, setSelectedRentOutId] = useState<string>();
-
-  const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
-  const [selectedRentOutIdForPayment, setSelectedRentOutIdForPayment] = useState('');
 
   const queryResult = useDebouncedQuery(
     trpc.rentOuts.getRentOuts,
@@ -63,14 +63,28 @@ export default function RentOuts() {
           tooltip='Search by name, address, phone or product'
         />
       </Toolbar>
+
       <EditRentOut
+        rentOutId={selectedRentOutId}
         modalProps={{ opened: editModalOpened, onClose: editModalHandlers.close }}
-        id={selectedRentOutId}
       />
+
       <AddRentPayment
-        modalProps={{ opened: paymentModalOpened, onClose: paymentModalHandlers.close }}
-        rentOutId={selectedRentOutIdForPayment}
+        modalProps={{
+          onClose: paymentModalHandlers.close,
+          opened: paymentModalOpened && selectedRentOutId !== undefined,
+        }}
+        rentOutId={selectedRentOutId!}
       />
+
+      <CreateRentReturn
+        rentOutId={selectedRentOutId!}
+        modalProps={{
+          onClose: returnModalHandlers.close,
+          opened: returnModalOpened && selectedRentOutId !== undefined,
+        }}
+      />
+
       <InfiniteTable
         keyPath='id'
         queryResult={queryResult}
@@ -88,8 +102,16 @@ export default function RentOuts() {
             icon: <FaPlus />,
             label: 'Add Payment',
             onClick: () => {
-              setSelectedRentOutIdForPayment(r.id);
+              setSelectedRentOutId(r.id);
               paymentModalHandlers.open();
+            },
+          },
+          {
+            icon: <FaTurnDown />,
+            label: 'Return',
+            onClick: () => {
+              setSelectedRentOutId(r.id);
+              returnModalHandlers.open();
             },
           },
 

@@ -103,8 +103,6 @@ export default function Table<TData extends Record<any, any>, TContext = unknown
   const { ref, height } = useElementHeight([data.length]);
   const [isScrolling, setIsScrolling] = useState(false);
 
-  console.log(isLoading);
-
   if (isLoading) {
     return (
       <div className={classes.infoWrapper}>
@@ -117,7 +115,7 @@ export default function Table<TData extends Record<any, any>, TContext = unknown
     return (
       <div className={classes.infoWrapper}>
         <Stack align='center'>
-          <p>Something went wrong while loading the page</p>
+          <div>Something went wrong while loading the page</div>
           {resetError && (
             <Button color='red.6' onClick={resetError}>
               Retry
@@ -131,7 +129,7 @@ export default function Table<TData extends Record<any, any>, TContext = unknown
   if (data.length === 0) {
     return (
       <div className={classes.infoWrapper}>
-        <p>{noDataMessage}</p>
+        <div>{noDataMessage}</div>
       </div>
     );
   }

@@ -104,18 +104,17 @@ export const rentOutsRouter = router({
   //       .catch(createNotFound('Rent Out'));
   //   }),
 
-  // getRentOut: publicProcedure
-  //   .input(z.object({ id: z.string().min(1) }))
-  //   .query(async ({ input }) => {
-  //     const rentOut = await prisma.rentOut
-  //       .findFirstOrThrow({
-  //         where: { id: input.id, deletedAt: null },
-  //         select: rentOutSelect,
-  //       })
-  //       .catch(createNotFound('Rent Out'));
-
-  //     return rentOut;
-  //   }),
+  getRentOut: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const rentOut = await prisma.rentOut
+        .findFirstOrThrow({
+          where: { id: input.id },
+          select: rentOutSelect,
+        })
+        .catch(createNotFound('Rent Out'));
+      return rentOut;
+    }),
 
   // getAllRentOuts: publicProcedure.query(async () => {
   //   const rentOuts = await prisma.rentOut.findMany({
@@ -186,5 +185,17 @@ export const rentOutsRouter = router({
         })
         .catch(createNotFound('Product'));
       return info;
+    }),
+
+  createRentReturn: publicProcedure
+    .input(z.object({ createdAt: z.string(), rentOutId: z.string().min(1) }))
+    .mutation(async ({}) => {
+      // await prisma.rentReturn.create({
+      //   data: {
+      //     ...input,
+      //     rentOut: { connect: { id: input.rentOutId } },
+      //   },
+      //   select: { id: true },
+      // });
     }),
 });
