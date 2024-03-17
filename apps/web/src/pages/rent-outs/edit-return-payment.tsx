@@ -1,60 +1,39 @@
 import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
-import { trpc } from '@/context/trpc';
-import { DatePickerInput, PriceInput, TextInput, validation, Watcher } from '@/components/form';
+import { PriceInput, TextInput, validation, Watcher } from '@/components/form';
 import { Modal, ModalFormProps, ModalRootProps } from '@/components/modal';
 import { formatCurrency, numberOrZero } from '@/utils/fns';
-import notification from '@/utils/notification';
 
-type AddRentPaymentFormProps = ModalFormProps & {
-  rentOutId: string;
-};
-
-type FormValues = {
-  date: string;
+export type ReturnPaymentFormValues = {
   totalAmount: string | number;
   discountAmount: string | number;
   description: string;
 };
 
-function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
-  const { control, handleSubmit, setValue } = useForm<FormValues>({
+export type EditReturnPaymentFormProps = ModalFormProps & {
+  defaultValues?: Partial<ReturnPaymentFormValues>;
+  onSubmit: (values: ReturnPaymentFormValues) => void;
+};
+
+function EditReturnPaymentForm({ onClose, onSubmit, defaultValues }: EditReturnPaymentFormProps) {
+  const { control, handleSubmit, setValue } = useForm<ReturnPaymentFormValues>({
     defaultValues: {
-      date: new Date().toISOString(),
       totalAmount: '',
       discountAmount: '',
+      description: '',
+      ...defaultValues,
     },
   });
 
-  const { mutateAsync: addRentPayment } = trpc.rentOuts.addRentPayment.useMutation();
-
   return (
     <Modal.Form
+      title='Payment'
+      disableOnFresh
       control={control}
       onCancel={onClose}
-      title='Add Payment'
-      onSubmit={handleSubmit(async (values) => {
-        try {
-          await addRentPayment({
-            ...values,
-            rentOutId,
-            discountAmount: numberOrZero(values.discountAmount),
-            totalAmount: numberOrZero(values.totalAmount),
-            receivedAmount: numberOrZero(values.totalAmount) - numberOrZero(values.discountAmount),
-          });
-          notification.created('Payment');
-          onClose();
-        } catch (error) {}
-      })}
+      onSubmit={handleSubmit(onSubmit)}
     >
       <Stack>
-        <DatePickerInput
-          withAsterisk
-          label='Date'
-          name='date'
-          control={control}
-          rules={validation().required().build()}
-        />
         <Watcher
           control={control}
           name={['discountAmount']}
@@ -112,13 +91,14 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
   );
 }
 
-export default function AddRentPayment({
-  modalProps,
-  ...rest
-}: Omit<AddRentPaymentFormProps, 'onClose'> & { modalProps: ModalRootProps }) {
+export type EditReturnPaymentProps = Omit<EditReturnPaymentFormProps, 'onClose'> & {
+  modalProps: ModalRootProps;
+};
+
+export default function EditReturnPayment({ modalProps, ...rest }: EditReturnPaymentProps) {
   return (
     <Modal.Root size='calc(30rem*var(--mantine-scale))' {...modalProps}>
-      <AddRentPaymentForm {...rest} onClose={modalProps.onClose} />
+      <EditReturnPaymentForm {...rest} onClose={modalProps.onClose} />
     </Modal.Root>
   );
 }

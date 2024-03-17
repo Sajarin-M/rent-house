@@ -21,6 +21,7 @@ const appRouter = router({
 export type AppRouter = typeof appRouter;
 
 ensureDirExistsSync(env.IMAGES_DIRECTORY);
+ensureDirExistsSync(env.STATIC_DIRECTORY);
 
 if (!existsSync(env.PASSWORD_FILE)) {
   await Bun.write(env.PASSWORD_FILE, 'password');
@@ -28,7 +29,7 @@ if (!existsSync(env.PASSWORD_FILE)) {
 
 const app = new Elysia()
   .use(cors())
-
+  .use(staticPlugin({ assets: env.STATIC_DIRECTORY, prefix: '/' }))
   .use(staticPlugin({ assets: env.IMAGES_DIRECTORY, prefix: '/api/images' }))
   .post('/api/upload', async ({ body, set }) => {
     if (
@@ -53,6 +54,11 @@ const app = new Elysia()
     return JSON.stringify(name);
   })
   .use(trpc(appRouter, { endpoint: '/api/trpc' }))
+  .onError(({ code, path }) => {
+    if (code === 'NOT_FOUND' && !path.startsWith('/api/')) {
+      return Bun.file(`${env.STATIC_DIRECTORY}/index.html`);
+    }
+  })
   .listen(env.PORT);
 
 console.log(

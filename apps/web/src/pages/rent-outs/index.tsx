@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FaPlus, FaTurnDown } from 'react-icons/fa6';
+import { FaPlus } from 'react-icons/fa6';
+import { TbRotateClockwise } from 'react-icons/tb';
 import { useDisclosure, useInputState } from '@mantine/hooks';
 import { trpc } from '@/context/trpc';
 import AddButton from '@/components/add-button';
@@ -107,7 +108,7 @@ export default function RentOuts() {
             },
           },
           {
-            icon: <FaTurnDown />,
+            icon: <TbRotateClockwise />,
             label: 'Return',
             onClick: () => {
               setSelectedRentOutId(r.id);

@@ -7,21 +7,21 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "lint": "tsc",
-    "build": "bun build ./src/index.ts --outdir ./dist --target bun --format esm",
+    "build": "bun build ./src/index.ts --minify --outdir ./dist --target bun --format esm",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist && rm -f tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@elysiajs/cors": "^0.8.0",
-    "@elysiajs/static": "^0.8.1",
-    "@elysiajs/trpc": "^0.8.0",
-    "@prisma/client": "^5.10.2",
+    "@elysiajs/cors": "^1.0.0",
+    "@elysiajs/static": "^1.0.0",
+    "@elysiajs/trpc": "^1.0.0",
+    "@prisma/client": "^5.11.0",
     "@trpc/server": "next",
-    "elysia": "^0.8.17",
-    "prisma": "^5.10.2",
+    "elysia": "^1.0.0",
+    "prisma": "^5.11.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/bun": "^1.0.7",
-    "typescript": "^5.3.3"
+    "@types/bun": "^1.0.8",
+    "typescript": "^5.4.2"
   }
 }

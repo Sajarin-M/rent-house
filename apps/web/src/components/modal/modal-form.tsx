@@ -1,4 +1,4 @@
-import { FormEventHandler, PropsWithChildren } from 'react';
+import { FormEventHandler, PropsWithChildren, ReactNode } from 'react';
 import { Button } from '@mantine/core';
 import { SubmitButton, SubmitButtonProps } from '../form';
 import ModalContent from './modal-content';
@@ -13,6 +13,7 @@ type Props = Pick<SubmitButtonProps, 'disableOnFresh' | 'checkDirty'> &
     onCancel: VoidFunction;
     isSubmitting?: boolean;
     onSubmit: FormEventHandler<HTMLFormElement>;
+    footer?: ReactNode;
   };
 export default function ModalForm({
   title,
@@ -24,6 +25,7 @@ export default function ModalForm({
   isSubmitting,
   disableOnFresh,
   checkDirty,
+  footer,
 }: Props) {
   return (
     <>
@@ -31,12 +33,18 @@ export default function ModalForm({
       <form className='contents' onSubmit={onSubmit}>
         <ModalContent isLoading={isLoading}>{children}</ModalContent>
         <ModalFooter>
-          <Button w='7rem' variant='default' onClick={onCancel} type='button'>
+          {footer}
+          <Button
+            className='w-action-btn ml-auto'
+            variant='default'
+            onClick={onCancel}
+            type='button'
+          >
             Cancel
           </Button>
           {control ? (
             <SubmitButton
-              w='7rem'
+              className='w-action-btn'
               control={control}
               loading={isSubmitting}
               checkDirty={checkDirty}
@@ -45,7 +53,7 @@ export default function ModalForm({
               Save
             </SubmitButton>
           ) : (
-            <Button w='7rem' type='submit' loading={isSubmitting}>
+            <Button className='w-action-btn' type='submit' loading={isSubmitting}>
               Save
             </Button>
           )}

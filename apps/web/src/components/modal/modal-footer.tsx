@@ -8,7 +8,7 @@ export type ModalFooterProps = ComponentPropsWithoutRef<'div'> & {
 export default function ModalFooter({ withDivider = true, ...rest }: ModalFooterProps) {
   return (
     <div
-      className={cn('gap-md px-md flex h-[4.2rem] shrink-0 items-center justify-end', {
+      className={cn('gap-md px-md flex h-[4.2rem] shrink-0 items-center', {
         'border-default-border border-t': withDivider,
       })}
       {...rest}

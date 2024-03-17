@@ -36,7 +36,7 @@ function DataRow({ children }: PropsWithChildren) {
   return (
     <div
       style={{ gridTemplateColumns: context?.gridTemplateColumns }}
-      className='gap-x-sm border-default-border bg-gray-1 px-md py-xs focus-within:outline-mantine-default dark:bg-dark-5 grid items-center rounded-sm border text-sm'
+      className='gap-x-sm border-default-border bg-gray-1 px-md py-xs focus-within:outline-mantine-default dark:bg-dark-6 grid items-center rounded-sm border text-sm'
     >
       {children}
     </div>

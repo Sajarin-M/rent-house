@@ -1,6 +1,7 @@
 import { ComponentProps, forwardRef } from 'react';
 import { TbSearch } from 'react-icons/tb';
 import { TextInput, Tooltip } from '@mantine/core';
+import { cn } from '@/utils/fns';
 
 export type SearchProps = ComponentProps<typeof TextInput> & {
   tooltip?: string;
@@ -8,7 +9,7 @@ export type SearchProps = ComponentProps<typeof TextInput> & {
 };
 
 const Search = forwardRef<HTMLInputElement, SearchProps>(
-  ({ tooltip, fullWidth, ...props }, ref) => {
+  ({ tooltip, fullWidth, classNames, ...props }, ref) => {
     return (
       <Tooltip
         withArrow
@@ -26,8 +27,11 @@ const Search = forwardRef<HTMLInputElement, SearchProps>(
           leftSection={<TbSearch />}
           w={!fullWidth ? '20rem' : undefined}
           classNames={{
-            input: '[&:not(:focus-within)]:border-default-border border',
-            section: 'text-primary-filled pl-1',
+            input: cn(
+              '[&:not(:focus-within)]:border-default-border dark:bg-dark-6 border',
+              (classNames as any)?.input,
+            ),
+            section: cn('text-primary-filled pl-1', (classNames as any)?.section),
           }}
           placeholder='Search...'
           {...props}

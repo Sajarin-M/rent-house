@@ -25,9 +25,8 @@ type EditRentOutFormProps = ModalFormProps & {
 };
 
 type FormValues = {
-  createdAt: string;
+  date: string;
   customerId: string;
-  discountAmount: string | number;
   description: string;
   rentOutItems: {
     quantity: string | number;
@@ -51,9 +50,8 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
 
   const { control, handleSubmit, setFocus, setValue } = useForm<FormValues>({
     defaultValues: {
-      createdAt: new Date().toISOString(),
+      date: new Date().toISOString(),
       description: '',
-      discountAmount: '',
       customerId: '',
       rentOutItems: [],
     },
@@ -83,7 +81,7 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
       <EditCustomer
         modalProps={{ opened, onClose: handlers.close }}
         onCustomerCreated={(customer) => {
-          setValue('createdAt', customer.id);
+          setValue('date', customer.id);
         }}
       />
 
@@ -99,8 +97,8 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
               setFocus('customerId');
               return notification.error({ message: 'Please select a customer' });
             }
-            if (!values.createdAt) {
-              setFocus('createdAt');
+            if (!values.date) {
+              setFocus('date');
               return notification.error({ message: 'Please select a date' });
             }
             if (values.rentOutItems.length === 0) {
@@ -121,7 +119,6 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
             }
             const submitValues = {
               ...values,
-              discountAmount: Number(values.discountAmount),
               rentOutItems: values.rentOutItems.map((item) => ({
                 productId: item.product.id,
                 quantity: Number(item.quantity),
@@ -146,7 +143,7 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
         <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
           <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_1fr_var(--mantine-spacing-sm)_6.5rem_1fr] grid-rows-[1fr_1fr] items-center rounded-sm border'>
             <Input.Label required>Date</Input.Label>
-            <DatePickerInput name='createdAt' control={control} />
+            <DatePickerInput name='date' control={control} />
             <div></div>
             <Input.Label required>Customer</Input.Label>
             <div className='gap-xs grid grid-cols-[1fr_auto] items-center'>
@@ -220,6 +217,7 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
             avatar={{ name: (p) => p.name, image: (p) => p.image || '' }}
             filter={(query, p) => p.name.toLowerCase().includes(query.toLowerCase())}
             {...(isEditing ? { 'data-autofocus': true } : {})}
+            nothingFound='No items found'
             onItemClicked={(p) => {
               const index = rentOutItems.fields.findIndex((f) => f.product.id === p.id);
               if (index === -1) {
@@ -250,7 +248,6 @@ type GrandTotalProps = {
 
 function GrandTotal({ control }: GrandTotalProps) {
   const rentOutItems = useWatch({ control, name: 'rentOutItems' });
-  const discountAmount = useWatch({ control, name: 'discountAmount' });
 
   const total = rentOutItems.reduce(
     (acc, item) => acc + numberOrZero(item.quantity) * numberOrZero(item.rentPerDay),
@@ -258,24 +255,9 @@ function GrandTotal({ control }: GrandTotalProps) {
   );
 
   return (
-    <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border'>
+    <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border font-semibold'>
       <span>Total</span>
-      <span className='pr-[calc(1.875rem/3)] text-end'>{formatCurrency(total)}</span>
-      <span>Discount</span>
-      <PriceInput
-        size='xs'
-        min={0}
-        max={total}
-        name='discountAmount'
-        control={control}
-        disabled={total === 0}
-        className='ml-auto w-[8rem]'
-        classNames={{ input: 'text-end text-sm' }}
-      />
-      <span className='font-semibold'>Grand Total</span>
-      <span className='pr-[calc(1.875rem/3)] text-end font-semibold'>
-        {formatCurrency(total - numberOrZero(discountAmount))}
-      </span>
+      <span className='pr-[calc(1.875rem/3)] text-end'>{formatCurrency(total)} / Day</span>
     </div>
   );
 }

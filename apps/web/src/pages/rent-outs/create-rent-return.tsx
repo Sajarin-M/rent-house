@@ -1,50 +1,61 @@
-import { Control, useFieldArray, useForm, useWatch } from 'react-hook-form';
-import { Input, ModalRootProps, TextInput as MTextInput } from '@mantine/core';
+import { useState } from 'react';
+import { Control, Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { TbSettings } from 'react-icons/tb';
+import {
+  ActionIcon,
+  Button,
+  Input,
+  ModalRootProps,
+  TextInput as MTextInput,
+  Popover,
+  Switch,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import dayjs from 'dayjs';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
-import {
-  DatePickerInput,
-  NumberInput,
-  PriceInput,
-  TextInput,
-  validation,
-  Watcher,
-} from '@/components/form';
+import { DatePickerInput, NumberInput, TextInput, validation, Watcher } from '@/components/form';
 import ItemTable from '@/components/item-table';
 import { Modal, ModalFormProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { formatCurrency, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
 import { RentOutVm } from '@/types';
+import EditReturnPayment, { ReturnPaymentFormValues } from './edit-return-payment';
 
 type CreateRentReturnFormProps = ModalFormProps & {
   rentOutId: string;
 };
 
 type FormValues = {
-  createdAt: string;
-  discountAmount: string | number;
+  date: string;
   description: string;
+  withPayment: boolean;
   returnItems: {
     quantity: string | number;
-    rentPerDay: string | number;
     usedDays: string | number;
     rentOutItem: RentOutVm['rentOutItems'][number];
   }[];
+  payment: ReturnPaymentFormValues | null;
 };
 
 function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps) {
+  const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
+  const [settingsPopoverOpened, settingsPopoverHandlers] = useDisclosure(false);
+  const [paymentDefaultValues, setPaymentDefaultValues] =
+    useState<Partial<ReturnPaymentFormValues>>();
+
   const { data: rentOutData, isLoading: isLoadingRentOutData } = trpc.rentOuts.getRentOut.useQuery({
     id: rentOutId,
   });
 
   const { control, handleSubmit, setFocus, getValues, setValue } = useForm<FormValues>({
     defaultValues: {
-      createdAt: new Date().toISOString(),
+      date: new Date().toISOString(),
       description: '',
-      discountAmount: '',
       returnItems: [],
+      withPayment: true,
+      payment: null,
     },
   });
 
@@ -54,147 +65,318 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
 
   const { mutateAsync: createRentReturn } = trpc.rentOuts.createRentReturn.useMutation();
 
-  return (
-    <Modal.Form
-      control={control}
-      onCancel={onClose}
-      title='Create Rent Return'
-      isLoading={isLoadingRentOutData}
-      onSubmit={handleSubmit(async (values) => {
-        try {
-          const submitValues = {
-            ...values,
-            rentOutId: rentOutId,
-            discountAmount: Number(values.discountAmount),
-            rentOutItems: values.returnItems.map((item) => ({
-              productId: item.rentOutItem.product.id,
-              quantity: Number(item.quantity),
-              rentPerDay: Number(item.rentPerDay),
-            })),
-          };
-          await createRentReturn(submitValues);
-          notification.created('Rent Out');
-          utils.rentOuts.getRentOuts.invalidate();
-          onClose();
-        } catch (error) {}
-      })}
-    >
-      <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
-        <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_auto_var(--mantine-spacing-sm)_6.5rem_auto] grid-rows-[1fr_1fr] items-center rounded-sm border'>
-          <Input.Label required>Date</Input.Label>
-          <DatePickerInput
-            name='createdAt'
-            control={control}
-            rules={validation().required().build()}
-            minDate={rentOutData?.createdAt ? new Date(rentOutData.createdAt) : undefined}
-            onChange={(date) => {
-              if (date !== null && date instanceof Date) {
-                const daysDifference =
-                  dayjs(getValues().createdAt).diff(dayjs(rentOutData?.createdAt), 'day') + 1;
+  function getDaysDifference() {
+    return dayjs(getValues().date).diff(dayjs(rentOutData?.date), 'day') + 1;
+  }
 
-                for (let i = 0; i < returnItems.fields.length; i++) {
-                  setValue(`returnItems.${i}.usedDays`, daysDifference);
+  return (
+    <>
+      <EditReturnPayment
+        defaultValues={paymentDefaultValues}
+        modalProps={{
+          onClose: paymentModalHandlers.close,
+          opened: paymentModalOpened,
+        }}
+        onSubmit={(values) => {
+          setValue('payment', values);
+          paymentModalHandlers.close();
+        }}
+      />
+      <Modal.Form
+        control={control}
+        onCancel={onClose}
+        title='Create Rent Return'
+        isLoading={isLoadingRentOutData}
+        onSubmit={handleSubmit(async (values) => {
+          try {
+            const submitValues: Parameters<typeof createRentReturn>[0] = {
+              ...values,
+              rentOutId: rentOutId,
+              returnItems: values.returnItems.map((item) => ({
+                rentOutItemId: item.rentOutItem.id,
+                rentPerDay: item.rentOutItem.rentPerDay,
+                totalAmount: getItemTotal(item),
+                quantity: numberOrZero(item.quantity),
+                usedDays: numberOrZero(item.usedDays),
+              })),
+              totalAmount: getGrandTotal(values.returnItems),
+              payment: values.payment
+                ? {
+                    totalAmount: numberOrZero(values.payment.totalAmount),
+                    discountAmount: numberOrZero(values.payment.discountAmount),
+                    description: values.payment.description,
+                    receivedAmount:
+                      numberOrZero(values.payment.totalAmount) -
+                      numberOrZero(values.payment.discountAmount),
+                  }
+                : null,
+            };
+            await createRentReturn(submitValues);
+            notification.created('Return');
+            utils.rentOuts.getRentOuts.invalidate();
+            utils.rentOuts.getRentOut.invalidate({ id: rentOutId });
+            onClose();
+          } catch (error) {}
+        })}
+        footer={
+          <Popover
+            withArrow
+            position='top-start'
+            opened={settingsPopoverOpened}
+            onChange={settingsPopoverHandlers.toggle}
+          >
+            <Popover.Target>
+              <ActionIcon variant='default' size='lg' onClick={settingsPopoverHandlers.toggle}>
+                <TbSettings />
+              </ActionIcon>
+            </Popover.Target>
+
+            <Popover.Dropdown>
+              <div className='space-y-sm'>
+                <Controller
+                  control={control}
+                  name='withPayment'
+                  render={({ field }) => (
+                    <div className='gap-xl flex items-center'>
+                      <Switch
+                        checked={field.value}
+                        onChange={field.onChange}
+                        label='Receive Payment'
+                      />
+                      <Button
+                        size='compact-sm'
+                        disabled={!field.value}
+                        variant='outline'
+                        onClick={() => {
+                          const values = getValues();
+                          if (values.payment === null) {
+                            setPaymentDefaultValues({
+                              totalAmount: getGrandTotal(values.returnItems),
+                            });
+                          } else {
+                            setPaymentDefaultValues(values.payment);
+                          }
+                          paymentModalHandlers.open();
+                        }}
+                      >
+                        <span className='text-xs'>Edit Payment</span>
+                      </Button>
+                    </div>
+                  )}
+                />
+                <Watcher
+                  control={control}
+                  name={['returnItems']}
+                  render={([returnItems]) => {
+                    const isFullyReturning =
+                      rentOutData &&
+                      rentOutData.rentOutItems.every((item) => {
+                        const returnItem = returnItems.find((i) => i.rentOutItem.id === item.id);
+                        if (!returnItem) {
+                          return false;
+                        }
+
+                        const quantityInfo = getRentOutItemQuantityInfo(item);
+                        if (quantityInfo.remainingQuantity !== returnItem.quantity) {
+                          return false;
+                        }
+
+                        return true;
+                      });
+                    return (
+                      <Switch
+                        label='Return All'
+                        checked={isFullyReturning}
+                        onChange={() => {
+                          if (!isFullyReturning && rentOutData) {
+                            setValue(
+                              'returnItems',
+                              rentOutData.rentOutItems.map((item) => ({
+                                rentOutItem: item,
+                                usedDays: getDaysDifference(),
+                                quantity: getRentOutItemQuantityInfo(item).remainingQuantity,
+                              })),
+                            );
+                          }
+                        }}
+                      />
+                    );
+                  }}
+                />
+              </div>
+            </Popover.Dropdown>
+          </Popover>
+        }
+      >
+        <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
+          <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_auto_var(--mantine-spacing-sm)_6.5rem_auto] grid-rows-[1fr_1fr] items-center rounded-sm border'>
+            <Input.Label required>Date</Input.Label>
+            <DatePickerInput
+              name='date'
+              control={control}
+              rules={validation().required().build()}
+              minDate={rentOutData?.date ? new Date(rentOutData.date) : undefined}
+              onChange={(date) => {
+                if (date !== null && date instanceof Date) {
+                  for (let i = 0; i < returnItems.fields.length; i++) {
+                    setValue(`returnItems.${i}.usedDays`, getDaysDifference());
+                  }
                 }
+              }}
+            />
+            <div></div>
+            <Input.Label required>Customer</Input.Label>
+            <MTextInput readOnly value={rentOutData?.customer.name} />
+            <Input.Label required>Description</Input.Label>
+            <TextInput control={control} name='description' />
+          </div>
+          <GrandTotal control={control} />
+          <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem 8rem 8rem 2rem'>
+            <ItemTable.HeadRow>
+              <div>#</div>
+              <div></div>
+              <div>Product</div>
+              <div className='text-end'>Rent Per Day</div>
+              <div className='text-end'>Used Days</div>
+              <div className='text-end'>Quantity</div>
+              <div className='text-end'>Total</div>
+              <div></div>
+            </ItemTable.HeadRow>
+            <ItemTable.DataWrapper>
+              {returnItems.fields.map((field, index) => (
+                <ItemTable.DataRow key={field.key}>
+                  <div className='text-xs'>{index + 1}</div>
+                  <Watcher
+                    control={control}
+                    name={[`returnItems.${index}.rentOutItem`]}
+                    render={([rentOutItem]) => (
+                      <>
+                        <Avatar
+                          text={rentOutItem.product.name}
+                          name={rentOutItem.product.image ?? ''}
+                          size={40}
+                        />
+                        <div>{rentOutItem.product.name}</div>
+                      </>
+                    )}
+                  />
+                  <Watcher
+                    control={control}
+                    name={[`returnItems.${index}.rentOutItem`]}
+                    render={([rentOutItem]) => (
+                      <div className='mr-1 text-end text-xs'>
+                        {formatCurrency(rentOutItem.rentPerDay)}
+                      </div>
+                    )}
+                  />
+                  <NumberInput
+                    size='xs'
+                    min={1}
+                    control={control}
+                    name={`returnItems.${index}.usedDays`}
+                    classNames={{ input: 'text-end' }}
+                  />
+                  <Watcher
+                    control={control}
+                    name={[`returnItems.${index}.rentOutItem`]}
+                    render={([rentOutItem]) => (
+                      <NumberInput
+                        size='xs'
+                        control={control}
+                        classNames={{ input: 'text-end' }}
+                        name={`returnItems.${index}.quantity`}
+                        min={0}
+                        max={
+                          rentOutItem.quantity -
+                          rentOutItem.returnItems.reduce((sum, item) => sum + item.quantity, 0)
+                        }
+                      />
+                    )}
+                  />
+                  <Watcher
+                    control={control}
+                    name={[`returnItems.${index}`]}
+                    render={([returnItem]) => (
+                      <div className='text-end text-sm font-semibold'>
+                        {formatCurrency(getItemTotal(returnItem))}
+                      </div>
+                    )}
+                  />
+
+                  <ItemTable.RemoveRowButton
+                    className='ml-auto'
+                    onClick={() => {
+                      returnItems.remove(index);
+                    }}
+                  />
+                </ItemTable.DataRow>
+              ))}
+            </ItemTable.DataWrapper>
+          </ItemTable.TableWrapper>
+          <UncontrolledSearchableList
+            keyPath='id'
+            items={rentOutData?.rentOutItems ?? []}
+            title={(item) => item.product.name}
+            avatar={{
+              name: (item) => item.product.name,
+              image: (item) => item.product.image || '',
+            }}
+            filter={(query, item) => item.product.name.toLowerCase().includes(query.toLowerCase())}
+            nothingFound='No items found'
+            onItemClicked={(item) => {
+              const quantityInfo = getRentOutItemQuantityInfo(item);
+
+              if (quantityInfo.rentedQuantity === quantityInfo.returnedQuantity) {
+                return notification.error({ message: 'Item is fully returned' });
+              }
+
+              const index = returnItems.fields.findIndex((f) => f.rentOutItem.id === item.id);
+              if (index === -1) {
+                returnItems.append(
+                  {
+                    rentOutItem: item,
+                    usedDays: getDaysDifference(),
+                    quantity: quantityInfo.remainingQuantity,
+                  },
+                  {
+                    focusName: `returnItems.${returnItems.fields.length}.quantity`,
+                  },
+                );
+              } else {
+                setFocus(`returnItems.${index}.quantity`);
               }
             }}
           />
-          <div></div>
-          <Input.Label required>Customer</Input.Label>
-          <MTextInput readOnly value={rentOutData?.customer.name} />
-          <Input.Label required>Description</Input.Label>
-          <TextInput control={control} name='description' />
         </div>
-        <GrandTotal control={control} />
-        <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem 8rem'>
-          <ItemTable.HeadRow>
-            <div>#</div>
-            <div></div>
-            <div>Product</div>
-            <div className='text-end'>Rent Per Day</div>
-            <div className='text-end'>Used Days</div>
-            <div className='text-end'>Quantity</div>
-          </ItemTable.HeadRow>
-          <ItemTable.DataWrapper>
-            {returnItems.fields.map((field, index) => (
-              <ItemTable.DataRow key={field.key}>
-                <div className='text-xs'>{index + 1}</div>
-                <Watcher
-                  control={control}
-                  name={[`returnItems.${index}.rentOutItem`]}
-                  render={([rentOutItem]) => (
-                    <>
-                      <Avatar
-                        text={rentOutItem.product.name}
-                        name={rentOutItem.product.image ?? ''}
-                        size={40}
-                      />
-                      <div>{rentOutItem.product.name}</div>
-                    </>
-                  )}
-                />
-                <PriceInput
-                  size='xs'
-                  min={0}
-                  control={control}
-                  name={`returnItems.${index}.rentPerDay`}
-                  classNames={{ input: 'text-end' }}
-                />
-                <NumberInput
-                  size='xs'
-                  min={1}
-                  control={control}
-                  name={`returnItems.${index}.usedDays`}
-                  classNames={{ input: 'text-end' }}
-                />
-
-                <Watcher
-                  control={control}
-                  name={[`returnItems.${index}.rentOutItem`]}
-                  render={([rentOutItem]) => (
-                    <NumberInput
-                      size='xs'
-                      control={control}
-                      classNames={{ input: 'text-end' }}
-                      name={`returnItems.${index}.quantity`}
-                      min={0}
-                      max={rentOutItem.quantity}
-                    />
-                  )}
-                />
-              </ItemTable.DataRow>
-            ))}
-          </ItemTable.DataWrapper>
-        </ItemTable.TableWrapper>
-        <UncontrolledSearchableList
-          keyPath='id'
-          items={rentOutData?.rentOutItems ?? []}
-          title={(item) => item.product.name}
-          avatar={{ name: (item) => item.product.name, image: (item) => item.product.image || '' }}
-          filter={(query, item) => item.product.name.toLowerCase().includes(query.toLowerCase())}
-          onItemClicked={(item) => {
-            const index = returnItems.fields.findIndex((f) => f.rentOutItem.id === item.id);
-            if (index === -1) {
-              const daysDifference =
-                dayjs(getValues().createdAt).diff(dayjs(rentOutData?.createdAt), 'day') + 1;
-              returnItems.append(
-                {
-                  quantity: item.quantity,
-                  rentPerDay: item.rentPerDay,
-                  usedDays: daysDifference,
-                  rentOutItem: item,
-                },
-                {
-                  focusName: `returnItems.${returnItems.fields.length}.quantity`,
-                },
-              );
-            } else {
-              setFocus(`returnItems.${index}.quantity`);
-            }
-          }}
-        />
-      </div>
-    </Modal.Form>
+      </Modal.Form>
+    </>
   );
+}
+
+function getItemTotal(returnItem: FormValues['returnItems'][number]) {
+  return (
+    numberOrZero(returnItem.quantity) *
+    numberOrZero(returnItem.rentOutItem.rentPerDay) *
+    numberOrZero(returnItem.usedDays)
+  );
+}
+
+function getGrandTotal(returnItems: FormValues['returnItems']) {
+  return returnItems.reduce((acc, item) => acc + getItemTotal(item), 0);
+}
+
+function getRentOutItemQuantityInfo(rentOutItem: {
+  quantity: number;
+  returnItems: {
+    quantity: number;
+  }[];
+}) {
+  const returnedQuantity = rentOutItem.returnItems.reduce((sum, item) => sum + item.quantity, 0);
+  return {
+    rentedQuantity: rentOutItem.quantity,
+    returnedQuantity,
+    remainingQuantity: rentOutItem.quantity - returnedQuantity,
+  };
 }
 
 type GrandTotalProps = {
@@ -202,34 +384,14 @@ type GrandTotalProps = {
 };
 
 function GrandTotal({ control }: GrandTotalProps) {
-  const rentOutItems = useWatch({ control, name: 'returnItems' });
-  const discountAmount = useWatch({ control, name: 'discountAmount' });
+  const returnItems = useWatch({ control, name: 'returnItems' });
 
-  const total =
-    rentOutItems?.reduce(
-      (acc, item) => acc + numberOrZero(item.quantity) * numberOrZero(item.rentPerDay),
-      0,
-    ) ?? 0;
+  const total = getGrandTotal(returnItems);
 
   return (
-    <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border'>
+    <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border font-semibold'>
       <span>Total</span>
       <span className='pr-[calc(1.875rem/3)] text-end'>{formatCurrency(total)}</span>
-      <span>Discount</span>
-      <PriceInput
-        size='xs'
-        min={0}
-        max={total}
-        name='discountAmount'
-        control={control}
-        disabled={total === 0}
-        className='ml-auto w-[8rem]'
-        classNames={{ input: 'text-end text-sm' }}
-      />
-      <span className='font-semibold'>Grand Total</span>
-      <span className='pr-[calc(1.875rem/3)] text-end font-semibold'>
-        {formatCurrency(total - numberOrZero(discountAmount))}
-      </span>
     </div>
   );
 }

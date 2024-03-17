@@ -40,7 +40,7 @@ export type TableProps<TData extends Record<any, any>, TContext = unknown> = Omi
 
 const TableRow = memo((props: ComponentProps<'div'>) => (
   <div
-    className='hover:bg-gray-2 dark:hover:bg-dark-5 grid h-[var(--rowHeight)] items-center gap-x-8 px-4 py-2'
+    className='hover:bg-gray-2 dark:hover:bg-dark-6 grid h-[var(--rowHeight)] items-center gap-x-8 px-4 py-2'
     {...props}
   />
 ));
