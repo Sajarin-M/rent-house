@@ -60,6 +60,7 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
           name={['discountAmount']}
           render={([discountAmount]) => (
             <PriceInput
+              min={0}
               name='totalAmount'
               withAsterisk
               data-autofocus

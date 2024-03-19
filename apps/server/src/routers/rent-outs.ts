@@ -1,10 +1,11 @@
 import { TRPCError } from '@trpc/server';
+import { omit } from 'remeda';
 import { z } from 'zod';
-import { createNotFound, Prisma, prisma } from '../lib/prisma';
+import { createNotFound, prisma } from '../lib/prisma';
 import { infiniteResult, infiniteSchema, searchSchema } from '../lib/utils';
-import { publicProcedure, router } from '../trpc';
+import { confirmedProcedure, publicProcedure, router } from '../trpc';
 import { customerSelect } from './customers';
-import { productSelect } from './products';
+import { getProductQuantityInfo, productSelect } from './products';
 
 const rentOutSchema = z.object({
   date: z.string(),
@@ -19,24 +20,46 @@ const rentOutSchema = z.object({
   ),
 });
 
-export const rentOutSelect = {
-  id: true,
-  date: true,
-  customer: { select: customerSelect },
-  rentOutItems: {
-    select: {
-      id: true,
-      quantity: true,
-      rentPerDay: true,
-      product: { select: productSelect },
-      returnItems: { select: { quantity: true } },
-    },
-  },
-  rentPayments: { select: { id: true } },
-} satisfies Prisma.RentOutSelect;
+function getRentOutItemQuantityInfo(rentOutItem: {
+  quantity: number;
+  returnItems: {
+    quantity: number;
+  }[];
+}) {
+  const returnedQuantity = rentOutItem.returnItems.reduce((sum, item) => sum + item.quantity, 0);
+  return {
+    returnedQuantity,
+    remainingQuantity: rentOutItem.quantity - returnedQuantity,
+  };
+}
 
 export const rentOutsRouter = router({
   createRentOut: publicProcedure.input(rentOutSchema).mutation(async ({ input }) => {
+    const products = await prisma.product.findMany({
+      where: { id: { in: input.rentOutItems.map((item) => item.productId) } },
+      select: { id: true, name: true, ...getProductQuantityInfo.select },
+    });
+
+    if (products.length !== input.rentOutItems.length) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'One or more products do not exist' });
+    }
+
+    // check if product is in stock
+    for (const rentOutItem of input.rentOutItems) {
+      const product = products.find((product) => product.id === rentOutItem.productId);
+      if (!product) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'One or more products do not exist' });
+      }
+
+      const { remainingQuantity } = getProductQuantityInfo(product);
+      if (remainingQuantity < rentOutItem.quantity) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Product ${product.name} is out of stock`,
+        });
+      }
+    }
+
     await prisma.rentOut.create({
       data: {
         ...input,
@@ -46,96 +69,29 @@ export const rentOutsRouter = router({
     });
   }),
 
-  editRentOut: publicProcedure
-    .input(z.object({ id: z.string().min(1), data: rentOutSchema }))
+  deleteRentOut: confirmedProcedure
+    .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      const rentOut = await prisma.rentOut
-        .findFirstOrThrow({
-          where: { id: input.id },
-          select: rentOutSelect,
-        })
-        .catch(createNotFound('Rent Out'));
-
       await prisma.rentOut
         .update({
           where: { id: input.id },
-          data: {
-            ...input.data,
-            rentOutItems: {
-              deleteMany: {
-                id: {
-                  in: rentOut.rentOutItems
-                    .filter(
-                      (item) =>
-                        !input.data.rentOutItems.find(
-                          (newItem) => newItem.productId === item.product.id,
-                        ),
-                    )
-                    .map((item) => item.id),
-                },
-              },
-              update: input.data.rentOutItems.reduce((acc, newItem) => {
-                const oldItem = rentOut.rentOutItems.find(
-                  (item) => item.product.id === newItem.productId,
-                );
-                if (oldItem) {
-                  acc.push({
-                    where: { id: oldItem.id },
-                    data: newItem,
-                  });
-                }
-                return acc;
-              }, [] as Prisma.RentOutItemUpdateWithWhereUniqueWithoutRentOutInput[]),
-              create: input.data.rentOutItems
-                .filter(
-                  (newItem) =>
-                    !rentOut.rentOutItems.find((item) => newItem.productId === item.product.id),
-                )
-                .map((item) => item),
-            },
-          },
-          select: { id: true },
+          data: { deletedAt: new Date() },
         })
-        .catch(createNotFound('Rent Out'));
+        .catch(createNotFound('Rent out'));
     }),
-
-  // deleteRentOut: confirmedProcedure
-  //   .input(z.object({ id: z.string().min(1) }))
-  //   .mutation(async ({ input }) => {
-  //     await prisma.rentOut
-  //       .update({
-  //         where: { id: input.id },
-  //         data: { deletedAt: new Date() },
-  //       })
-  //       .catch(createNotFound('Rent Out'));
-  //   }),
-
-  getRentOut: publicProcedure
-    .input(z.object({ id: z.string().min(1) }))
-    .query(async ({ input }) => {
-      const rentOut = await prisma.rentOut
-        .findFirstOrThrow({
-          where: { id: input.id },
-          select: rentOutSelect,
-        })
-        .catch(createNotFound('Rent Out'));
-      return rentOut;
-    }),
-
-  // getAllRentOuts: publicProcedure.query(async () => {
-  //   const rentOuts = await prisma.rentOut.findMany({
-  //     select: rentOutSelect,
-  //     where: { deletedAt: null },
-  //   });
-  //   return rentOuts;
-  // }),
 
   getRentOuts: publicProcedure
     .input(infiniteSchema.merge(searchSchema))
     .query(async ({ input: { limit, cursor, searchQuery } }) => {
       const rentOuts = await prisma.rentOut.findMany({
         take: limit + 1,
-        select: rentOutSelect,
+        select: {
+          id: true,
+          date: true,
+          customer: { select: { name: true } },
+          status: true,
+          paymentStatus: true,
+        },
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: [
           {
@@ -146,6 +102,7 @@ export const rentOutsRouter = router({
           },
         ],
         where: {
+          deletedAt: null,
           OR: searchQuery
             ? [
                 { customer: { name: { contains: searchQuery, mode: 'insensitive' } } },
@@ -181,21 +138,93 @@ export const rentOutsRouter = router({
         }),
     )
     .mutation(async ({ input }) => {
-      await prisma.rentPayment.create({
-        data: input,
-        select: { id: true },
-      });
+      const rentOut = await prisma.rentOut
+        .findFirstOrThrow({
+          where: { id: input.rentOutId, deletedAt: null },
+          select: {
+            status: true,
+            rentReturns: { select: { totalAmount: true } },
+            rentPayments: { select: { totalAmount: true } },
+          },
+        })
+        .catch(createNotFound('Rent out'));
+
+      const isFullyPaying =
+        rentOut.status === 'Returned' &&
+        input.totalAmount >=
+          rentOut.rentReturns.reduce((sum, returns) => sum + returns.totalAmount, 0) -
+            rentOut.rentPayments.reduce((sum, payment) => sum + payment.totalAmount, 0);
+
+      await prisma.$transaction([
+        prisma.rentOut.update({
+          where: { id: input.rentOutId },
+          data: { paymentStatus: isFullyPaying ? 'Paid' : 'Partially_Paid' },
+        }),
+        prisma.rentPayment.create({
+          data: input,
+          select: { id: true },
+        }),
+      ]);
     }),
+
   getRentOutInfo: publicProcedure
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ input }) => {
-      const info = await prisma.rentOut
+      const rentOut = await prisma.rentOut
         .findFirstOrThrow({
-          where: { id: input.id },
-          select: rentOutSelect,
+          where: { id: input.id, deletedAt: null },
+          select: {
+            id: true,
+            date: true,
+            customer: { select: customerSelect },
+            rentOutItems: {
+              select: {
+                id: true,
+                quantity: true,
+                rentPerDay: true,
+                product: { select: productSelect },
+              },
+            },
+            rentPayments: { select: { id: true } },
+          },
         })
-        .catch(createNotFound('Product'));
-      return info;
+        .catch(createNotFound('Rent out'));
+      return rentOut;
+    }),
+
+  getRentOutWithQuantityInfo: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const rentOut = await prisma.rentOut
+        .findFirstOrThrow({
+          where: { id: input.id, deletedAt: null },
+          select: {
+            id: true,
+            date: true,
+            customer: { select: customerSelect },
+            rentOutItems: {
+              select: {
+                id: true,
+                quantity: true,
+                rentPerDay: true,
+                product: { select: productSelect },
+                returnItems: { select: { quantity: true } },
+              },
+            },
+            rentPayments: { select: { id: true } },
+          },
+        })
+        .catch(createNotFound('Rent out'));
+
+      const returnData = {
+        ...rentOut,
+        rentOutItems: rentOut.rentOutItems.map((item) => ({
+          ...omit(item, ['returnItems']),
+          ...getRentOutItemQuantityInfo(item),
+        })),
+      };
+
+      return returnData;
     }),
 
   createRentReturn: publicProcedure
@@ -251,10 +280,22 @@ export const rentOutsRouter = router({
     .mutation(async ({ input }) => {
       const rentOut = await prisma.rentOut
         .findFirstOrThrow({
-          where: { id: input.rentOutId },
-          select: rentOutSelect,
+          where: { id: input.rentOutId, deletedAt: null },
+          select: {
+            rentOutItems: {
+              select: {
+                id: true,
+                quantity: true,
+                returnItems: { select: { quantity: true } },
+              },
+            },
+            rentReturns: { select: { totalAmount: true } },
+            rentPayments: { select: { totalAmount: true } },
+          },
         })
-        .catch(createNotFound('Rent Out'));
+        .catch(createNotFound('Rent out'));
+
+      let isFullyReturning = true;
 
       for (const returnItem of input.returnItems) {
         const rentOutItem = rentOut.rentOutItems.find(
@@ -281,43 +322,68 @@ export const rentOutsRouter = router({
             message: "Return quantity can't be greater than remaining quantity",
           });
         }
+
+        if (remainingQuantity !== rentOutItem.quantity) {
+          isFullyReturning = false;
+        }
       }
 
-      await prisma.rentReturn.create({
-        data: {
-          date: input.date,
-          rentOutId: input.rentOutId,
-          totalAmount: input.totalAmount,
-          description: input.description,
-          rentPayment: input.withPayment
-            ? {
-                create: input.payment
-                  ? {
-                      date: input.date,
-                      rentOutId: input.rentOutId,
-                      discountAmount: input.payment.discountAmount,
-                      receivedAmount: input.payment.receivedAmount,
-                      totalAmount: input.payment.totalAmount,
-                      description: input.payment.description?.trim() || undefined,
-                    }
-                  : {
-                      date: input.date,
-                      rentOutId: input.rentOutId,
-                      discountAmount: 0,
-                      receivedAmount: input.totalAmount,
-                      totalAmount: input.totalAmount,
-                    },
-              }
-            : undefined,
-          returnItems: {
-            create: input.returnItems.map((item) => ({
-              quantity: item.quantity,
-              rentOutItemId: item.rentOutItemId,
-              totalAmount: item.totalAmount,
-            })),
+      const isFullyPaying =
+        isFullyReturning &&
+        input.withPayment &&
+        (input.payment === null || input.payment.totalAmount >= input.totalAmount) &&
+        rentOut.rentPayments.reduce((sum, payment) => sum + payment.totalAmount, 0) >=
+          rentOut.rentReturns.reduce((sum, returns) => sum + returns.totalAmount, 0);
+
+      await prisma.$transaction(async (tx) => {
+        if (isFullyReturning || isFullyPaying) {
+          await tx.rentOut
+            .update({
+              where: { id: input.rentOutId },
+              data: {
+                status: isFullyReturning ? 'Returned' : undefined,
+                paymentStatus: isFullyPaying ? 'Paid' : undefined,
+              },
+            })
+            .catch(createNotFound('Rent out'));
+        }
+
+        await tx.rentReturn.create({
+          data: {
+            date: input.date,
+            rentOutId: input.rentOutId,
+            totalAmount: input.totalAmount,
+            description: input.description,
+            rentPayment: input.withPayment
+              ? {
+                  create: input.payment
+                    ? {
+                        date: input.date,
+                        rentOutId: input.rentOutId,
+                        discountAmount: input.payment.discountAmount,
+                        receivedAmount: input.payment.receivedAmount,
+                        totalAmount: input.payment.totalAmount,
+                        description: input.payment.description?.trim() || undefined,
+                      }
+                    : {
+                        date: input.date,
+                        rentOutId: input.rentOutId,
+                        discountAmount: 0,
+                        receivedAmount: input.totalAmount,
+                        totalAmount: input.totalAmount,
+                      },
+                }
+              : undefined,
+            returnItems: {
+              create: input.returnItems.map((item) => ({
+                quantity: item.quantity,
+                rentOutItemId: item.rentOutItemId,
+                totalAmount: item.totalAmount,
+              })),
+            },
           },
-        },
-        select: { id: true },
+          select: { id: true },
+        });
       });
     }),
 });

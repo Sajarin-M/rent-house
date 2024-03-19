@@ -9,11 +9,12 @@ import { menuItems } from '@/components/menu';
 import Search from '@/components/search';
 import { InfiniteTable } from '@/components/table';
 import Toolbar from '@/components/toolbar';
-import EditRentOut from '@/pages/rent-outs/edit-rent-out';
+import CreateRentOut from '@/pages/rent-outs/create-rent-out';
 import { useDebouncedQuery } from '@/utils/queries';
 import AddRentPayment from './add-rent-payment';
 import CreateRentReturn from './create-rent-return';
 import RentOutInfo from './rent-out-info';
+import RentOutInfoBadge from './rent-out-info-badge';
 
 export default function RentOuts() {
   // const utils = trpc.useUtils();
@@ -65,7 +66,7 @@ export default function RentOuts() {
         />
       </Toolbar>
 
-      <EditRentOut
+      <CreateRentOut
         rentOutId={selectedRentOutId}
         modalProps={{ opened: editModalOpened, onClose: editModalHandlers.close }}
       />
@@ -93,7 +94,17 @@ export default function RentOuts() {
           setSelectedRentOutId(order.id);
           infoModalHandlers.open();
         }}
-        columns={[{ header: 'Customer', cell: (r) => r.customer.name, cellWidth: '1fr' }]}
+        columns={[
+          { header: 'Customer', cell: (r) => r.customer.name, cellWidth: '1fr' },
+          {
+            header: 'Return Status',
+            cell: (r) => <RentOutInfoBadge status={r.status} />,
+            cellWidth: '10rem',
+            classNames: {
+              cell: 'text-center justify-center',
+            },
+          },
+        ]}
         menu={(r) => [
           menuItems.edit(() => {
             setSelectedRentOutId(r.id);

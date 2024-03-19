@@ -8,14 +8,14 @@ datasource db {
 }
 
 model Product {
-  id          String        @id @default(uuid())
-  name        String
-  image       String?
-  quantity    Int
-  rentPerDay  Float
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  RentOutItem RentOutItem[]
+  id           String        @id @default(uuid())
+  name         String
+  image        String?
+  quantity     Int
+  rentPerDay   Float
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  rentOutItems RentOutItem[]
 }
 
 model Customer {
@@ -58,6 +58,7 @@ model RentOut {
   updatedAt     DateTime             @updatedAt
   status        RentOutStatus        @default(Pending)
   paymentStatus RentOutPaymentStatus @default(Pending)
+  deletedAt     DateTime?
 }
 
 model RentPayment {

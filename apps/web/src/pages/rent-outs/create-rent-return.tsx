@@ -20,7 +20,7 @@ import { Modal, ModalFormProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { formatCurrency, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
-import { RentOutVm } from '@/types';
+import { RouterOutput } from '@/types';
 import EditReturnPayment, { ReturnPaymentFormValues } from './edit-return-payment';
 
 type CreateRentReturnFormProps = ModalFormProps & {
@@ -34,7 +34,7 @@ type FormValues = {
   returnItems: {
     quantity: string | number;
     usedDays: string | number;
-    rentOutItem: RentOutVm['rentOutItems'][number];
+    rentOutItem: RouterOutput['rentOuts']['getRentOutWithQuantityInfo']['rentOutItems'][number];
   }[];
   payment: ReturnPaymentFormValues | null;
 };
@@ -45,9 +45,10 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
   const [paymentDefaultValues, setPaymentDefaultValues] =
     useState<Partial<ReturnPaymentFormValues>>();
 
-  const { data: rentOutData, isLoading: isLoadingRentOutData } = trpc.rentOuts.getRentOut.useQuery({
-    id: rentOutId,
-  });
+  const { data: rentOutData, isLoading: isLoadingRentOutData } =
+    trpc.rentOuts.getRentOutWithQuantityInfo.useQuery({
+      id: rentOutId,
+    });
 
   const { control, handleSubmit, setFocus, getValues, setValue } = useForm<FormValues>({
     defaultValues: {
@@ -114,7 +115,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
             await createRentReturn(submitValues);
             notification.created('Return');
             utils.rentOuts.getRentOuts.invalidate();
-            utils.rentOuts.getRentOut.invalidate({ id: rentOutId });
+            utils.rentOuts.getRentOutWithQuantityInfo.invalidate({ id: rentOutId });
             onClose();
           } catch (error) {}
         })}
@@ -176,8 +177,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                           return false;
                         }
 
-                        const quantityInfo = getRentOutItemQuantityInfo(item);
-                        if (quantityInfo.remainingQuantity !== returnItem.quantity) {
+                        if (item.remainingQuantity !== returnItem.quantity) {
                           return false;
                         }
 
@@ -194,7 +194,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                               rentOutData.rentOutItems.map((item) => ({
                                 rentOutItem: item,
                                 usedDays: getDaysDifference(),
-                                quantity: getRentOutItemQuantityInfo(item).remainingQuantity,
+                                quantity: item.remainingQuantity,
                               })),
                             );
                           }
@@ -285,11 +285,8 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                         control={control}
                         classNames={{ input: 'text-end' }}
                         name={`returnItems.${index}.quantity`}
-                        min={0}
-                        max={
-                          rentOutItem.quantity -
-                          rentOutItem.returnItems.reduce((sum, item) => sum + item.quantity, 0)
-                        }
+                        min={1}
+                        max={rentOutItem.remainingQuantity}
                       />
                     )}
                   />
@@ -302,7 +299,6 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                       </div>
                     )}
                   />
-
                   <ItemTable.RemoveRowButton
                     className='ml-auto'
                     onClick={() => {
@@ -324,27 +320,25 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
             filter={(query, item) => item.product.name.toLowerCase().includes(query.toLowerCase())}
             nothingFound='No items found'
             onItemClicked={(item) => {
-              const quantityInfo = getRentOutItemQuantityInfo(item);
-
-              if (quantityInfo.rentedQuantity === quantityInfo.returnedQuantity) {
-                return notification.error({ message: 'Item is fully returned' });
+              if (item.quantity === item.returnedQuantity) {
+                return notification.error({ message: 'Product is fully returned' });
               }
 
               const index = returnItems.fields.findIndex((f) => f.rentOutItem.id === item.id);
-              if (index === -1) {
-                returnItems.append(
-                  {
-                    rentOutItem: item,
-                    usedDays: getDaysDifference(),
-                    quantity: quantityInfo.remainingQuantity,
-                  },
-                  {
-                    focusName: `returnItems.${returnItems.fields.length}.quantity`,
-                  },
-                );
-              } else {
+              if (index !== -1) {
                 setFocus(`returnItems.${index}.quantity`);
               }
+
+              returnItems.append(
+                {
+                  rentOutItem: item,
+                  usedDays: getDaysDifference(),
+                  quantity: item.remainingQuantity,
+                },
+                {
+                  focusName: `returnItems.${returnItems.fields.length}.quantity`,
+                },
+              );
             }}
           />
         </div>
@@ -363,20 +357,6 @@ function getItemTotal(returnItem: FormValues['returnItems'][number]) {
 
 function getGrandTotal(returnItems: FormValues['returnItems']) {
   return returnItems.reduce((acc, item) => acc + getItemTotal(item), 0);
-}
-
-function getRentOutItemQuantityInfo(rentOutItem: {
-  quantity: number;
-  returnItems: {
-    quantity: number;
-  }[];
-}) {
-  const returnedQuantity = rentOutItem.returnItems.reduce((sum, item) => sum + item.quantity, 0);
-  return {
-    rentedQuantity: rentOutItem.quantity,
-    returnedQuantity,
-    remainingQuantity: rentOutItem.quantity - returnedQuantity,
-  };
 }
 
 type GrandTotalProps = {

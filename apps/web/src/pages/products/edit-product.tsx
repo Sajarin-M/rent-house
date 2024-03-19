@@ -102,14 +102,16 @@ function EditProductForm({ id, onClose }: EditProductProps) {
           name='quantity'
           control={control}
           label='Total Quantity'
-          rules={validation().required().build()}
+          rules={validation().required().min(1).build()}
+          min={1}
         />
 
         <PriceInput
           name='rentPerDay'
           control={control}
           label='Rent Per Day'
-          rules={validation().required().build()}
+          rules={validation().required().min(0).build()}
+          min={0}
         />
       </Stack>
     </Modal.Form>

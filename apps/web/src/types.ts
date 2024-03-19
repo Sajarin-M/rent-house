@@ -5,6 +5,4 @@ export type RouterInput = inferRouterInputs<AppRouter>;
 export type RouterOutput = inferRouterOutputs<AppRouter>;
 export type RouterContext = inferRouterContext<AppRouter>;
 
-export type ProductVm = RouterOutput['products']['getProduct'];
-export type CustomerVm = RouterOutput['customers']['getCustomer'];
-export type RentOutVm = RouterOutput['rentOuts']['getRentOut'];
+export type * from 'rent-house-server';

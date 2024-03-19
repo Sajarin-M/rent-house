@@ -17,38 +17,31 @@ import { Modal, ModalFormProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { formatCurrency, getFormTItle, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
-import { ProductVm } from '@/types';
+import { RouterOutput } from '@/types';
 import EditCustomer from '../customers/edit-customer';
 
-type EditRentOutFormProps = ModalFormProps & {
+type CreateRentOutFormProps = ModalFormProps & {
   rentOutId?: string;
 };
 
-type FormValues = {
+type CreateRentOutFormValues = {
   date: string;
   customerId: string;
   description: string;
   rentOutItems: {
     quantity: string | number;
     rentPerDay: string | number;
-    product: ProductVm;
+    product: RouterOutput['products']['getAllProductsWithQuantityInfo'][number];
   }[];
 };
 
-function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
-  const isEditing = rentOutId !== undefined;
+function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
   const [opened, handlers] = useDisclosure(false);
-  // const [selectedCustomerId, setSelectedCustomerId] = useState<string>();
 
-  // const { data, isLoading } = trpc.rentOuts.getRentOut.useQuery(
-  //   { id: id! },
-  //   { enabled: isEditing },
-  // );
-
-  const { data: products = [] } = trpc.products.getAllProducts.useQuery();
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
+  const { data: products = [] } = trpc.products.getAllProductsWithQuantityInfo.useQuery();
 
-  const { control, handleSubmit, setFocus, setValue } = useForm<FormValues>({
+  const { control, handleSubmit, setFocus, setValue } = useForm<CreateRentOutFormValues>({
     defaultValues: {
       date: new Date().toISOString(),
       description: '',
@@ -59,22 +52,9 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
 
   const rentOutItems = useFieldArray({ control, name: 'rentOutItems', keyName: 'key' });
 
-  // useEffect(() => {
-  //   if (data) {
-  //     reset({
-  //       name: data.name,
-  //       phoneNumber: data.phoneNumber,
-  //       addressLine1: data.addressLine1 ?? '',
-  //       addressLine2: data.addressLine2 ?? '',
-  //       city: data.city ?? '',
-  //     });
-  //   }
-  // }, [data]);
-
   const utils = trpc.useUtils();
 
   const { mutateAsync: createRentOut } = trpc.rentOuts.createRentOut.useMutation();
-  const { mutateAsync: editRentOut } = trpc.rentOuts.editRentOut.useMutation();
 
   return (
     <>
@@ -88,9 +68,7 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
       <Modal.Form
         control={control}
         onCancel={onClose}
-        disableOnFresh={isEditing}
-        // isLoading={isEditing && isLoading}
-        title={getFormTItle('Rent Out', isEditing)}
+        title={getFormTItle('Rent Out')}
         onSubmit={handleSubmit(async (values) => {
           try {
             if (!values.customerId) {
@@ -125,16 +103,8 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
                 rentPerDay: Number(item.rentPerDay),
               })),
             };
-            if (isEditing) {
-              await editRentOut({
-                id: rentOutId,
-                data: submitValues,
-              });
-              notification.edited('Rent Out');
-            } else {
-              await createRentOut(submitValues);
-              notification.created('Rent Out');
-            }
+            await createRentOut(submitValues);
+            notification.created('Rent Out');
             utils.rentOuts.getRentOuts.invalidate();
             onClose();
           } catch (error) {}
@@ -148,10 +118,10 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
             <Input.Label required>Customer</Input.Label>
             <div className='gap-xs grid grid-cols-[1fr_auto] items-center'>
               <Select
+                data-autofocus
                 name='customerId'
                 control={control}
                 data={customers.map((c) => ({ label: c.name, value: c.id }))}
-                {...(isEditing ? {} : { 'data-autofocus': true })}
               />
               <Tooltip label='Create new customer' position='bottom' withArrow>
                 <ActionIcon variant='outline' size='lg' onClick={() => handlers.open()}>
@@ -193,12 +163,19 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
                     name={`rentOutItems.${index}.rentPerDay`}
                     classNames={{ input: 'text-end' }}
                   />
-                  <NumberInput
-                    size='xs'
-                    min={0}
+                  <Watcher
                     control={control}
-                    name={`rentOutItems.${index}.quantity`}
-                    classNames={{ input: 'text-end' }}
+                    name={[`rentOutItems.${index}.product`]}
+                    render={([product]) => (
+                      <NumberInput
+                        size='xs'
+                        min={1}
+                        control={control}
+                        name={`rentOutItems.${index}.quantity`}
+                        classNames={{ input: 'text-end' }}
+                        max={product.remainingQuantity}
+                      />
+                    )}
                   />
                   <ItemTable.RemoveRowButton
                     className='ml-auto'
@@ -216,24 +193,27 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
             title={(p) => p.name}
             avatar={{ name: (p) => p.name, image: (p) => p.image || '' }}
             filter={(query, p) => p.name.toLowerCase().includes(query.toLowerCase())}
-            {...(isEditing ? { 'data-autofocus': true } : {})}
             nothingFound='No items found'
             onItemClicked={(p) => {
-              const index = rentOutItems.fields.findIndex((f) => f.product.id === p.id);
-              if (index === -1) {
-                rentOutItems.append(
-                  {
-                    quantity: 1,
-                    product: p,
-                    rentPerDay: p.rentPerDay,
-                  },
-                  {
-                    focusName: `rentOutItems.${rentOutItems.fields.length}.quantity`,
-                  },
-                );
-              } else {
-                setFocus(`rentOutItems.${index}.quantity`);
+              if (p.quantity === 0) {
+                return notification.error({ message: 'Product is out of stock' });
               }
+
+              const index = rentOutItems.fields.findIndex((f) => f.product.id === p.id);
+              if (index !== -1) {
+                return setFocus(`rentOutItems.${index}.quantity`);
+              }
+
+              rentOutItems.append(
+                {
+                  quantity: 1,
+                  product: p,
+                  rentPerDay: p.rentPerDay,
+                },
+                {
+                  focusName: `rentOutItems.${rentOutItems.fields.length}.quantity`,
+                },
+              );
             }}
           />
         </div>
@@ -243,7 +223,7 @@ function EditRentOutForm({ rentOutId, onClose }: EditRentOutFormProps) {
 }
 
 type GrandTotalProps = {
-  control: Control<FormValues>;
+  control: Control<CreateRentOutFormValues>;
 };
 
 function GrandTotal({ control }: GrandTotalProps) {
@@ -262,13 +242,13 @@ function GrandTotal({ control }: GrandTotalProps) {
   );
 }
 
-export default function EditRentOut({
+export default function CreateRentOut({
   modalProps,
   ...rest
-}: Omit<EditRentOutFormProps, 'onClose'> & { modalProps: ModalRootProps }) {
+}: Omit<CreateRentOutFormProps, 'onClose'> & { modalProps: ModalRootProps }) {
   return (
     <Modal.Root fullScreen={true} {...modalProps}>
-      <EditRentOutForm {...rest} onClose={modalProps.onClose} />
+      <CreateRentOutForm {...rest} onClose={modalProps.onClose} />
     </Modal.Root>
   );
 }

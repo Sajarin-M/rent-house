@@ -7,11 +7,11 @@ import { Modal, ModalFormProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
 import { ImageUpload, useImageUpload } from '@/utils/images';
 import notification from '@/utils/notification';
-import { CustomerVm } from '@/types';
+import { RouterOutput } from '@/types';
 
 type EditCustomerProps = ModalFormProps & {
   id?: string;
-  onCustomerCreated?: (customer: CustomerVm) => void;
+  onCustomerCreated?: (customer: RouterOutput['customers']['createCustomer']) => void;
 };
 
 function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerProps) {

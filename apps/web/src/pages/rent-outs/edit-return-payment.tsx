@@ -39,6 +39,7 @@ function EditReturnPaymentForm({ onClose, onSubmit, defaultValues }: EditReturnP
           name={['discountAmount']}
           render={([discountAmount]) => (
             <PriceInput
+              min={0}
               name='totalAmount'
               withAsterisk
               data-autofocus

@@ -1,3 +1,4 @@
+import { omit } from 'remeda';
 import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
 import { publicProcedure, router } from '../trpc';
@@ -5,8 +6,8 @@ import { publicProcedure, router } from '../trpc';
 const productSchema = z.object({
   name: z.string().min(1),
   image: z.string().optional(),
-  quantity: z.number().min(0),
-  rentPerDay: z.number().min(0),
+  quantity: z.number().positive(),
+  rentPerDay: z.number().nonnegative(),
 });
 
 export const productSelect = {
@@ -15,6 +16,42 @@ export const productSelect = {
   image: true,
   quantity: true,
   rentPerDay: true,
+} satisfies Prisma.ProductSelect;
+
+export function getProductQuantityInfo(product: {
+  quantity: number;
+  rentOutItems: {
+    quantity: number;
+    returnItems: {
+      quantity: number;
+    }[];
+  }[];
+}) {
+  const currentlyRentedQuantity = product.rentOutItems.reduce((rentOutItemSum, rentOutItem) => {
+    return (
+      rentOutItemSum +
+      rentOutItem.quantity -
+      rentOutItem.returnItems.reduce(
+        (returnItemSum, returnItem) => returnItemSum + returnItem.quantity,
+        0,
+      )
+    );
+  }, 0);
+
+  return {
+    currentlyRentedQuantity,
+    remainingQuantity: product.quantity - currentlyRentedQuantity,
+  };
+}
+
+getProductQuantityInfo.select = {
+  quantity: true,
+  rentOutItems: {
+    where: {
+      rentOut: { deletedAt: null, status: { in: ['Pending', 'Partially_Returned'] } },
+    },
+    select: { quantity: true, returnItems: { select: { quantity: true } } },
+  },
 } satisfies Prisma.ProductSelect;
 
 export const productsRouter = router({
@@ -54,5 +91,21 @@ export const productsRouter = router({
       select: productSelect,
     });
     return products;
+  }),
+
+  getAllProductsWithQuantityInfo: publicProcedure.query(async () => {
+    const products = await prisma.product.findMany({
+      select: {
+        ...productSelect,
+        ...getProductQuantityInfo.select,
+      },
+    });
+
+    const returnData = products.map((product) => ({
+      ...omit(product, ['rentOutItems']),
+      ...getProductQuantityInfo(product),
+    }));
+
+    return returnData;
   }),
 });
