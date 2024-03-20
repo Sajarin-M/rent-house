@@ -1,6 +1,6 @@
 import { TbCheck } from 'react-icons/tb';
 import { CloseIcon } from '@mantine/core';
-import { NotificationData, showNotification } from '@mantine/notifications';
+import { hideNotification, NotificationData, showNotification } from '@mantine/notifications';
 
 type Props = NotificationData & { message: string };
 
@@ -12,9 +12,13 @@ const success = (props: Props) =>
 const notification = {
   error,
   success,
-  edited: (entity: string) => success({ message: `${entity} updated successfully` }),
-  created: (entity: string) => success({ message: `${entity} created successfully` }),
-  deleted: (entity: string) => success({ message: `${entity} deleted successfully` }),
+  edited: (entity: string, props?: Omit<NotificationData, 'message'>) =>
+    success({ ...props, message: `${entity} updated successfully` }),
+  created: (entity: string, props?: Omit<NotificationData, 'message'>) =>
+    success({ ...props, message: `${entity} created successfully` }),
+  deleted: (entity: string, props?: Omit<NotificationData, 'message'>) =>
+    success({ ...props, message: `${entity} deleted successfully` }),
+  hideNotification,
 };
 
 export default notification;

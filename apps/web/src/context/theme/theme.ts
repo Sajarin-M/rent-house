@@ -1,30 +1,26 @@
-import { PropsWithChildren } from 'react';
 import {
   createTheme,
   Loader,
-  MantineProvider as MMantineProvider,
   Modal,
   MultiSelect,
   NumberInput,
   ScrollArea,
   Select,
 } from '@mantine/core';
-import { DatesProvider } from '@mantine/dates';
-import { ModalsProvider } from '@mantine/modals';
-import { Notifications } from '@mantine/notifications';
+import { DateInput, DatePickerInput } from '@mantine/dates';
 
 const selectProps = {
   searchable: true,
   clearable: true,
 } as const;
 
+export const defaultDateFormat = 'DD MMM YYYY';
+
 export const theme = createTheme({
   components: {
     Modal: Modal.extend({
       defaultProps: {
         classNames: { title: 'font-semibold' },
-        closeOnEscape: false,
-        closeOnClickOutside: false,
       },
     }),
     Loader: Loader.extend({
@@ -55,18 +51,21 @@ export const theme = createTheme({
         clampBehavior: 'strict',
       },
     }),
+    DateInput: DateInput.extend({
+      defaultProps: {
+        valueFormat: defaultDateFormat,
+        // dateParser: (input) =>
+        //   dayjs(
+        //     input,
+        //     ['D/M/YY', 'D/M/YYYY', 'DD/MM/YY', 'DD/MM/YYYY', 'MM/YY', 'M/YY', 'YYYY'],
+        //     true,
+        //   ).toDate(),
+      },
+    }),
+    DatePickerInput: DatePickerInput.extend({
+      defaultProps: {
+        valueFormat: defaultDateFormat,
+      },
+    }),
   },
 });
-
-export default function ThemeProvider({ children }: PropsWithChildren) {
-  return (
-    <MMantineProvider theme={theme}>
-      <DatesProvider settings={{ firstDayOfWeek: 0, weekendDays: [0], consistentWeeks: true }}>
-        <Notifications position='top-right' />
-        <ModalsProvider labels={{ cancel: 'Cancel', confirm: 'Confirm' }}>
-          {children}
-        </ModalsProvider>
-      </DatesProvider>
-    </MMantineProvider>
-  );
-}

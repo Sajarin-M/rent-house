@@ -5,7 +5,6 @@ import { useDisclosure, useInputState } from '@mantine/hooks';
 import { trpc } from '@/context/trpc';
 import AddButton from '@/components/add-button';
 import Content from '@/components/content';
-import { menuItems } from '@/components/menu';
 import Search from '@/components/search';
 import { InfiniteTable } from '@/components/table';
 import Toolbar from '@/components/toolbar';
@@ -20,7 +19,7 @@ export default function RentOuts() {
   // const utils = trpc.useUtils();
   const [searchQuery, setSearchQuery] = useInputState('');
 
-  const [editModalOpened, editModalHandlers] = useDisclosure(false);
+  const [createModalOpened, createModalHandlers] = useDisclosure(false);
   const [infoModalOpened, infoModalHandlers] = useDisclosure(false);
   const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
   const [returnModalOpened, returnModalHandlers] = useDisclosure(false);
@@ -53,7 +52,7 @@ export default function RentOuts() {
         <AddButton
           onClick={() => {
             setSelectedRentOutId(undefined);
-            editModalHandlers.open();
+            createModalHandlers.open();
           }}
         >
           Create Rent Out
@@ -67,8 +66,7 @@ export default function RentOuts() {
       </Toolbar>
 
       <CreateRentOut
-        rentOutId={selectedRentOutId}
-        modalProps={{ opened: editModalOpened, onClose: editModalHandlers.close }}
+        modalProps={{ opened: createModalOpened, onClose: createModalHandlers.close }}
       />
 
       <AddRentPayment
@@ -105,30 +103,32 @@ export default function RentOuts() {
             },
           },
         ]}
-        menu={(r) => [
-          menuItems.edit(() => {
-            setSelectedRentOutId(r.id);
-            editModalHandlers.open();
-          }),
-          {
-            icon: <FaPlus />,
-            label: 'Add Payment',
-            onClick: () => {
-              setSelectedRentOutId(r.id);
-              paymentModalHandlers.open();
+        menu={(r) => {
+          const items = [
+            {
+              icon: <FaPlus />,
+              label: 'Add Payment',
+              onClick: () => {
+                setSelectedRentOutId(r.id);
+                paymentModalHandlers.open();
+              },
             },
-          },
-          {
-            icon: <TbRotateClockwise />,
-            label: 'Return',
-            onClick: () => {
-              setSelectedRentOutId(r.id);
-              returnModalHandlers.open();
-            },
-          },
+            // menuItems.delete(() => deleteRentOut({ id: r.id })),
+          ];
 
-          // menuItems.delete(() => deleteRentOut({ id: r.id })),
-        ]}
+          if (r.status !== 'Returned') {
+            items.unshift({
+              icon: <TbRotateClockwise />,
+              label: 'Return',
+              onClick: () => {
+                setSelectedRentOutId(r.id);
+                returnModalHandlers.open();
+              },
+            });
+          }
+
+          return items;
+        }}
       />
       <RentOutInfo
         rentOutId={selectedRentOutId!}

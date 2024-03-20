@@ -20,9 +20,7 @@ import notification from '@/utils/notification';
 import { RouterOutput } from '@/types';
 import EditCustomer from '../customers/edit-customer';
 
-type CreateRentOutFormProps = ModalFormProps & {
-  rentOutId?: string;
-};
+type CreateRentOutFormProps = ModalFormProps & {};
 
 type CreateRentOutFormValues = {
   date: string;
@@ -56,6 +54,8 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
 
   const { mutateAsync: createRentOut } = trpc.rentOuts.createRentOut.useMutation();
 
+  const notificationId = 'rent-out-form-notification';
+
   return (
     <>
       <EditCustomer
@@ -73,24 +73,32 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
           try {
             if (!values.customerId) {
               setFocus('customerId');
-              return notification.error({ message: 'Please select a customer' });
+              return notification.error({
+                id: notificationId,
+                message: 'Please select a customer',
+              });
             }
             if (!values.date) {
               setFocus('date');
-              return notification.error({ message: 'Please select a date' });
+              return notification.error({ id: notificationId, message: 'Please select a date' });
             }
             if (values.rentOutItems.length === 0) {
-              return notification.error({ message: 'Please add at least one item' });
+              return notification.error({
+                id: notificationId,
+                message: 'Please add at least one item',
+              });
             }
             for (let i = 0; i < values.rentOutItems.length; i++) {
               const item = values.rentOutItems[i];
               if (numberOrZero(item.quantity) <= 0) {
                 return notification.error({
+                  id: notificationId,
                   message: `Please add a quantity for ${item.product.name.toLowerCase()}`,
                 });
               }
               if (numberOrZero(item.rentPerDay) < 0) {
                 return notification.error({
+                  id: notificationId,
                   message: `Please add a rent per day for ${item.product.name.toLowerCase()}`,
                 });
               }
@@ -104,7 +112,7 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
               })),
             };
             await createRentOut(submitValues);
-            notification.created('Rent Out');
+            notification.created('Rent out', { id: notificationId });
             utils.rentOuts.getRentOuts.invalidate();
             onClose();
           } catch (error) {}
@@ -195,8 +203,11 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
             filter={(query, p) => p.name.toLowerCase().includes(query.toLowerCase())}
             nothingFound='No items found'
             onItemClicked={(p) => {
-              if (p.quantity === 0) {
-                return notification.error({ message: 'Product is out of stock' });
+              if (p.remainingQuantity === 0) {
+                return notification.error({
+                  id: notificationId,
+                  message: 'Product is out of stock',
+                });
               }
 
               const index = rentOutItems.fields.findIndex((f) => f.product.id === p.id);

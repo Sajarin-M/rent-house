@@ -12,6 +12,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import dayjs from 'dayjs';
+import { defaultDateFormat } from '@/context/theme';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
 import { DatePickerInput, NumberInput, TextInput, validation, Watcher } from '@/components/form';
@@ -67,8 +68,13 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
   const { mutateAsync: createRentReturn } = trpc.rentOuts.createRentReturn.useMutation();
 
   function getDaysDifference() {
-    return dayjs(getValues().date).diff(dayjs(rentOutData?.date), 'day') + 1;
+    return (
+      dayjs(getValues().date).startOf('day').diff(dayjs(rentOutData!.date).startOf('day'), 'day') +
+      1
+    );
   }
+
+  const notificationId = 'rent-return-form-notification';
 
   return (
     <>
@@ -113,7 +119,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                 : null,
             };
             await createRentReturn(submitValues);
-            notification.created('Return');
+            notification.created('Return', { id: notificationId });
             utils.rentOuts.getRentOuts.invalidate();
             utils.rentOuts.getRentOutWithQuantityInfo.invalidate({ id: rentOutId });
             onClose();
@@ -174,6 +180,9 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                       rentOutData.rentOutItems.every((item) => {
                         const returnItem = returnItems.find((i) => i.rentOutItem.id === item.id);
                         if (!returnItem) {
+                          if (item.remainingQuantity === 0) {
+                            return true;
+                          }
                           return false;
                         }
 
@@ -191,11 +200,13 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                           if (!isFullyReturning && rentOutData) {
                             setValue(
                               'returnItems',
-                              rentOutData.rentOutItems.map((item) => ({
-                                rentOutItem: item,
-                                usedDays: getDaysDifference(),
-                                quantity: item.remainingQuantity,
-                              })),
+                              rentOutData.rentOutItems
+                                .filter((item) => item.remainingQuantity > 0)
+                                .map((item) => ({
+                                  rentOutItem: item,
+                                  usedDays: getDaysDifference(),
+                                  quantity: item.remainingQuantity,
+                                })),
                             );
                           }
                         }}
@@ -210,7 +221,12 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
       >
         <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
           <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_auto_var(--mantine-spacing-sm)_6.5rem_auto] grid-rows-[1fr_1fr] items-center rounded-sm border'>
-            <Input.Label required>Date</Input.Label>
+            <Input.Label required>Rented Date</Input.Label>
+            <MTextInput readOnly value={dayjs(rentOutData?.date).format(defaultDateFormat)} />
+            <div></div>
+            <Input.Label required>Customer</Input.Label>
+            <MTextInput readOnly value={rentOutData?.customer.name} />
+            <Input.Label required>Return Date</Input.Label>
             <DatePickerInput
               name='date'
               control={control}
@@ -223,10 +239,8 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                   }
                 }
               }}
-            />
+            />{' '}
             <div></div>
-            <Input.Label required>Customer</Input.Label>
-            <MTextInput readOnly value={rentOutData?.customer.name} />
             <Input.Label required>Description</Input.Label>
             <TextInput control={control} name='description' />
           </div>
@@ -271,7 +285,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                   />
                   <NumberInput
                     size='xs'
-                    min={1}
+                    min={0}
                     control={control}
                     name={`returnItems.${index}.usedDays`}
                     classNames={{ input: 'text-end' }}
@@ -311,6 +325,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
           </ItemTable.TableWrapper>
           <UncontrolledSearchableList
             keyPath='id'
+            data-autofocus
             items={rentOutData?.rentOutItems ?? []}
             title={(item) => item.product.name}
             avatar={{
@@ -321,12 +336,15 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
             nothingFound='No items found'
             onItemClicked={(item) => {
               if (item.quantity === item.returnedQuantity) {
-                return notification.error({ message: 'Product is fully returned' });
+                return notification.error({
+                  id: notificationId,
+                  message: 'Product is fully returned',
+                });
               }
 
               const index = returnItems.fields.findIndex((f) => f.rentOutItem.id === item.id);
               if (index !== -1) {
-                setFocus(`returnItems.${index}.quantity`);
+                return setFocus(`returnItems.${index}.quantity`);
               }
 
               returnItems.append(

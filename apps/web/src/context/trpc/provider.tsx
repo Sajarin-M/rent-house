@@ -21,7 +21,7 @@ export default function TrpcProvider({ children }: PropsWithChildren) {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         {children}
-        <ReactQueryDevtools buttonPosition='bottom-left' />
+        <ReactQueryDevtools buttonPosition='top-left' />
         {showDevtools && <ReactQueryDevtoolsProduction buttonPosition='bottom-left' />}
       </QueryClientProvider>
     </trpc.Provider>

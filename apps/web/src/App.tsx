@@ -1,5 +1,5 @@
 import AuthProvider from '@/context/auth';
-import ThemeProvider from '@/context/theme';
+import { ThemeProvider } from '@/context/theme';
 import { TrpcProvider } from '@/context/trpc';
 import Pages from '@/pages';
 

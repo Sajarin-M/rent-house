@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
@@ -28,11 +29,28 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
 
   const { mutateAsync: addRentPayment } = trpc.rentOuts.addRentPayment.useMutation();
 
+  const { data: rentAmountInfo, isPending } = trpc.rentOuts.getRentAmountInfo.useQuery(
+    {
+      rentOutId,
+    },
+    {
+      gcTime: 0,
+      staleTime: 0,
+    },
+  );
+
+  useEffect(() => {
+    if (rentAmountInfo && rentAmountInfo.pendingAmount !== 0) {
+      setValue('totalAmount', rentAmountInfo.pendingAmount);
+    }
+  }, [rentAmountInfo]);
+
   return (
     <Modal.Form
       control={control}
       onCancel={onClose}
       title='Add Payment'
+      isLoading={isPending}
       onSubmit={handleSubmit(async (values) => {
         try {
           await addRentPayment({
@@ -48,6 +66,27 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
       })}
     >
       <Stack>
+        {rentAmountInfo && (
+          <div className='bg-gray-2 gap-xs dark:bg-dark-6 border-default-border p-xs grid grid-cols-[1fr_auto] rounded-sm border text-sm font-semibold [&>*:nth-child(even)]:text-end'>
+            <div className='flex items-center gap-1'>
+              <div>Total Rent Amount</div>
+              <div className='text-xs'>
+                ({' '}
+                {rentAmountInfo.status === 'Returned'
+                  ? 'Items fully returned'
+                  : rentAmountInfo.status === 'Pending'
+                    ? 'Items not returned Yet'
+                    : 'Items partially returned'}{' '}
+                )
+              </div>
+            </div>
+            <div>{formatCurrency(rentAmountInfo.totalAmount)}</div>
+            <div>Total Paid Amount</div>
+            <div>{formatCurrency(rentAmountInfo.paidAmount)}</div>
+            <div>Total Amount Due</div>
+            <div>{formatCurrency(rentAmountInfo.pendingAmount)}</div>
+          </div>
+        )}
         <DatePickerInput
           withAsterisk
           label='Date'

@@ -16,7 +16,7 @@ export default function Products() {
   const [opened, handlers] = useDisclosure(false);
   const [selectedProductId, setSelectedProductId] = useState<string>();
 
-  const queryResult = trpc.products.getAllProducts.useQuery();
+  const queryResult = trpc.products.getAllProductsWithQuantityInfo.useQuery();
   const { data: products = [] } = queryResult;
 
   const filteredProducts = products.filter((c) =>
@@ -63,8 +63,13 @@ export default function Products() {
         columns={[
           { header: 'Name', cell: (c) => c.name, cellWidth: '3fr' },
           {
-            header: 'Quantity',
+            header: 'Total Quantity',
             cell: (c) => c.quantity,
+            cellWidth: '2fr',
+          },
+          {
+            header: 'Remaining Quantity',
+            cell: (c) => c.remainingQuantity,
             cellWidth: '2fr',
           },
           {

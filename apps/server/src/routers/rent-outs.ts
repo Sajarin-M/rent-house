@@ -152,8 +152,8 @@ export const rentOutsRouter = router({
       const isFullyPaying =
         rentOut.status === 'Returned' &&
         input.totalAmount >=
-          rentOut.rentReturns.reduce((sum, returns) => sum + returns.totalAmount, 0) -
-            rentOut.rentPayments.reduce((sum, payment) => sum + payment.totalAmount, 0);
+          rentOut.rentReturns.reduce((sum, returnItem) => sum + returnItem.totalAmount, 0) -
+            rentOut.rentPayments.reduce((sum, paymentItem) => sum + paymentItem.totalAmount, 0);
 
       await prisma.$transaction([
         prisma.rentOut.update({
@@ -227,6 +227,40 @@ export const rentOutsRouter = router({
       return returnData;
     }),
 
+  getRentAmountInfo: publicProcedure
+    .input(z.object({ rentOutId: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const rentOut = await prisma.rentOut
+        .findFirstOrThrow({
+          where: { id: input.rentOutId, deletedAt: null },
+          select: {
+            status: true,
+            rentReturns: { select: { totalAmount: true } },
+            rentPayments: { select: { totalAmount: true } },
+          },
+        })
+        .catch(createNotFound('Rent out'));
+
+      const totalAmount = rentOut.rentReturns.reduce(
+        (sum, returnItem) => sum + returnItem.totalAmount,
+        0,
+      );
+
+      const paidAmount = rentOut.rentPayments.reduce(
+        (sum, paymentItem) => sum + paymentItem.totalAmount,
+        0,
+      );
+
+      const pendingAmount = totalAmount - paidAmount;
+
+      return {
+        totalAmount,
+        paidAmount,
+        pendingAmount: pendingAmount < 0 ? 0 : pendingAmount,
+        status: rentOut.status,
+      };
+    }),
+
   createRentReturn: publicProcedure
     .input(
       z
@@ -295,8 +329,6 @@ export const rentOutsRouter = router({
         })
         .catch(createNotFound('Rent out'));
 
-      let isFullyReturning = true;
-
       for (const returnItem of input.returnItems) {
         const rentOutItem = rentOut.rentOutItems.find(
           (item) => item.id === returnItem.rentOutItemId,
@@ -309,44 +341,52 @@ export const rentOutsRouter = router({
           });
         }
 
-        const alreadyReturnedQuantity = rentOutItem.returnItems.reduce(
-          (sum, item) => sum + item.quantity,
-          0,
-        );
-
-        const remainingQuantity = rentOutItem.quantity - alreadyReturnedQuantity;
-
-        if (returnItem.quantity > remainingQuantity) {
+        if (returnItem.quantity > getRentOutItemQuantityInfo(rentOutItem).remainingQuantity) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: "Return quantity can't be greater than remaining quantity",
           });
         }
-
-        if (remainingQuantity !== rentOutItem.quantity) {
-          isFullyReturning = false;
-        }
       }
+
+      const isFullyReturning = rentOut.rentOutItems.every((rentOutItem) => {
+        const returnItem = input.returnItems.find((i) => i.rentOutItemId === rentOutItem.id);
+        const quantityInfo = getRentOutItemQuantityInfo(rentOutItem);
+
+        if (!returnItem) {
+          if (quantityInfo.remainingQuantity === 0) {
+            return true;
+          }
+          return false;
+        }
+
+        if (quantityInfo.remainingQuantity !== returnItem.quantity) {
+          return false;
+        }
+        return true;
+      });
 
       const isFullyPaying =
         isFullyReturning &&
         input.withPayment &&
         (input.payment === null || input.payment.totalAmount >= input.totalAmount) &&
-        rentOut.rentPayments.reduce((sum, payment) => sum + payment.totalAmount, 0) >=
-          rentOut.rentReturns.reduce((sum, returns) => sum + returns.totalAmount, 0);
+        rentOut.rentPayments.reduce((sum, paymentItem) => sum + paymentItem.totalAmount, 0) >=
+          rentOut.rentReturns.reduce((sum, returnItem) => sum + returnItem.totalAmount, 0);
 
       await prisma.$transaction(async (tx) => {
-        if (isFullyReturning || isFullyPaying) {
-          await tx.rentOut
-            .update({
-              where: { id: input.rentOutId },
-              data: {
-                status: isFullyReturning ? 'Returned' : undefined,
-                paymentStatus: isFullyPaying ? 'Paid' : undefined,
-              },
-            })
-            .catch(createNotFound('Rent out'));
-        }
+        await tx.rentOut
+          .update({
+            where: { id: input.rentOutId },
+            data: {
+              status: isFullyReturning ? 'Returned' : 'Partially_Returned',
+              paymentStatus: isFullyPaying
+                ? 'Paid'
+                : input.withPayment
+                  ? 'Partially_Paid'
+                  : undefined,
+            },
+          })
+          .catch(createNotFound('Rent out'));
 
         await tx.rentReturn.create({
           data: {
