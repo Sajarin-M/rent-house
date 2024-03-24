@@ -14,6 +14,10 @@ export function formatDate(date: Date | string) {
   return dayjs(date).format('DD/MM/YYYY');
 }
 
+export function formatDateWithTime(date: Date | string) {
+  return dayjs(date).format('DD/MM/YYYY - hh:mm A');
+}
+
 export function formatCurrency(amount: number) {
   return amount.toLocaleString('en-IN', {
     currency: 'INR',

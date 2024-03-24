@@ -9,6 +9,7 @@ import Search from '@/components/search';
 import { InfiniteTable } from '@/components/table';
 import Toolbar from '@/components/toolbar';
 import CreateRentOut from '@/pages/rent-outs/create-rent-out';
+import { formatDateWithTime } from '@/utils/fns';
 import { useDebouncedQuery } from '@/utils/queries';
 import AddRentPayment from './add-rent-payment';
 import CreateRentReturn from './create-rent-return';
@@ -94,6 +95,7 @@ export default function RentOuts() {
           infoModalHandlers.open();
         }}
         columns={[
+          { header: 'Date', cell: (r) => formatDateWithTime(r.date), cellWidth: '11rem' },
           { header: 'Customer', cell: (r) => r.customer.name, cellWidth: '1fr' },
           {
             header: 'Phone',
