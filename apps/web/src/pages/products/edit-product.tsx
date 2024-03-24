@@ -75,7 +75,7 @@ function EditProductForm({ id, onClose }: EditProductProps) {
             await createProduct(submitValues);
             notification.created('Product');
           }
-          utils.products.getAllProducts.invalidate();
+          utils.products.getAllProductsWithQuantityInfo.invalidate();
           onClose();
         } catch (error) {}
       })}

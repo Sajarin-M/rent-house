@@ -119,7 +119,7 @@ export default function SearchableList<T>({
                   // @ts-ignore
                   key={item[keyPath]}
                   className={cn(
-                    'border-default-border bg-gray-1 hover:bg-gray-2 dark:bg-dark-6 dark:hover:bg-dark-5 px-md py-xs gap-x-xs grid cursor-pointer grid-cols-[auto_1fr_auto] items-center rounded-sm border',
+                    'border-default-border bg-gray-1 scroll-m-sm hover:bg-gray-2 dark:bg-dark-6 dark:hover:bg-dark-5 px-md py-xs gap-x-xs grid cursor-pointer grid-cols-[auto_1fr_auto] items-center rounded-sm border',
                     hovered === index && `bg-gray-1 outline-mantine-default dark:bg-dark-5`,
                   )}
                   onClick={() => onItemClicked?.(item)}

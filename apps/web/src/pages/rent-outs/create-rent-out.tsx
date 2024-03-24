@@ -1,7 +1,17 @@
 import { Control, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { FaPlus } from 'react-icons/fa6';
-import { ActionIcon, Input, ModalRootProps, Tooltip } from '@mantine/core';
+import { TbCheck, TbInfoTriangle } from 'react-icons/tb';
+import {
+  ActionIcon,
+  Divider,
+  HoverCard,
+  Input,
+  Loader,
+  ModalRootProps,
+  Tooltip,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { modals } from '@mantine/modals';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
 import {
@@ -34,6 +44,8 @@ type CreateRentOutFormValues = {
 };
 
 function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
+  const utils = trpc.useUtils();
+
   const [opened, handlers] = useDisclosure(false);
 
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
@@ -48,13 +60,39 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
     },
   });
 
+  const customerId = useWatch({ control, name: 'customerId' });
+
+  const { data: customerStatus, isPending: isCustomerStatusLoading } =
+    trpc.rentOuts.getCustomerStatus.useQuery(
+      { customerId },
+      {
+        enabled: !!customerId,
+      },
+    );
+
   const rentOutItems = useFieldArray({ control, name: 'rentOutItems', keyName: 'key' });
 
-  const utils = trpc.useUtils();
-
-  const { mutateAsync: createRentOut } = trpc.rentOuts.createRentOut.useMutation();
+  const { mutateAsync: createRentOut, isPending: isCreateRentOutLoading } =
+    trpc.rentOuts.createRentOut.useMutation();
 
   const notificationId = 'rent-out-form-notification';
+
+  async function onSubmit(values: CreateRentOutFormValues) {
+    const submitValues = {
+      ...values,
+      rentOutItems: values.rentOutItems.map((item) => ({
+        productId: item.product.id,
+        quantity: Number(item.quantity),
+        rentPerDay: Number(item.rentPerDay),
+      })),
+    };
+    await createRentOut(submitValues);
+    notification.created('Rent out', { id: notificationId });
+    utils.rentOuts.getRentOuts.invalidate();
+    utils.products.getAllProductsWithQuantityInfo.invalidate();
+    utils.rentOuts.getCustomerStatus.invalidate({ customerId: values.customerId });
+    onClose();
+  }
 
   return (
     <>
@@ -69,6 +107,7 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
         control={control}
         onCancel={onClose}
         title={getFormTItle('Rent Out')}
+        isSubmitting={isCreateRentOutLoading}
         onSubmit={handleSubmit(async (values) => {
           try {
             if (!values.customerId) {
@@ -103,18 +142,25 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
                 });
               }
             }
-            const submitValues = {
-              ...values,
-              rentOutItems: values.rentOutItems.map((item) => ({
-                productId: item.product.id,
-                quantity: Number(item.quantity),
-                rentPerDay: Number(item.rentPerDay),
-              })),
-            };
-            await createRentOut(submitValues);
-            notification.created('Rent out', { id: notificationId });
-            utils.rentOuts.getRentOuts.invalidate();
-            onClose();
+
+            if (customerStatus && !customerStatus.isSafe) {
+              return modals.openConfirmModal({
+                title: 'Are you sure ?',
+                children: (
+                  <div>
+                    <CustomerStatus customerStatus={customerStatus} />
+                    <div className='my-sm'>
+                      Are you sure you want to rent again to this customer?
+                    </div>
+                  </div>
+                ),
+                onConfirm: () => {
+                  onSubmit(values);
+                },
+              });
+            }
+
+            await onSubmit(values);
           } catch (error) {}
         })}
       >
@@ -130,8 +176,43 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
                 name='customerId'
                 control={control}
                 data={customers.map((c) => ({ label: c.name, value: c.id }))}
+                rightSection={
+                  !!customerId && isCustomerStatusLoading ? (
+                    <Loader />
+                  ) : customerStatus ? (
+                    <HoverCard
+                      withArrow
+                      arrowOffset={15}
+                      position='bottom-end'
+                      offset={{ crossAxis: 10, mainAxis: 25 }}
+                    >
+                      <HoverCard.Target>
+                        <div>
+                          {customerStatus.isSafe ? (
+                            <TbCheck className='text-teal-6' />
+                          ) : (
+                            <TbInfoTriangle className='text-red-6' />
+                          )}
+                        </div>
+                      </HoverCard.Target>
+                      <HoverCard.Dropdown
+                        px='xs'
+                        py='0.5rem'
+                        className='flex justify-center text-sm'
+                      >
+                        <CustomerStatus customerStatus={customerStatus} />
+                      </HoverCard.Dropdown>
+                    </HoverCard>
+                  ) : undefined
+                }
               />
-              <Tooltip label='Create new customer' position='bottom' withArrow>
+              <Tooltip
+                withArrow
+                openDelay={1000}
+                position='bottom'
+                offset={{ mainAxis: 15 }}
+                label='Create new customer'
+              >
                 <ActionIcon variant='outline' size='lg' onClick={() => handlers.open()}>
                   <FaPlus />
                 </ActionIcon>
@@ -249,6 +330,51 @@ function GrandTotal({ control }: GrandTotalProps) {
     <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border font-semibold'>
       <span>Total</span>
       <span className='pr-[calc(1.875rem/3)] text-end'>{formatCurrency(total)} / Day</span>
+    </div>
+  );
+}
+
+function CustomerStatus({
+  customerStatus,
+}: {
+  customerStatus: RouterOutput['rentOuts']['getCustomerStatus'];
+}) {
+  if (customerStatus.isSafe) {
+    return (
+      <div>
+        {customerStatus.hasRentedBefore
+          ? "This customer has'nt rented anything before"
+          : 'This customer has rented previously and returned all of them'}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {customerStatus.pendingItems.length > 0 && (
+        <>
+          <div>This customer has'nt returned the following items</div>
+          <div className='mt-xs gap-x-xl grid grid-cols-[1fr_auto] gap-y-1'>
+            {customerStatus.pendingItems.map((product) => (
+              <>
+                <div>{product.name}</div>
+                <div className='text-end'>{product.remainingQuantity}</div>
+              </>
+            ))}
+          </div>
+        </>
+      )}
+
+      {customerStatus.pendingItems.length > 0 && customerStatus.pendingAmount > 0 && (
+        <Divider my='xs' />
+      )}
+
+      {customerStatus.pendingAmount > 0 && (
+        <div className='gap-x-xl grid grid-cols-[1fr_auto] gap-y-1'>
+          <div>This customer has payment due</div>
+          <div className='text-end'>{formatCurrency(customerStatus.pendingAmount)}</div>
+        </div>
+      )}
     </div>
   );
 }

@@ -75,29 +75,4 @@ export const customersRouter = router({
     });
     return customers;
   }),
-
-  // getCustomers: publicProcedure
-  //   .input(infiniteSchema.merge(searchSchema))
-  //   .query(async ({ input: { limit, cursor, searchQuery } }) => {
-  //     const customers = await prisma.customer.findMany({
-  //       take: limit + 1,
-  //       cursor: cursor ? { id: cursor } : undefined,
-  //       orderBy: {
-  //         createdAt: 'desc',
-  //       },
-  //       where: {
-  //         OR: searchQuery
-  //           ? [
-  //               { name: { contains: searchQuery, mode: 'insensitive' } },
-  //               { addressLine1: { contains: searchQuery, mode: 'insensitive' } },
-  //               { addressLine2: { contains: searchQuery, mode: 'insensitive' } },
-  //               { city: { contains: searchQuery, mode: 'insensitive' } },
-  //               { phoneNumber: { contains: searchQuery, mode: 'insensitive' } },
-  //               {},
-  //             ]
-  //           : undefined,
-  //       },
-  //     });
-  //     return infiniteResult(customers, limit, 'id');
-  //   }),
 });

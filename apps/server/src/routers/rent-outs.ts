@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { omit } from 'remeda';
+import R from 'remeda';
 import { z } from 'zod';
 import { createNotFound, prisma } from '../lib/prisma';
 import { infiniteResult, infiniteSchema, searchSchema } from '../lib/utils';
@@ -30,6 +30,28 @@ function getRentOutItemQuantityInfo(rentOutItem: {
   return {
     returnedQuantity,
     remainingQuantity: rentOutItem.quantity - returnedQuantity,
+  };
+}
+
+function getRentOutPaymentInfo(rentOut: {
+  rentReturns: { totalAmount: number }[];
+  rentPayments: { totalAmount: number }[];
+}) {
+  const totalAmount = rentOut.rentReturns.reduce(
+    (sum, returnItem) => sum + returnItem.totalAmount,
+    0,
+  );
+  const paidAmount = rentOut.rentPayments.reduce(
+    (sum, paymentItem) => sum + paymentItem.totalAmount,
+    0,
+  );
+
+  const pendingAmount = totalAmount - paidAmount;
+
+  return {
+    totalAmount,
+    paidAmount,
+    pendingAmount: pendingAmount < 0 ? 0 : pendingAmount,
   };
 }
 
@@ -219,7 +241,7 @@ export const rentOutsRouter = router({
       const returnData = {
         ...rentOut,
         rentOutItems: rentOut.rentOutItems.map((item) => ({
-          ...omit(item, ['returnItems']),
+          ...R.omit(item, ['returnItems']),
           ...getRentOutItemQuantityInfo(item),
         })),
       };
@@ -241,23 +263,9 @@ export const rentOutsRouter = router({
         })
         .catch(createNotFound('Rent out'));
 
-      const totalAmount = rentOut.rentReturns.reduce(
-        (sum, returnItem) => sum + returnItem.totalAmount,
-        0,
-      );
-
-      const paidAmount = rentOut.rentPayments.reduce(
-        (sum, paymentItem) => sum + paymentItem.totalAmount,
-        0,
-      );
-
-      const pendingAmount = totalAmount - paidAmount;
-
       return {
-        totalAmount,
-        paidAmount,
-        pendingAmount: pendingAmount < 0 ? 0 : pendingAmount,
         status: rentOut.status,
+        ...getRentOutPaymentInfo(rentOut),
       };
     }),
 
@@ -425,5 +433,72 @@ export const rentOutsRouter = router({
           select: { id: true },
         });
       });
+    }),
+
+  getCustomerStatus: publicProcedure
+    .input(z.object({ customerId: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const pendingRentOutByCustomer = await prisma.rentOut.findMany({
+        where: {
+          customerId: input.customerId,
+          OR: [
+            {
+              status: { in: ['Pending', 'Partially_Returned'] },
+            },
+            {
+              paymentStatus: { in: ['Pending', 'Partially_Paid'] },
+            },
+          ],
+        },
+        select: {
+          rentOutItems: {
+            select: {
+              id: true,
+              quantity: true,
+              product: { select: { id: true, name: true } },
+              returnItems: { select: { quantity: true } },
+            },
+          },
+          rentReturns: { select: { totalAmount: true } },
+          rentPayments: { select: { totalAmount: true } },
+        },
+      });
+
+      const pendingItems = pendingRentOutByCustomer.reduce(
+        (items, rentOut) => {
+          for (const rentOutItem of rentOut.rentOutItems) {
+            const quantityInfo = getRentOutItemQuantityInfo(rentOutItem);
+            if (quantityInfo.remainingQuantity > 0) {
+              const existing = items.find((item) => item.productId === rentOutItem.product.id);
+              if (existing) {
+                existing.remainingQuantity += quantityInfo.remainingQuantity;
+              } else {
+                items.push({
+                  productId: rentOutItem.product.id,
+                  name: rentOutItem.product.name,
+                  remainingQuantity: quantityInfo.remainingQuantity,
+                });
+              }
+            }
+          }
+          return items;
+        },
+        [] as { productId: string; name: string; remainingQuantity: number }[],
+      );
+
+      const returnData = {
+        pendingItems,
+        isSafe: pendingRentOutByCustomer.length === 0,
+        hasRentedBefore:
+          pendingRentOutByCustomer.length !== 0
+            ? (await prisma.rentOut.count({ where: { customerId: input.customerId } })) > 0
+            : true,
+        pendingAmount: pendingRentOutByCustomer.reduce(
+          (sum, rentOut) => sum + getRentOutPaymentInfo(rentOut).pendingAmount,
+          0,
+        ),
+      };
+
+      return returnData;
     }),
 });
