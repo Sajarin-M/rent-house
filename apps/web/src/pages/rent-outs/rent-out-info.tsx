@@ -1,35 +1,39 @@
 import { Card } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
-import Drawer from '@/components/drawer';
+import { Drawer, GenerateDrawerWrapperProps } from '@/components/drawer';
 
-type OrderInfoContentProps = {
+type RentOutInfoContentProps = {
   rentOutId: string;
 };
 
-function RentOutInfoContent({ rentOutId }: OrderInfoContentProps) {
-  const { data } = trpc.rentOuts.getRentOutInfo.useQuery({ id: rentOutId });
+function RentOutInfoContent({ rentOutId }: RentOutInfoContentProps) {
+  const { data: renOut, isPending } = trpc.rentOuts.getRentOutInfo.useQuery({
+    id: rentOutId,
+  });
 
   return (
-    <Drawer.Content title='Order Details'>
+    <Drawer.Content isLoading={isPending} title='Order Details'>
       <div className='gap-y-xs grid grid-cols-[auto_1fr] items-center gap-x-12'>
         <span className='text-dimmed'>Date</span>
         {/* <span>{formatDate(data?.createdAt)}</span> */}
         <span>date</span>
         <span className='text-dimmed'>Name</span>
-        <span>{data?.customer.name}</span>
+        <span>{renOut?.customer.name}</span>
         <span className='text-dimmed self-start'>Phone Number </span>
-        <span>{data?.customer.phoneNumber}</span>
-        <span className='text-dimmed'>Address 1</span>
+        <span>{renOut?.customer.phoneNumber}</span>
+        <span className='text-dimmed'>Address</span>
         <span>
-          {data?.customer.addressLine1} , {data?.customer.addressLine2} , {data?.customer.city}
+          {/* {[data?.customer.addressLine1, data?.customer.addressLine2, data?.customer.city].} */}
+          {renOut?.customer.addressLine1} , {renOut?.customer.addressLine2} ,{' '}
+          {renOut?.customer.city}
         </span>
       </div>
       <Drawer.Divider className='my-md' />
       <p className='mb-3 text-center'>Items</p>
       <Card className='w-full min-w-0' radius='md' padding={0} withBorder>
         <div className='divide-default-border divide-y p-0'>
-          {data?.rentOutItems.map((item) => {
+          {renOut?.rentOutItems.map((item) => {
             return (
               <div key={item.id} className='p-4'>
                 <div className='flex gap-x-4 '>
@@ -101,5 +105,7 @@ function RentOutInfoContent({ rentOutId }: OrderInfoContentProps) {
     </Drawer.Content>
   );
 }
-const RentOutInfo = Drawer.generateDrawer(RentOutInfoContent, { size: 'lg', position: 'right' });
-export default RentOutInfo;
+
+export default function RentOutInfo(props: GenerateDrawerWrapperProps<RentOutInfoContentProps>) {
+  return <Drawer.Wrapper component={RentOutInfoContent} size='lg' position='right' {...props} />;
+}

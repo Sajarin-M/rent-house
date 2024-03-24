@@ -3,16 +3,16 @@ import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import { NumberInput, PriceInput, TextInput, validation } from '@/components/form';
-import { Modal, ModalFormProps } from '@/components/modal';
+import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
 import { ImageUpload, useImageUpload } from '@/utils/images';
 import notification from '@/utils/notification';
 
-type EditProductProps = ModalFormProps & {
+type EditProductFormProps = ModalCommonProps & {
   id?: string;
 };
 
-function EditProductForm({ id, onClose }: EditProductProps) {
+function EditProductForm({ id, onClose }: EditProductFormProps) {
   const isEditing = id !== undefined;
 
   const { data, isLoading } = trpc.products.getProduct.useQuery(
@@ -118,5 +118,6 @@ function EditProductForm({ id, onClose }: EditProductProps) {
   );
 }
 
-const EditProduct = Modal.generateFormModal(EditProductForm, { size: 'lg' });
-export default EditProduct;
+export default function EditProduct(props: GenerateModalWrapperProps<EditProductFormProps>) {
+  return <Modal.Wrapper component={EditProductForm} size='lg' {...props} />;
+}

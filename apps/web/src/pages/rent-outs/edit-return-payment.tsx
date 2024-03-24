@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { PriceInput, TextInput, validation, Watcher } from '@/components/form';
-import { Modal, ModalFormProps, ModalRootProps } from '@/components/modal';
+import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { formatCurrency, numberOrZero } from '@/utils/fns';
 
 export type ReturnPaymentFormValues = {
@@ -10,7 +10,7 @@ export type ReturnPaymentFormValues = {
   description: string;
 };
 
-export type EditReturnPaymentFormProps = ModalFormProps & {
+export type EditReturnPaymentFormProps = ModalCommonProps & {
   defaultValues?: Partial<ReturnPaymentFormValues>;
   onSubmit: (values: ReturnPaymentFormValues) => void;
 };
@@ -92,14 +92,14 @@ function EditReturnPaymentForm({ onClose, onSubmit, defaultValues }: EditReturnP
   );
 }
 
-export type EditReturnPaymentProps = Omit<EditReturnPaymentFormProps, 'onClose'> & {
-  modalProps: ModalRootProps;
-};
-
-export default function EditReturnPayment({ modalProps, ...rest }: EditReturnPaymentProps) {
+export default function EditReturnPayment(
+  props: GenerateModalWrapperProps<EditReturnPaymentFormProps>,
+) {
   return (
-    <Modal.Root size='calc(30rem*var(--mantine-scale))' {...modalProps}>
-      <EditReturnPaymentForm {...rest} onClose={modalProps.onClose} />
-    </Modal.Root>
+    <Modal.Wrapper
+      component={EditReturnPaymentForm}
+      size='calc(30rem*var(--mantine-scale))'
+      {...props}
+    />
   );
 }

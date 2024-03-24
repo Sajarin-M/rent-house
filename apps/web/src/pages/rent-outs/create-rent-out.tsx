@@ -1,15 +1,7 @@
 import { Control, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { FaPlus } from 'react-icons/fa6';
 import { TbCheck, TbInfoTriangle } from 'react-icons/tb';
-import {
-  ActionIcon,
-  Divider,
-  HoverCard,
-  Input,
-  Loader,
-  ModalRootProps,
-  Tooltip,
-} from '@mantine/core';
+import { ActionIcon, Divider, HoverCard, Input, Loader, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { trpc } from '@/context/trpc';
@@ -23,14 +15,14 @@ import {
   Watcher,
 } from '@/components/form';
 import ItemTable from '@/components/item-table';
-import { Modal, ModalFormProps } from '@/components/modal';
+import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { formatCurrency, getFormTItle, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
 import { RouterOutput } from '@/types';
 import EditCustomer from '../customers/edit-customer';
 
-type CreateRentOutFormProps = ModalFormProps & {};
+type CreateRentOutFormProps = ModalCommonProps & {};
 
 type CreateRentOutFormValues = {
   date: string;
@@ -379,13 +371,6 @@ function CustomerStatus({
   );
 }
 
-export default function CreateRentOut({
-  modalProps,
-  ...rest
-}: Omit<CreateRentOutFormProps, 'onClose'> & { modalProps: ModalRootProps }) {
-  return (
-    <Modal.Root fullScreen={true} {...modalProps}>
-      <CreateRentOutForm {...rest} onClose={modalProps.onClose} />
-    </Modal.Root>
-  );
+export default function CreateRentOut(props: GenerateModalWrapperProps<CreateRentOutFormProps>) {
+  return <Modal.Wrapper component={CreateRentOutForm} fullScreen {...props} />;
 }

@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { Control, Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { TbSettings } from 'react-icons/tb';
-import {
-  ActionIcon,
-  Button,
-  Input,
-  ModalRootProps,
-  TextInput as MTextInput,
-  Popover,
-  Switch,
-} from '@mantine/core';
+import { ActionIcon, Button, Input, TextInput as MTextInput, Popover, Switch } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import dayjs from 'dayjs';
 import { defaultDateFormat } from '@/context/theme';
@@ -17,14 +9,14 @@ import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
 import { DatePickerInput, NumberInput, TextInput, validation, Watcher } from '@/components/form';
 import ItemTable from '@/components/item-table';
-import { Modal, ModalFormProps } from '@/components/modal';
+import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { UncontrolledSearchableList } from '@/components/searchable-list';
 import { formatCurrency, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
 import { RouterOutput } from '@/types';
 import EditReturnPayment, { ReturnPaymentFormValues } from './edit-return-payment';
 
-type CreateRentReturnFormProps = ModalFormProps & {
+type CreateRentReturnFormProps = ModalCommonProps & {
   rentOutId: string;
 };
 
@@ -394,13 +386,8 @@ function GrandTotal({ control }: GrandTotalProps) {
   );
 }
 
-export default function CreateRentReturn({
-  modalProps,
-  ...rest
-}: Omit<CreateRentReturnFormProps, 'onClose'> & { modalProps: ModalRootProps }) {
-  return (
-    <Modal.Root fullScreen={true} {...modalProps}>
-      <CreateRentReturnForm {...rest} onClose={modalProps.onClose} />
-    </Modal.Root>
-  );
+export default function CreateRentReturn(
+  props: GenerateModalWrapperProps<CreateRentReturnFormProps>,
+) {
+  return <Modal.Wrapper component={CreateRentReturnForm} fullScreen {...props} />;
 }

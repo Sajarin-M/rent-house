@@ -12,6 +12,8 @@ type ModalPropNames =
 
 export type ModalRootProps = Omit<MModalProps, ModalPropNames>;
 
+export type ModalCommonProps = { onClose: VoidFunction };
+
 const fullScreenOnlyProps: Pick<MModalProps, 'transitionProps' | 'overlayProps'> = {
   transitionProps: {
     duration: 80,

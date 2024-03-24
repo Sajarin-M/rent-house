@@ -3,18 +3,18 @@ import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import { TextInput, validation } from '@/components/form';
-import { Modal, ModalFormProps } from '@/components/modal';
+import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
 import { ImageUpload, useImageUpload } from '@/utils/images';
 import notification from '@/utils/notification';
 import { RouterOutput } from '@/types';
 
-type EditCustomerProps = ModalFormProps & {
+type EditCustomerFormProps = ModalCommonProps & {
   id?: string;
   onCustomerCreated?: (customer: RouterOutput['customers']['createCustomer']) => void;
 };
 
-function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerProps) {
+function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerFormProps) {
   const isEditing = id !== undefined;
 
   const { data, isLoading } = trpc.customers.getCustomer.useQuery(
@@ -130,5 +130,6 @@ function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerProps)
   );
 }
 
-const EditCustomer = Modal.generateFormModal(EditCustomerForm, { size: 'lg' });
-export default EditCustomer;
+export default function EditCustomer(props: GenerateModalWrapperProps<EditCustomerFormProps>) {
+  return <Modal.Wrapper component={EditCustomerForm} size='lg' {...props} />;
+}

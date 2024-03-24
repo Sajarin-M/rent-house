@@ -3,11 +3,11 @@ import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import { DatePickerInput, PriceInput, TextInput, validation, Watcher } from '@/components/form';
-import { Modal, ModalFormProps, ModalRootProps } from '@/components/modal';
+import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { formatCurrency, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
 
-type AddRentPaymentFormProps = ModalFormProps & {
+type AddRentPaymentFormProps = ModalCommonProps & {
   rentOutId: string;
 };
 
@@ -152,13 +152,12 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
   );
 }
 
-export default function AddRentPayment({
-  modalProps,
-  ...rest
-}: Omit<AddRentPaymentFormProps, 'onClose'> & { modalProps: ModalRootProps }) {
+export default function AddRentPayment(props: GenerateModalWrapperProps<AddRentPaymentFormProps>) {
   return (
-    <Modal.Root size='calc(30rem*var(--mantine-scale))' {...modalProps}>
-      <AddRentPaymentForm {...rest} onClose={modalProps.onClose} />
-    </Modal.Root>
+    <Modal.Wrapper
+      component={AddRentPaymentForm}
+      size='calc(30rem*var(--mantine-scale))'
+      {...props}
+    />
   );
 }

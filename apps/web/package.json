@@ -50,7 +50,7 @@
     "tailwindcss-animate": "^1.0.7",
     "ts-toolbelt": "^9.6.0",
     "typescript": "^5.4.3",
-    "vite": "^5.2.3",
+    "vite": "^5.2.6",
     "vite-tsconfig-paths": "^4.3.2"
   }
 }

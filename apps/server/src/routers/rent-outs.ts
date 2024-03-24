@@ -110,9 +110,9 @@ export const rentOutsRouter = router({
         select: {
           id: true,
           date: true,
-          customer: { select: { name: true } },
           status: true,
           paymentStatus: true,
+          customer: { select: { name: true, phoneNumber: true } },
         },
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: [
