@@ -13,7 +13,8 @@ import { useDebouncedQuery } from '@/utils/queries';
 import AddRentPayment from './add-rent-payment';
 import CreateRentReturn from './create-rent-return';
 import RentOutInfo from './rent-out-info';
-import RentOutInfoBadge from './rent-out-info-badge';
+import RentOutPaymentStatusBadge from './rent-out-payment-status-badge';
+import RentOutStatusBadge from './rent-out-status-badge';
 
 export default function RentOuts() {
   // const utils = trpc.useUtils();
@@ -95,8 +96,21 @@ export default function RentOuts() {
         columns={[
           { header: 'Customer', cell: (r) => r.customer.name, cellWidth: '1fr' },
           {
+            header: 'Phone',
+            cell: (r) => r.customer.phoneNumber,
+            cellWidth: '1fr',
+          },
+          {
             header: 'Return Status',
-            cell: (r) => <RentOutInfoBadge status={r.status} />,
+            cell: (r) => <RentOutStatusBadge status={r.status} />,
+            cellWidth: '10rem',
+            classNames: {
+              cell: 'text-center justify-center',
+            },
+          },
+          {
+            header: 'Payment Status',
+            cell: (r) => <RentOutPaymentStatusBadge status={r.paymentStatus} />,
             cellWidth: '10rem',
             classNames: {
               cell: 'text-center justify-center',

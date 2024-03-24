@@ -7,7 +7,7 @@ const colorMap: Record<RentOutStatus, MantineColor> = {
   Returned: 'green',
 };
 
-export default function RentOutInfoBadge({ status }: { status: RentOutStatus }) {
+export default function RentOutStatusBadge({ status }: { status: RentOutStatus }) {
   return (
     <Badge variant='outline' size='sm' color={colorMap[status]}>
       {status.replaceAll('_', ' ')}
