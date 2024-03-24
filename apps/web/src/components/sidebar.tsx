@@ -1,8 +1,9 @@
 import { FaMoon, FaSun } from 'react-icons/fa6';
-import { TbHome, TbLogout, TbShoppingBag, TbUsers } from 'react-icons/tb';
+import { TbChevronCompactLeft, TbHome, TbLogout, TbShoppingBag, TbUsers } from 'react-icons/tb';
 import { Link, useLocation } from 'react-router-dom';
-import { Button, Code, useMantineColorScheme } from '@mantine/core';
-import { useHotkeys } from '@mantine/hooks';
+import { Button, Code, px, useMantineColorScheme } from '@mantine/core';
+import { useHotkeys, useLocalStorage, useMouse } from '@mantine/hooks';
+import { cn } from '@/utils/fns';
 
 const sidebarItems = [
   { href: '/', label: 'Home', icon: TbHome },
@@ -13,44 +14,70 @@ const sidebarItems = [
 export default function Sidebar() {
   const { pathname } = useLocation();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const [opened, setOpened] = useLocalStorage({
+    key: 'sidebar-opened',
+    defaultValue: true,
+    getInitialValueInEffect: false,
+  });
 
   useHotkeys([['mod+k', () => toggleColorScheme()]]);
 
+  const mouse = useMouse();
+
   return (
-    <nav className='border-default-border p-sm w-sidebar flex h-screen flex-col border-r border-solid'>
-      <div className='flex-grow'>
-        <div className='border-default-border py-sm mb-sm -mt-sm h-toolbar flex items-center justify-between border-b border-solid'>
-          {/* <MantineLogo size={28} /> */}
-          <Code fw={700}>v1.0.0</Code>
-        </div>
-        {sidebarItems.map((item) => {
-          const isActive = item.href === pathname;
-          return (
-            <SidebarItem
-              icon={item.icon}
-              size={item.size}
-              href={item.href}
-              key={item.label}
-              label={item.label}
-              isActive={isActive ? true : undefined}
-            />
-          );
-        })}
-      </div>
-
-      <Button
-        variant='outline'
-        onClick={() => toggleColorScheme()}
-        leftSection={colorScheme === 'dark' ? <FaSun /> : <FaMoon />}
-        color={colorScheme === 'dark' ? 'yellow.7' : 'dark'}
+    <div className='relative'>
+      <div
+        className={cn(
+          'border-default-border p-sm w-sidebar flex h-screen flex-col border-r border-solid transition-all',
+          !opened && 'invisible w-0 !p-0 opacity-0 *:hidden',
+        )}
       >
-        {colorScheme === 'dark' ? 'Light' : 'Dark'} Mode
-      </Button>
-
-      <div className='border-default-border mt-sm py-sm -mb-sm border-t border-solid'>
-        <SidebarItem icon={TbLogout} href='/logout' label='Logout' />
+        <div className='flex-grow'>
+          <div className='border-default-border py-sm mb-sm -mt-sm h-toolbar flex items-center justify-between border-b border-solid'>
+            {/* <MantineLogo size={28} /> */}
+            <Code fw={700}>v1.0.0</Code>
+          </div>
+          {sidebarItems.map((item) => {
+            const isActive = item.href === pathname;
+            return (
+              <SidebarItem
+                icon={item.icon}
+                size={item.size}
+                href={item.href}
+                key={item.label}
+                label={item.label}
+                isActive={isActive ? true : undefined}
+              />
+            );
+          })}
+        </div>
+        <Button
+          variant='outline'
+          onClick={() => toggleColorScheme()}
+          leftSection={colorScheme === 'dark' ? <FaSun /> : <FaMoon />}
+          color={colorScheme === 'dark' ? 'yellow.7' : 'dark'}
+        >
+          {colorScheme === 'dark' ? 'Light' : 'Dark'} Mode
+        </Button>
+        <div className='border-default-border mt-sm py-sm -mb-sm border-t border-solid'>
+          <SidebarItem icon={TbLogout} href='/logout' label='Logout' />
+        </div>
       </div>
-    </nav>
+      <button
+        type='button'
+        onClick={() => setOpened((prev) => !prev)}
+        className={cn(
+          'dark:bg-dark-6 bg-gray-2 border-default-border absolute right-0 top-1/2 flex h-[2rem] w-[1rem] translate-x-1/2 cursor-pointer items-center justify-center rounded-sm border transition-all',
+          !opened && 'invisible translate-x-full opacity-0',
+          mouse.x < Number(px('1rem')) && 'visible opacity-100',
+        )}
+      >
+        <TbChevronCompactLeft
+          size='1.3rem'
+          className={cn('transition-all', !opened && 'rotate-180')}
+        />
+      </button>
+    </div>
   );
 }
 

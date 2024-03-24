@@ -19,7 +19,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className='flex h-screen w-screen'>
+    <div className='flex h-screen w-screen overflow-x-hidden'>
       <Sidebar />
       <div className='h-screen grow'>
         <Outlet />
