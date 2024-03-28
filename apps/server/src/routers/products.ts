@@ -1,13 +1,14 @@
 import { omit } from 'remeda';
 import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
+import { emptyStringToNull } from '../lib/utils';
 import { publicProcedure, router } from '../trpc';
 
 const productSchema = z.object({
-  name: z.string().min(1),
-  image: z.string().optional(),
+  name: z.string().trim().min(1),
   quantity: z.number().positive(),
   rentPerDay: z.number().nonnegative(),
+  image: z.string().transform(emptyStringToNull).nullish(),
 });
 
 export const productSelect = {

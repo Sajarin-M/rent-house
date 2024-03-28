@@ -11,7 +11,7 @@ export function useDebouncedQuery<TQueryFn extends (input: any, opts: any) => an
   input: Parameters<TQueryFn>[0],
   opts: Parameters<TQueryFn>[1],
 ): ReturnType<TQueryFn> {
-  const [debouncedValue] = useDebouncedValue(input.searchQuery || '', 500);
+  const [debouncedValue] = useDebouncedValue(input.searchQuery || '', 100);
 
   let modifiedInput = { ...input, searchQuery: debouncedValue };
 

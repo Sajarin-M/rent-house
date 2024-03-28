@@ -29,3 +29,10 @@ export function ensureDirExistsSync(path: string) {
     mkdirSync(path, { recursive: true });
   }
 }
+
+export function emptyStringToNull(value: string): string | null {
+  if (value === '') {
+    return null;
+  }
+  return value;
+}

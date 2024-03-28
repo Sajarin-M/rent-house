@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server';
 import R from 'remeda';
 import { z } from 'zod';
 import { createNotFound, prisma } from '../lib/prisma';
-import { infiniteResult, infiniteSchema, searchSchema } from '../lib/utils';
+import { emptyStringToNull, infiniteResult, infiniteSchema, searchSchema } from '../lib/utils';
 import { confirmedProcedure, publicProcedure, router } from '../trpc';
 import { customerSelect } from './customers';
 import { getProductQuantityInfo, productSelect } from './products';
@@ -10,7 +10,7 @@ import { getProductQuantityInfo, productSelect } from './products';
 const rentOutSchema = z.object({
   date: z.string(),
   customerId: z.string().min(1),
-  description: z.string().optional(),
+  description: z.string().trim().transform(emptyStringToNull).nullish(),
   rentOutItems: z.array(
     z.object({
       productId: z.string().min(1),
@@ -153,6 +153,7 @@ export const rentOutsRouter = router({
           receivedAmount: z.number().positive(),
           discountAmount: z.number().nonnegative().optional().default(0),
           totalAmount: z.number().positive(),
+          description: z.string().trim().transform(emptyStringToNull).nullish(),
         })
         .refine((data) => data.receivedAmount + data.discountAmount === data.totalAmount, {
           message: 'Total amount should be equal to received amount and discount amount',
@@ -275,7 +276,7 @@ export const rentOutsRouter = router({
         .object({
           date: z.string(),
           rentOutId: z.string().min(1),
-          description: z.string().optional(),
+          description: z.string().trim().transform(emptyStringToNull).nullish(),
           returnItems: z.array(
             z.object({
               rentOutItemId: z.string().min(1),
@@ -292,7 +293,7 @@ export const rentOutsRouter = router({
               receivedAmount: z.number().nonnegative(),
               discountAmount: z.number().nonnegative().optional().default(0),
               totalAmount: z.number().nonnegative(),
-              description: z.string().optional(),
+              description: z.string().trim().transform(emptyStringToNull).nullish(),
             })
             .nullable(),
         })
@@ -411,7 +412,7 @@ export const rentOutsRouter = router({
                         discountAmount: input.payment.discountAmount,
                         receivedAmount: input.payment.receivedAmount,
                         totalAmount: input.payment.totalAmount,
-                        description: input.payment.description?.trim() || undefined,
+                        description: input.payment.description,
                       }
                     : {
                         date: input.date,

@@ -1,15 +1,16 @@
 import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
+import { emptyStringToNull } from '../lib/utils';
 import { confirmedProcedure, publicProcedure, router } from '../trpc';
 
 const customerSchema = z.object({
-  name: z.string().min(1),
-  addressLine1: z.string().min(1),
-  addressLine2: z.string().min(1),
-  city: z.string().min(1),
-  phoneNumber: z.string().min(1),
-  image: z.string(),
-  documentImage: z.string(),
+  name: z.string().trim().min(1),
+  phoneNumber: z.string().trim().min(1),
+  addressLine1: z.string().trim().transform(emptyStringToNull).nullish(),
+  addressLine2: z.string().trim().transform(emptyStringToNull).nullish(),
+  city: z.string().trim().transform(emptyStringToNull).nullish(),
+  image: z.string().transform(emptyStringToNull).nullish(),
+  documentImage: z.string().transform(emptyStringToNull).nullish(),
 });
 
 export const customerSelect = {

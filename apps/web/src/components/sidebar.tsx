@@ -28,7 +28,8 @@ export default function Sidebar() {
     <div className='relative'>
       <div
         className={cn(
-          'border-default-border p-sm w-sidebar flex h-screen flex-col border-r border-solid transition-all',
+          'border-default-border flex h-screen flex-col border-r border-solid transition-all',
+          opened && 'p-sm w-sidebar',
           !opened && 'invisible w-0 !p-0 opacity-0 *:hidden',
         )}
       >
