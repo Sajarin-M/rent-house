@@ -1,3 +1,7 @@
+const pluginAnimate = require('tailwindcss-animate');
+const pluginMantine = require('@devoss/tailwind-plugin-mantine');
+const mantineTheme = require('./src/context/theme/theme').theme;
+
 const heights = {
   toolbar: 'var(--h-toolbar)',
   content: 'var(--h-content)',
@@ -23,5 +27,5 @@ module.exports = {
       scrollMargin: heights,
     },
   },
-  plugins: [require('tailwindcss-animate'), require('@devoss/tailwind-plugin-mantine')],
+  plugins: [pluginAnimate, pluginMantine(mantineTheme)],
 };
