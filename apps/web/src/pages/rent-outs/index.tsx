@@ -110,6 +110,7 @@ export default function RentOuts() {
               cell: 'text-center justify-center',
             },
           },
+
           {
             header: 'Payment Status',
             cell: (r) => <RentOutPaymentStatusBadge status={r.paymentStatus} />,
