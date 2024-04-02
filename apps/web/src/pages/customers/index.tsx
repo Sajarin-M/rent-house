@@ -10,6 +10,7 @@ import Toolbar from '@/components/toolbar';
 import EditCustomer from '@/pages/customers/edit-customer';
 import notification from '@/utils/notification';
 import { useConfirmedDeletion } from '@/utils/queries';
+import CustomerInfo from './customer-info';
 
 export default function Customers() {
   const utils = trpc.useUtils();
@@ -17,6 +18,7 @@ export default function Customers() {
 
   const [opened, handlers] = useDisclosure(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>();
+  const [CustomerInfoModalOpened, CustomerInfoModalHandlers] = useDisclosure(false);
 
   const queryResult = trpc.customers.getAllCustomers.useQuery();
   const { data: customers = [] } = queryResult;
@@ -67,6 +69,10 @@ export default function Customers() {
         keyPath='id'
         data={filteredCustomers}
         queryResult={queryResult}
+        onRowClick={(order) => {
+          setSelectedCustomerId(order.id);
+          CustomerInfoModalHandlers.open();
+        }}
         columns={[
           { header: 'Name', cell: (c) => c.name, cellWidth: '2fr' },
           {
@@ -87,6 +93,13 @@ export default function Customers() {
           }),
           menuItems.delete(() => deleteCustomer({ id: c.id })),
         ]}
+      />
+      <CustomerInfo
+        customerId={selectedCustomerId!}
+        drawerProps={{
+          opened: CustomerInfoModalOpened && selectedCustomerId !== undefined,
+          onClose: CustomerInfoModalHandlers.close,
+        }}
       />
     </Content>
   );

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
 import { emptyStringToNull } from '../lib/utils';
 import { confirmedProcedure, publicProcedure, router } from '../trpc';
+import { productSelect } from './products';
 
 const customerSchema = z.object({
   name: z.string().trim().min(1),
@@ -76,4 +77,28 @@ export const customersRouter = router({
     });
     return customers;
   }),
+  getRentOutInfo: publicProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(async ({ input }) => {
+      const rentOut = await prisma.rentOut
+        .findFirstOrThrow({
+          where: { customerId: input.id, deletedAt: null },
+          select: {
+            id: true,
+            date: true,
+            customer: { select: customerSelect },
+            rentOutItems: {
+              select: {
+                id: true,
+                quantity: true,
+                rentPerDay: true,
+                product: { select: productSelect },
+              },
+            },
+            rentPayments: { select: { id: true } },
+          },
+        })
+        .catch(createNotFound('Rent out'));
+      return rentOut;
+    }),
 });
