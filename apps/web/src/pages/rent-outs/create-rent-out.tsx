@@ -38,7 +38,10 @@ type CreateRentOutFormValues = {
 function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
   const utils = trpc.useUtils();
 
+  // const [paymentDefaultValues, setPaymentDefaultValues] =
+  //   useState<Partial<ReturnPaymentFormValues>>();
   const [opened, handlers] = useDisclosure(false);
+  // const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
 
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
   const { data: products = [] } = trpc.products.getAllProductsWithQuantityInfo.useQuery();
@@ -94,6 +97,17 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
           setValue('date', customer.id);
         }}
       />
+      {/* <EditReturnPayment
+        defaultValues={paymentDefaultValues}
+        modalProps={{
+          onClose: paymentModalHandlers.close,
+          opened: paymentModalOpened,
+        }}
+        onSubmit={(values) => {
+          setValue('payment', values);
+          paymentModalHandlers.close();
+        }}
+      /> */}
 
       <Modal.Form
         control={control}
@@ -155,6 +169,33 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
             await onSubmit(values);
           } catch (error) {}
         })}
+        // footer={
+        //   <div className='space-y-sm'>
+        //     <Controller
+        //       control={control}
+        //       name='withPayment'
+        //       render={({}) => (
+        //         <div className='gap-xl flex items-center'>
+        //           <Button
+        //             size='compact-sm'
+        //             variant='outline'
+        //             onClick={() => {
+        //               const values = getValues();
+
+        //               console.log(values.payment, 'dddddd');
+        //               setPaymentDefaultValues(values.payment);
+
+        //               // }
+        //               paymentModalHandlers.open();
+        //             }}
+        //           >
+        //             <span className='text-xs'>Add Payment</span>
+        //           </Button>
+        //         </div>
+        //       )}
+        //     />
+        //   </div>
+        // }
       >
         <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
           <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_1fr_var(--mantine-spacing-sm)_6.5rem_1fr] grid-rows-[1fr_1fr] items-center rounded-sm border'>
