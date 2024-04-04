@@ -18,5 +18,8 @@
   "packageManager": "bun@1.1.0",
   "workspaces": [
     "apps/*"
-  ]
+  ],
+  "dependencies": {
+    "dayjs": "^1.11.10"
+  }
 }

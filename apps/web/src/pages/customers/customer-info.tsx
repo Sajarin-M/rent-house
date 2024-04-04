@@ -74,8 +74,6 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
               })}
             </div>
           </Card>
-          <Drawer.Divider className='my-md' />
-          <p className='font-semibold'>Rent Amount Received</p>
         </div>
       )}
     </Drawer.Content>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FaPlus } from 'react-icons/fa6';
 import { TbRotateClockwise } from 'react-icons/tb';
 import { useDisclosure, useInputState } from '@mantine/hooks';
+import dayjs from 'dayjs';
 import { trpc } from '@/context/trpc';
 import AddButton from '@/components/add-button';
 import Content from '@/components/content';
@@ -13,6 +14,7 @@ import { formatDateWithTime } from '@/utils/fns';
 import { useDebouncedQuery } from '@/utils/queries';
 import AddRentPayment from './add-rent-payment';
 import CreateRentReturn from './create-rent-return';
+import RentOutDaysCountBadge from './rent-out-days-count-badge';
 import RentOutInfo from './rent-out-info';
 import RentOutPaymentStatusBadge from './rent-out-payment-status-badge';
 import RentOutStatusBadge from './rent-out-status-badge';
@@ -101,6 +103,22 @@ export default function RentOuts() {
             header: 'Phone',
             cell: (r) => r.customer.phoneNumber,
             cellWidth: '1fr',
+          },
+          {
+            header: 'Total Days',
+            cell: (r) => {
+              if (r.status === 'Returned' && r.paymentStatus === 'Paid') {
+                return null; // Return null to hide the column
+              }
+              const startDate = dayjs(r.date);
+              const currentDate = dayjs();
+              const daysDifference = currentDate.diff(startDate, 'day');
+              return <RentOutDaysCountBadge days={daysDifference} />;
+            },
+            cellWidth: '10rem',
+            classNames: {
+              cell: 'text-center justify-center',
+            },
           },
           {
             header: 'Return Status',
