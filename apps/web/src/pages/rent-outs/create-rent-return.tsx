@@ -77,7 +77,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
           opened: paymentModalOpened,
         }}
         onSubmit={(values) => {
-          setValue('payment', values);
+          setValue('payment', values, { shouldDirty: true });
           paymentModalHandlers.close();
         }}
       />
@@ -227,7 +227,9 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
               onChange={(date) => {
                 if (date !== null && date instanceof Date) {
                   for (let i = 0; i < returnItems.fields.length; i++) {
-                    setValue(`returnItems.${i}.usedDays`, getDaysDifference());
+                    setValue(`returnItems.${i}.usedDays`, getDaysDifference(), {
+                      shouldDirty: true,
+                    });
                   }
                 }
               }}

@@ -41,7 +41,7 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
 
   useEffect(() => {
     if (rentAmountInfo && rentAmountInfo.pendingAmount !== 0) {
-      setValue('totalAmount', rentAmountInfo.pendingAmount);
+      setValue('totalAmount', rentAmountInfo.pendingAmount, { shouldDirty: true });
     }
   }, [rentAmountInfo]);
 
@@ -110,7 +110,7 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
               onChange={(value) => {
                 const amount = numberOrZero(value);
                 if (amount < numberOrZero(discountAmount)) {
-                  setValue('discountAmount', 0);
+                  setValue('discountAmount', 0, { shouldDirty: true });
                 }
               }}
             />

@@ -46,7 +46,7 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
   const { data: products = [] } = trpc.products.getAllProductsWithQuantityInfo.useQuery();
 
-  const { control, handleSubmit, setFocus, setValue } = useForm<CreateRentOutFormValues>({
+  const { control, handleSubmit, setFocus, setValue, watch } = useForm<CreateRentOutFormValues>({
     defaultValues: {
       date: new Date().toISOString(),
       description: '',
@@ -89,12 +89,14 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
     onClose();
   }
 
+  console.log(watch('customerId'));
+
   return (
     <>
       <EditCustomer
         modalProps={{ opened, onClose: handlers.close }}
         onCustomerCreated={(customer) => {
-          setValue('date', customer.id);
+          setValue('customerId', customer.id, { shouldDirty: true });
         }}
       />
       {/* <EditReturnPayment

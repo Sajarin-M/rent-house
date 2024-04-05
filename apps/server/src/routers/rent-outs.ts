@@ -150,7 +150,7 @@ export const rentOutsRouter = router({
         .object({
           date: z.string(),
           rentOutId: z.string().min(1),
-          receivedAmount: z.number().positive(),
+          receivedAmount: z.number().nonnegative(),
           discountAmount: z.number().nonnegative().optional().default(0),
           totalAmount: z.number().positive(),
           description: z.string().trim().transform(emptyStringToNull).nullish(),

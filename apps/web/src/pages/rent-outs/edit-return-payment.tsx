@@ -50,7 +50,7 @@ function EditReturnPaymentForm({ onClose, onSubmit, defaultValues }: EditReturnP
               onChange={(value) => {
                 const amount = numberOrZero(value);
                 if (amount < numberOrZero(discountAmount)) {
-                  setValue('discountAmount', 0);
+                  setValue('discountAmount', 0, { shouldDirty: true });
                 }
               }}
             />
