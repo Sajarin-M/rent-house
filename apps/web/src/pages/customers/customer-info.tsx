@@ -20,25 +20,24 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
       {customer && (
         <div>
           <div className='gap-y-xs grid grid-cols-[auto_1fr] items-center gap-x-12'>
-            <span className='text-dimmed'>User Image</span>
-            <Avatar
-              radius={0}
-              size='8rem'
-              className='rounded-[4px]'
-              text={customer?.name}
-              name={customer?.image ?? ''}
-              classNames={{ placeholder: 'text-[1.6rem]' }}
-            />
-            <span className='text-dimmed'>Doc Image</span>
-
-            <Avatar
-              radius={0}
-              size='8rem'
-              className='rounded-[4px]'
-              text={customer?.name}
-              name={customer?.image ?? ''}
-              classNames={{ placeholder: 'text-[1.6rem]' }}
-            />
+            <div className='flex items-center'>
+              <span className=' px-md text-md font-semibold'>User Image</span>
+              <Avatar
+                size='9rem'
+                text={customer?.name}
+                name={customer?.image ?? ''}
+                classNames={{ placeholder: 'text-[1.6rem]' }}
+              />
+            </div>
+            <div className='flex items-center'>
+              <span className=' px-md text-md font-semibold'>Document</span>
+              <Avatar
+                size='9rem'
+                text={customer?.name}
+                name={customer?.image ?? ''}
+                classNames={{ placeholder: 'text-[1.6rem]' }}
+              />
+            </div>
             <span className='text-dimmed'>Name</span>
             <span>{customer.name}</span>
 
