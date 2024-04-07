@@ -85,6 +85,7 @@ export const customersRouter = router({
       const pendingRentOutByCustomer = await prisma.rentOut.findMany({
         where: {
           customerId: input.customerId,
+          deletedAt: null,
           OR: [
             {
               status: { in: ['Pending', 'Partially_Returned'] },
