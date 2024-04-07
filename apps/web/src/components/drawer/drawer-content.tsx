@@ -1,5 +1,6 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { Divider, Loader, Drawer as MDrawer, ScrollArea } from '@mantine/core';
+import { Loader, Drawer as MDrawer, ScrollArea } from '@mantine/core';
+import Divider from './drawer-divider';
 
 type DrawerContentProps = PropsWithChildren & {
   title: string;
@@ -15,12 +16,13 @@ export default function DrawerContent({
 }: DrawerContentProps) {
   return (
     <>
-      <MDrawer.Header className='px-lg py-md'>
+      <MDrawer.Header className='p-md'>
         <MDrawer.Title className='font-semibold'>{title}</MDrawer.Title>
         {titleSlot}
         <MDrawer.CloseButton className='-mr-2' />
       </MDrawer.Header>
-      <Divider className='-mx-lg' />
+
+      <Divider />
 
       {isLoading ? (
         <div className='flex grow items-center justify-center'>
@@ -28,7 +30,7 @@ export default function DrawerContent({
         </div>
       ) : (
         <ScrollArea className='grow'>
-          <div className='p-lg'>{children}</div>
+          <div className='p-md'>{children}</div>
         </ScrollArea>
       )}
     </>
