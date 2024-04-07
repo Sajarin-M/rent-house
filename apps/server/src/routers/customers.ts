@@ -23,6 +23,7 @@ export const customerSelect = {
   phoneNumber: true,
   image: true,
   documentImage: true,
+  createdAt: true,
 } satisfies Prisma.CustomerSelect;
 
 export const customersRouter = router({

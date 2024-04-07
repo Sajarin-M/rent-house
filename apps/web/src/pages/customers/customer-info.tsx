@@ -1,6 +1,8 @@
+import { Badge } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
 import { Drawer, GenerateDrawerWrapperProps } from '@/components/drawer';
+import { formatCurrency, formatDateWithTime } from '@/utils/fns';
 import { getImageUrl } from '@/utils/images';
 
 type CustomerInfoProps = {
@@ -23,57 +25,78 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
     <Drawer.Content isLoading={isPending} title='Customer Details'>
       {customer && customerStatus && (
         <div>
-          <div className='gap-sm flex items-center'>
-            {customer.image && (
-              <img
-                className='border-default-border size-[9rem] rounded-sm'
-                src={getImageUrl(customer.image)}
-                alt='Customer Image'
-              />
-            )}
-            {customer.documentImage && (
-              <img
-                className='border-default-border size-[9rem] rounded-sm'
-                src={getImageUrl(customer.documentImage)}
-                alt='Customer Image'
-              />
-            )}
-          </div>
-          <div className='gap-y-xs grid grid-cols-[auto_1fr] items-center gap-x-12'>
-            <span className='text-dimmed'>Name</span>
+          {(customer.image || customer.documentImage) && (
+            <div className='gap-md mb-md flex items-center'>
+              {customer.image && (
+                <img
+                  className='border-default-border aspect-auto h-[8rem] rounded-sm object-contain'
+                  src={getImageUrl(customer.image)}
+                  alt='Customer Image'
+                />
+              )}
+              {customer.documentImage && (
+                <img
+                  src={getImageUrl(customer.documentImage)}
+                  alt='Customer Image'
+                  className='border-default-border aspect-auto h-[8rem] rounded-sm object-contain'
+                />
+              )}
+            </div>
+          )}
+          <div className='gap-y-sm grid grid-cols-[10rem_1fr] items-center'>
+            <span className='self-start'>Name</span>
             <span>{customer.name}</span>
-            <span className='text-dimmed self-start'>Phone Number </span>
+            <span className='self-start'>Phone Number </span>
             <span>{customer.phoneNumber}</span>
-            <span className='text-dimmed'>Address</span>
+            <span className='self-start'>Address</span>
             <span>
               {[customer.addressLine1, customer.addressLine2, customer.city]
                 .filter(Boolean)
                 .join(' , ')}
             </span>
-            d
+            <span className='self-start'>Registered On</span>
+            <span>{formatDateWithTime(customer.createdAt)}</span>
+            <span className='self-start'>About</span>
+            <span>
+              {customerStatus.isSafe
+                ? customerStatus.hasRentedBefore
+                  ? "This customer has'nt rented anything before"
+                  : 'This customer has rented previously and returned all of them'
+                : 'This customer has some settlements pending'}
+            </span>
           </div>
 
-          <Drawer.Divider className='my-md' />
+          {(customerStatus.pendingAmount > 0 || customerStatus.pendingItems.length > 0) && (
+            <Drawer.Divider className='my-md' />
+          )}
 
-          <p className='mb-3 font-semibold'>Pending Items</p>
+          {customerStatus.pendingAmount > 0 && (
+            <div className='grid grid-cols-[10rem_1fr] items-center font-semibold'>
+              <div className='font-semibold'>Pending Amount</div>
+              <div>₹ {formatCurrency(customerStatus.pendingAmount)}</div>
+            </div>
+          )}
 
-          <div className='divide-default-border border-default-border divide-y rounded-sm border'>
-            {customerStatus.pendingItems.map((item) => {
-              return (
-                <div key={item.id} className='p-4'>
-                  <div className='flex gap-x-4 '>
-                    <Avatar text={item.name} name={item.image ?? ''} size={55} />
-                    <div className='mt-1 flex flex-col gap-1 truncate text-sm'>
-                      <h4 className='truncate font-semibold'>{item.name}</h4>
-                      <span className='truncate font-semibold'>
-                        Quantity : {item.remainingQuantity}
-                      </span>
+          {customerStatus.pendingItems.length > 0 && (
+            <>
+              <div className='my-sm font-semibold'>Pending Items</div>
+              <div className='divide-default-border border-default-border bg-gray-1 dark:bg-dark-6/50 divide-y rounded-sm border'>
+                {customerStatus.pendingItems.map((item) => {
+                  return (
+                    <div key={item.id} className='p-md'>
+                      <div className='gap-x-md flex items-center'>
+                        <Avatar text={item.name} name={item.image ?? ''} size={50} />
+                        <div className='truncate text-sm font-semibold'>{item.name}</div>
+                        <Badge size='lg' variant='default' className='ml-auto'>
+                          {item.remainingQuantity}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       )}
     </Drawer.Content>
