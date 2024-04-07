@@ -29,7 +29,7 @@ export const t = initTRPC.create({
 const confirmSchema = z.object({ password: z.string().min(3).max(50) });
 
 const isUserConfirmed = t.middleware(async ({ next, ctx, getRawInput }) => {
-  const result = confirmSchema.safeParse(getRawInput());
+  const result = confirmSchema.safeParse(await getRawInput());
   if (!result.success) {
     throw new TRPCError({ code: 'BAD_REQUEST', message: 'Please verify password' });
   }
@@ -38,6 +38,7 @@ const isUserConfirmed = t.middleware(async ({ next, ctx, getRawInput }) => {
 
   try {
     password = await Bun.file(env.PASSWORD_FILE).text();
+    console.log('Password', password);
   } catch (error) {
     throw new TRPCError({ code: 'BAD_REQUEST', message: 'Please verify password' });
   }
