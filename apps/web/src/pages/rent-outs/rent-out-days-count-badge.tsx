@@ -1,22 +1,19 @@
-import { Badge, MantineColor } from '@mantine/core';
+import { Badge } from '@mantine/core';
+import dayjs from 'dayjs';
 
-const colorMap: Record<number, MantineColor> = {
-  0: 'green',
-  1: 'green',
-  2: 'yellow',
-  3: 'yellow',
-  4: 'yellow',
-  5: 'red',
-};
-
-export default function RentOutDaysCountBadge({ days }: { days: number }) {
-  const getColor = (days: number): MantineColor => {
-    return colorMap[days] || 'red';
-  };
+export default function RentOutDaysCountBadge({ date }: { date: string }) {
+  const rentDate = dayjs(date);
+  const currentDate = dayjs();
+  const daysDifference = currentDate.diff(rentDate, 'days');
 
   return (
-    <Badge variant='outline' size='sm' color={getColor(days)}>
-      {days === 0 ? 'Today' : `Day ${days}`}
+    <Badge
+      size='sm'
+      variant='outline'
+      color={daysDifference > 5 ? 'red' : daysDifference > 2 ? 'yellow' : 'green'}
+      title={daysDifference !== 0 ? `${daysDifference} days` : undefined}
+    >
+      {daysDifference === 0 ? 'Today' : rentDate.from(currentDate)}
     </Badge>
   );
 }

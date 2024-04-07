@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { FaPlus } from 'react-icons/fa6';
 import { TbRotateClockwise } from 'react-icons/tb';
 import { useDisclosure, useInputState } from '@mantine/hooks';
-import dayjs from 'dayjs';
 import { trpc } from '@/context/trpc';
 import AddButton from '@/components/add-button';
 import Content from '@/components/content';
