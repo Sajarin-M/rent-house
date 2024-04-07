@@ -1,6 +1,7 @@
 import { Control, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { FaPlus } from 'react-icons/fa6';
 import { TbCheck, TbInfoTriangle } from 'react-icons/tb';
+import { Fragment } from 'react/jsx-runtime';
 import { ActionIcon, Divider, HoverCard, Input, Loader, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
@@ -58,7 +59,7 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
   const customerId = useWatch({ control, name: 'customerId' });
 
   const { data: customerStatus, isPending: isCustomerStatusLoading } =
-    trpc.rentOuts.getCustomerStatus.useQuery(
+    trpc.customers.getCustomerStatus.useQuery(
       { customerId },
       {
         enabled: !!customerId,
@@ -85,7 +86,7 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
     notification.created('Rent out', { id: notificationId });
     utils.rentOuts.getRentOuts.invalidate();
     utils.products.getAllProductsWithQuantityInfo.invalidate();
-    utils.rentOuts.getCustomerStatus.invalidate({ customerId: values.customerId });
+    utils.customers.getCustomerStatus.invalidate({ customerId: values.customerId });
     onClose();
   }
 
@@ -372,7 +373,7 @@ function GrandTotal({ control }: GrandTotalProps) {
 function CustomerStatus({
   customerStatus,
 }: {
-  customerStatus: RouterOutput['rentOuts']['getCustomerStatus'];
+  customerStatus: RouterOutput['customers']['getCustomerStatus'];
 }) {
   if (customerStatus.isSafe) {
     return (
@@ -391,10 +392,10 @@ function CustomerStatus({
           <div>This customer has'nt returned the following items</div>
           <div className='mt-xs gap-x-xl grid grid-cols-[1fr_auto] gap-y-1'>
             {customerStatus.pendingItems.map((product) => (
-              <>
+              <Fragment key={product.id}>
                 <div>{product.name}</div>
                 <div className='text-end'>{product.remainingQuantity}</div>
-              </>
+              </Fragment>
             ))}
           </div>
         </>

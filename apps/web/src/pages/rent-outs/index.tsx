@@ -5,12 +5,14 @@ import { useDisclosure, useInputState } from '@mantine/hooks';
 import { trpc } from '@/context/trpc';
 import AddButton from '@/components/add-button';
 import Content from '@/components/content';
+import { menuItems } from '@/components/menu';
 import Search from '@/components/search';
 import { InfiniteTable } from '@/components/table';
 import Toolbar from '@/components/toolbar';
 import CreateRentOut from '@/pages/rent-outs/create-rent-out';
 import { formatDateWithTime } from '@/utils/fns';
-import { useDebouncedQuery } from '@/utils/queries';
+import notification from '@/utils/notification';
+import { useConfirmedDeletion, useDebouncedQuery } from '@/utils/queries';
 import AddRentPayment from './add-rent-payment';
 import CreateRentReturn from './create-rent-return';
 import RentOutDaysCountBadge from './rent-out-days-count-badge';
@@ -19,7 +21,7 @@ import RentOutPaymentStatusBadge from './rent-out-payment-status-badge';
 import RentOutStatusBadge from './rent-out-status-badge';
 
 export default function RentOuts() {
-  // const utils = trpc.useUtils();
+  const utils = trpc.useUtils();
   const [searchQuery, setSearchQuery] = useInputState('');
 
   const [createModalOpened, createModalHandlers] = useDisclosure(false);
@@ -37,17 +39,17 @@ export default function RentOuts() {
     },
   );
 
-  // const deleteRentOut = useConfirmedDeletion(
-  //   trpc.rentOuts.deleteRentOut.useMutation({
-  //     onSuccess: () => {
-  //       utils.rentOuts.getAllRentOuts.invalidate();
-  //       notification.deleted('Rent Out');
-  //     },
-  //   }).mutateAsync,
-  //   {
-  //     entityName: 'Rent Out',
-  //   },
-  // );
+  const deleteRentOut = useConfirmedDeletion(
+    trpc.rentOuts.deleteRentOut.useMutation({
+      onSuccess: () => {
+        utils.rentOuts.getRentOuts.invalidate();
+        notification.deleted('Rent out');
+      },
+    }).mutateAsync,
+    {
+      entityName: 'Rent Out',
+    },
+  );
 
   return (
     <Content>
@@ -107,12 +109,9 @@ export default function RentOuts() {
             header: 'Total Days',
             cell: (r) => {
               if (r.status === 'Returned' && r.paymentStatus === 'Paid') {
-                return null; // Return null to hide the column
+                return null;
               }
-              const startDate = dayjs(r.date);
-              const currentDate = dayjs();
-              const daysDifference = currentDate.diff(startDate, 'day');
-              return <RentOutDaysCountBadge days={daysDifference} />;
+              return <RentOutDaysCountBadge date={r.date} />;
             },
             cellWidth: '10rem',
             classNames: {
@@ -147,7 +146,7 @@ export default function RentOuts() {
                 paymentModalHandlers.open();
               },
             },
-            // menuItems.delete(() => deleteRentOut({ id: r.id })),
+            menuItems.delete(() => deleteRentOut({ id: r.id })),
           ];
 
           if (r.status !== 'Returned') {

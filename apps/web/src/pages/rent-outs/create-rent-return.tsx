@@ -27,7 +27,7 @@ type FormValues = {
   returnItems: {
     quantity: string | number;
     usedDays: string | number;
-    rentOutItem: RouterOutput['rentOuts']['getRentOutWithQuantityInfo']['rentOutItems'][number];
+    rentOutItem: RouterOutput['rentOuts']['getRentOutInfo']['rentOutItems'][number];
   }[];
   payment: ReturnPaymentFormValues | null;
 };
@@ -39,7 +39,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
     useState<Partial<ReturnPaymentFormValues>>();
 
   const { data: rentOutData, isLoading: isLoadingRentOutData } =
-    trpc.rentOuts.getRentOutWithQuantityInfo.useQuery({
+    trpc.rentOuts.getRentOutInfo.useQuery({
       id: rentOutId,
     });
 
@@ -113,7 +113,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
             await createRentReturn(submitValues);
             notification.created('Return', { id: notificationId });
             utils.rentOuts.getRentOuts.invalidate();
-            utils.rentOuts.getRentOutWithQuantityInfo.invalidate({ id: rentOutId });
+            utils.rentOuts.getRentOutInfo.invalidate({ id: rentOutId });
             onClose();
           } catch (error) {}
         })}

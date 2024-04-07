@@ -1,46 +1,47 @@
-import { Card } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
 import { Drawer, GenerateDrawerWrapperProps } from '@/components/drawer';
+import { getImageUrl } from '@/utils/images';
 
 type CustomerInfoProps = {
   customerId: string;
 };
 
 function CustomerInfoContent({ customerId }: CustomerInfoProps) {
-  const { data: customer, isPending } = trpc.customers.getCustomer.useQuery({
+  const { data: customer, isPending: isCustomerPending } = trpc.customers.getCustomer.useQuery({
     id: customerId,
   });
-  const { data: renOut } = trpc.customers.getRentOutInfo.useQuery({
-    id: customerId,
-  });
+
+  const { data: customerStatus, isPending: isCustomerStatusPending } =
+    trpc.customers.getCustomerStatus.useQuery({
+      customerId,
+    });
+
+  const isPending = isCustomerPending || isCustomerStatusPending;
 
   return (
     <Drawer.Content isLoading={isPending} title='Customer Details'>
-      {customer && (
+      {customer && customerStatus && (
         <div>
+          <div className='gap-sm flex items-center'>
+            {customer.image && (
+              <img
+                className='border-default-border size-[9rem] rounded-sm'
+                src={getImageUrl(customer.image)}
+                alt='Customer Image'
+              />
+            )}
+            {customer.documentImage && (
+              <img
+                className='border-default-border size-[9rem] rounded-sm'
+                src={getImageUrl(customer.documentImage)}
+                alt='Customer Image'
+              />
+            )}
+          </div>
           <div className='gap-y-xs grid grid-cols-[auto_1fr] items-center gap-x-12'>
-            <div className='flex items-center'>
-              <span className=' px-md text-md font-semibold'>User Image</span>
-              <Avatar
-                size='9rem'
-                text={customer?.name}
-                name={customer?.image ?? ''}
-                classNames={{ placeholder: 'text-[1.6rem]' }}
-              />
-            </div>
-            <div className='flex items-center'>
-              <span className=' px-md text-md font-semibold'>Document</span>
-              <Avatar
-                size='9rem'
-                text={customer?.name}
-                name={customer?.image ?? ''}
-                classNames={{ placeholder: 'text-[1.6rem]' }}
-              />
-            </div>
             <span className='text-dimmed'>Name</span>
             <span>{customer.name}</span>
-
             <span className='text-dimmed self-start'>Phone Number </span>
             <span>{customer.phoneNumber}</span>
             <span className='text-dimmed'>Address</span>
@@ -49,30 +50,30 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
                 .filter(Boolean)
                 .join(' , ')}
             </span>
+            d
           </div>
 
           <Drawer.Divider className='my-md' />
 
-          <p className='mb-3 font-semibold'>Items</p>
+          <p className='mb-3 font-semibold'>Pending Items</p>
 
-          <Card className='w-full min-w-0' radius='md' padding={0} withBorder>
-            <div className='divide-default-border divide-y p-0'>
-              {renOut?.rentOutItems.map((item) => {
-                return (
-                  <div key={item.id} className='p-4'>
-                    <div className='flex gap-x-4 '>
-                      <Avatar text={item.product.name} name={item.product.image ?? ''} size={55} />
-                      <div className='mt-1 flex flex-col gap-1 truncate text-sm'>
-                        <h4 className='truncate font-semibold'>{item.product.name}</h4>
-                        <span className='truncate font-semibold'>Rent/Day : {item.rentPerDay}</span>
-                        <span className='truncate font-semibold'>Quantity : {item.quantity}</span>
-                      </div>
+          <div className='divide-default-border border-default-border divide-y rounded-sm border'>
+            {customerStatus.pendingItems.map((item) => {
+              return (
+                <div key={item.id} className='p-4'>
+                  <div className='flex gap-x-4 '>
+                    <Avatar text={item.name} name={item.image ?? ''} size={55} />
+                    <div className='mt-1 flex flex-col gap-1 truncate text-sm'>
+                      <h4 className='truncate font-semibold'>{item.name}</h4>
+                      <span className='truncate font-semibold'>
+                        Quantity : {item.remainingQuantity}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </Card>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </Drawer.Content>

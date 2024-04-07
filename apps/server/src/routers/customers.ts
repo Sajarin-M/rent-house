@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
+import { getRentOutItemQuantityInfo, getRentOutPaymentInfo } from '../lib/shared';
 import { emptyStringToNull } from '../lib/utils';
 import { confirmedProcedure, publicProcedure, router } from '../trpc';
-import { productSelect } from './products';
 
 const customerSchema = z.object({
   name: z.string().trim().min(1),
@@ -77,28 +77,72 @@ export const customersRouter = router({
     });
     return customers;
   }),
-  getRentOutInfo: publicProcedure
-    .input(z.object({ id: z.string().min(1) }))
+
+  getCustomerStatus: publicProcedure
+    .input(z.object({ customerId: z.string().min(1) }))
     .query(async ({ input }) => {
-      const rentOut = await prisma.rentOut
-        .findFirstOrThrow({
-          where: { customerId: input.id, deletedAt: null },
-          select: {
-            id: true,
-            date: true,
-            customer: { select: customerSelect },
-            rentOutItems: {
-              select: {
-                id: true,
-                quantity: true,
-                rentPerDay: true,
-                product: { select: productSelect },
-              },
+      const pendingRentOutByCustomer = await prisma.rentOut.findMany({
+        where: {
+          customerId: input.customerId,
+          OR: [
+            {
+              status: { in: ['Pending', 'Partially_Returned'] },
             },
-            rentPayments: { select: { id: true } },
+            {
+              paymentStatus: { in: ['Pending', 'Partially_Paid'] },
+            },
+          ],
+        },
+        select: {
+          rentOutItems: {
+            select: {
+              id: true,
+              quantity: true,
+              product: { select: { id: true, name: true, image: true } },
+              returnItems: { select: { quantity: true } },
+            },
           },
-        })
-        .catch(createNotFound('Rent out'));
-      return rentOut;
+          rentReturns: { select: { totalAmount: true } },
+          rentPayments: { select: { totalAmount: true } },
+        },
+      });
+
+      const pendingItems = pendingRentOutByCustomer.reduce(
+        (items, rentOut) => {
+          for (const rentOutItem of rentOut.rentOutItems) {
+            const quantityInfo = getRentOutItemQuantityInfo(rentOutItem);
+            if (quantityInfo.remainingQuantity > 0) {
+              const existing = items.find((item) => item.id === rentOutItem.product.id);
+              if (existing) {
+                existing.remainingQuantity += quantityInfo.remainingQuantity;
+              } else {
+                items.push({
+                  ...rentOutItem.product,
+                  remainingQuantity: quantityInfo.remainingQuantity,
+                });
+              }
+            }
+          }
+          return items;
+        },
+        [] as ((typeof pendingRentOutByCustomer)[number]['rentOutItems'][number]['product'] & {
+          remainingQuantity: number;
+        })[],
+      );
+
+      const returnData = {
+        pendingItems,
+        isSafe: pendingRentOutByCustomer.length === 0,
+        hasRentedBefore:
+          pendingRentOutByCustomer.length !== 0
+            ? (await prisma.rentOut.count({ where: { customerId: input.customerId } })) > 0
+            : true,
+        pendingAmount: pendingRentOutByCustomer.reduce(
+          (sum, rentOut) => sum + getRentOutPaymentInfo(rentOut).pendingAmount,
+          0,
+        ),
+      };
+
+      return returnData;
     }),
 });
