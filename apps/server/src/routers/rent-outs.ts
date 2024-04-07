@@ -207,6 +207,7 @@ export const rentOutsRouter = router({
           where: { id: input.rentOutId, deletedAt: null },
           select: {
             status: true,
+            paymentStatus: true,
             rentReturns: { select: { totalAmount: true } },
             rentPayments: { select: { totalAmount: true } },
           },
@@ -215,6 +216,7 @@ export const rentOutsRouter = router({
 
       return {
         status: rentOut.status,
+        paymentStatus: rentOut.paymentStatus,
         ...getRentOutPaymentInfo(rentOut),
       };
     }),

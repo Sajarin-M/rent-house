@@ -38,9 +38,14 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
   const [paymentDefaultValues, setPaymentDefaultValues] =
     useState<Partial<ReturnPaymentFormValues>>();
 
-  const { data: rentOutData, isLoading: isLoadingRentOutData } =
+  const { data: rentOutData, isPending: isRentOutDataPending } =
     trpc.rentOuts.getRentOutInfo.useQuery({
       id: rentOutId,
+    });
+
+  const { data: renOutPaymentInfo, isPending: isRenOutPaymentInfoPending } =
+    trpc.rentOuts.getRentAmountInfo.useQuery({
+      rentOutId,
     });
 
   const { control, handleSubmit, setFocus, getValues, setValue } = useForm<FormValues>({
@@ -85,7 +90,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
         control={control}
         onCancel={onClose}
         title='Create Rent Return'
-        isLoading={isLoadingRentOutData}
+        isLoading={isRentOutDataPending || isRenOutPaymentInfoPending}
         onSubmit={handleSubmit(async (values) => {
           try {
             const submitValues: Parameters<typeof createRentReturn>[0] = {
@@ -238,7 +243,11 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
             <Input.Label required>Description</Input.Label>
             <TextInput control={control} name='description' />
           </div>
-          <GrandTotal control={control} />
+          <GrandTotal
+            control={control}
+            previousPaidAmount={renOutPaymentInfo?.paidAmount || 0}
+            previousPendingAmount={renOutPaymentInfo?.pendingAmount || 0}
+          />
           <ItemTable.TableWrapper gridTemplateColumns='1.5rem 2.5rem 1fr 8rem 8rem 8rem 8rem 2rem'>
             <ItemTable.HeadRow>
               <div>#</div>
@@ -373,17 +382,44 @@ function getGrandTotal(returnItems: FormValues['returnItems']) {
 
 type GrandTotalProps = {
   control: Control<FormValues>;
+  previousPaidAmount: number;
+  previousPendingAmount: number;
 };
 
-function GrandTotal({ control }: GrandTotalProps) {
-  const returnItems = useWatch({ control, name: 'returnItems' });
+function GrandTotal({ control, previousPaidAmount, previousPendingAmount }: GrandTotalProps) {
+  const [returnItems, withPayment, payment] = useWatch({
+    control,
+    name: ['returnItems', 'withPayment', 'payment'],
+  });
 
   const total = getGrandTotal(returnItems);
 
   return (
-    <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border font-semibold'>
-      <span>Total</span>
-      <span className='pr-[calc(1.875rem/3)] text-end'>{formatCurrency(total)}</span>
+    <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border'>
+      <span className='font-semibold'>Total</span>
+      <span className='pr-[calc(1.875rem/3)] text-end font-semibold'>{formatCurrency(total)}</span>
+      {previousPaidAmount > 0 && (
+        <>
+          <span className='text-sm'>Previous Paid Amount</span>
+          <span className='pr-[calc(1.875rem/3)] text-end text-sm'>
+            {formatCurrency(previousPaidAmount)}
+          </span>
+        </>
+      )}
+      {previousPendingAmount > 0 && (
+        <>
+          <span className='text-sm'>Previous Balance Amount</span>
+          <span className='pr-[calc(1.875rem/3)] text-end text-sm'>
+            {formatCurrency(previousPendingAmount)}
+          </span>
+        </>
+      )}
+      <span className='text-sm'>Current Paying Amount</span>
+      <span className='pr-[calc(1.875rem/3)] text-end text-sm'>
+        {formatCurrency(
+          withPayment ? (payment === null ? total : numberOrZero(payment.totalAmount)) : 0,
+        )}
+      </span>
     </div>
   );
 }
