@@ -24,10 +24,24 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { useMutation } from '@tanstack/react-query';
+import { cn } from './fns';
 
-function Preview({ src }: ComponentPropsWithoutRef<'img'>) {
+type PreviewProps = {
+  src?: string;
+  onClick?: VoidFunction;
+  isSelected?: boolean;
+  onLoad?: VoidFunction;
+};
+
+function Preview({ src, onClick, isSelected }: PreviewProps) {
   return (
-    <div className='border-default-border dark:bg-dark-6 flex h-28 w-28 items-center justify-center overflow-hidden rounded-sm border'>
+    <div
+      className={cn(
+        'border-default-border dark:bg-dark-6 relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-sm border',
+        isSelected && 'ring-1',
+      )}
+      onClick={onClick}
+    >
       {src ? <img className='h-full w-full object-cover' src={src} /> : <FaImage size='3.2rem' />}
     </div>
   );
@@ -238,10 +252,19 @@ export function useImageUpload(props: UseImageUploadProps = {}) {
   }, [file]);
 
   const Preview = useMemo(
-    () => () => {
+    () => (props: PreviewProps) => {
       const { previewUrl, revokeUrl } = (Preview as any).api as Api;
 
-      return <ImageUpload.Preview src={previewUrl} onLoad={revokeUrl} />;
+      return (
+        <ImageUpload.Preview
+          {...props}
+          src={previewUrl}
+          onLoad={() => {
+            revokeUrl();
+            props.onLoad?.();
+          }}
+        />
+      );
     },
     [],
   );

@@ -4,6 +4,7 @@ export function useCamera() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
+    let mediaStream: MediaStream | null = null;
     navigator.mediaDevices
       .getUserMedia({
         video: {
@@ -11,10 +12,20 @@ export function useCamera() {
         },
       })
       .then((stream) => {
+        mediaStream = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
       });
+
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, []);
 
   async function captureImage(): Promise<File> {

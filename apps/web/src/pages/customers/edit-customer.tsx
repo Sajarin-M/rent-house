@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
+import { CameraView } from '@/components/camera';
 import { TextInput, validation } from '@/components/form';
 import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
@@ -24,6 +25,8 @@ function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerFormPr
 
   const imageUpload = useImageUpload({ initialValue: data?.image });
   const documentImageUpload = useImageUpload({ initialValue: data?.documentImage });
+
+  const [selectedImage, setSelectedImage] = useState<'image' | 'documentImage' | null>(null);
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -90,20 +93,51 @@ function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerFormPr
         } catch (error) {}
       })}
     >
+      <CameraView
+        onCapture={(imageFile) => {
+          if (selectedImage === 'image') {
+            imageUpload.setFile(imageFile);
+            setSelectedImage(null);
+          } else if (selectedImage === 'documentImage') {
+            documentImageUpload.setFile(imageFile);
+            setSelectedImage(null);
+          } else if (imageUpload.file === null) {
+            imageUpload.setFile(imageFile);
+          } else if (documentImageUpload.file === null) {
+            documentImageUpload.setFile(imageFile);
+          } else {
+            imageUpload.setFile(imageFile);
+          }
+        }}
+      />
       <Stack>
         <ImageUpload.Wrapper
           label='Profile Image'
           error={imageUpload.error}
-          preview={<imageUpload.Preview />}
           clear={<imageUpload.ClearButton />}
           select={<imageUpload.SelectButton />}
+          preview={
+            <imageUpload.Preview
+              isSelected={selectedImage === 'image'}
+              onClick={() => {
+                setSelectedImage('image');
+              }}
+            />
+          }
         />
         <ImageUpload.Wrapper
           label='Document Image'
           error={documentImageUpload.error}
-          preview={<documentImageUpload.Preview />}
           clear={<documentImageUpload.ClearButton />}
           select={<documentImageUpload.SelectButton />}
+          preview={
+            <documentImageUpload.Preview
+              isSelected={selectedImage === 'documentImage'}
+              onClick={() => {
+                setSelectedImage('documentImage');
+              }}
+            />
+          }
         />
 
         <TextInput
