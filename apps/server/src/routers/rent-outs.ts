@@ -2,11 +2,15 @@ import { TRPCError } from '@trpc/server';
 import R from 'remeda';
 import { z } from 'zod';
 import { createNotFound, prisma } from '../lib/prisma';
-import { getRentOutItemQuantityInfo, getRentOutPaymentInfo } from '../lib/shared';
+import {
+  getProductQuantityInfo,
+  getRentOutItemQuantityInfo,
+  getRentOutPaymentInfo,
+} from '../lib/shared';
 import { emptyStringToNull, infiniteResult, infiniteSchema, searchSchema } from '../lib/utils';
 import { confirmedProcedure, publicProcedure, router } from '../trpc';
 import { customerSelect } from './customers';
-import { getProductQuantityInfo, productSelect } from './products';
+import { productSelect } from './products';
 
 const rentOutSchema = z.object({
   date: z.string(),

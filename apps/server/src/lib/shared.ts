@@ -1,3 +1,5 @@
+import { Prisma } from '../lib/prisma';
+
 export function getRentOutItemQuantityInfo(rentOutItem: {
   quantity: number;
   returnItems: {
@@ -32,3 +34,39 @@ export function getRentOutPaymentInfo(rentOut: {
     pendingAmount: pendingAmount < 0 ? 0 : pendingAmount,
   };
 }
+
+export function getProductQuantityInfo(product: {
+  quantity: number;
+  rentOutItems: {
+    quantity: number;
+    returnItems: {
+      quantity: number;
+    }[];
+  }[];
+}) {
+  const currentlyRentedQuantity = product.rentOutItems.reduce((rentOutItemSum, rentOutItem) => {
+    return (
+      rentOutItemSum +
+      rentOutItem.quantity -
+      rentOutItem.returnItems.reduce(
+        (returnItemSum, returnItem) => returnItemSum + returnItem.quantity,
+        0,
+      )
+    );
+  }, 0);
+
+  return {
+    currentlyRentedQuantity,
+    remainingQuantity: product.quantity - currentlyRentedQuantity,
+  };
+}
+
+getProductQuantityInfo.select = {
+  quantity: true,
+  rentOutItems: {
+    where: {
+      rentOut: { deletedAt: null, status: { in: ['Pending', 'Partially_Returned'] } },
+    },
+    select: { quantity: true, returnItems: { select: { quantity: true } } },
+  },
+} satisfies Prisma.ProductSelect;

@@ -1,6 +1,7 @@
 import { omit } from 'remeda';
 import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
+import { getProductQuantityInfo } from '../lib/shared';
 import { emptyStringToNull } from '../lib/utils';
 import { publicProcedure, router } from '../trpc';
 
@@ -17,42 +18,6 @@ export const productSelect = {
   image: true,
   quantity: true,
   rentPerDay: true,
-} satisfies Prisma.ProductSelect;
-
-export function getProductQuantityInfo(product: {
-  quantity: number;
-  rentOutItems: {
-    quantity: number;
-    returnItems: {
-      quantity: number;
-    }[];
-  }[];
-}) {
-  const currentlyRentedQuantity = product.rentOutItems.reduce((rentOutItemSum, rentOutItem) => {
-    return (
-      rentOutItemSum +
-      rentOutItem.quantity -
-      rentOutItem.returnItems.reduce(
-        (returnItemSum, returnItem) => returnItemSum + returnItem.quantity,
-        0,
-      )
-    );
-  }, 0);
-
-  return {
-    currentlyRentedQuantity,
-    remainingQuantity: product.quantity - currentlyRentedQuantity,
-  };
-}
-
-getProductQuantityInfo.select = {
-  quantity: true,
-  rentOutItems: {
-    where: {
-      rentOut: { deletedAt: null, status: { in: ['Pending', 'Partially_Returned'] } },
-    },
-    select: { quantity: true, returnItems: { select: { quantity: true } } },
-  },
 } satisfies Prisma.ProductSelect;
 
 export const productsRouter = router({
