@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
 
-export const prisma = new PrismaClient({ log: ['query'] });
+export const prisma = new PrismaClient();
 export * from '@prisma/client';
 
 export const createNotFound = (entityName: string) => (error: unknown) => {
