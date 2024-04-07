@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
+import { CameraView } from '@/components/camera';
 import { NumberInput, PriceInput, TextInput, validation } from '@/components/form';
 import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
@@ -80,6 +81,11 @@ function EditProductForm({ id, onClose }: EditProductFormProps) {
         } catch (error) {}
       })}
     >
+      <CameraView
+        onCapture={(imageFile) => {
+          imageUpload.setFile(imageFile);
+        }}
+      />
       <Stack>
         <ImageUpload.Wrapper
           label='Product Image'
