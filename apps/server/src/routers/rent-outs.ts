@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import R from 'remeda';
+import * as R from "remeda"
 import { z } from 'zod';
 import { createNotFound, prisma } from '../lib/prisma';
 import {

@@ -2,17 +2,23 @@ import { useEffect, useRef } from 'react';
 
 export function useCamera() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const imageCaptureRef = useRef<ImageCapture | null>(null);
 
   useEffect(() => {
-    let mediaStream: MediaStream | null = null;
     navigator.mediaDevices
       .getUserMedia({
         video: {
           facingMode: 'environment',
+          width: { ideal: 4096 },
+          height: { ideal: 2160 },
+          frameRate: { ideal: 60 },
+          zoom: { exact: 0 },
         },
       })
       .then((stream) => {
-        mediaStream = stream;
+        streamRef.current = stream;
+        imageCaptureRef.current = new ImageCapture(streamRef.current.getVideoTracks()[0]);
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
@@ -22,30 +28,22 @@ export function useCamera() {
       if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
-      if (mediaStream) {
-        mediaStream.getTracks().forEach((track) => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
   }, []);
 
   async function captureImage(): Promise<File> {
-    if (!videoRef.current) {
-      throw new Error("Couldn't get video element");
+    if (!streamRef.current) {
+      throw new Error("Couldn't get media stream");
     }
-    const canvas = document.createElement('canvas');
-    canvas.setAttribute('width', videoRef.current.videoWidth.toString());
-    canvas.setAttribute('height', videoRef.current.videoHeight.toString());
-    const context = canvas.getContext('2d');
-    if (!context) {
-      throw new Error("Couldn't get canvas context");
+
+    if (!imageCaptureRef.current) {
+      throw new Error("Couldn't get image capture");
     }
-    context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    const imageBlob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error("Couldn't get blob"));
-        resolve(blob);
-      }, 'image/png');
-    });
+
+    const imageBlob = await imageCaptureRef.current.takePhoto();
 
     return new File([imageBlob], 'image.png', { type: 'image/png', lastModified: Date.now() });
   }

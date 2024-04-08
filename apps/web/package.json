@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bunx --bun vite",
+    "dev": "vite dev",
     "lint": "bunx --bun tsc",
     "preview": "vite preview",
     "build": "tsc && vite build",
@@ -38,6 +38,7 @@
     "@types/lodash": "^4.17.0",
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.24",
+    "@types/w3c-image-capture": "^1.0.10",
     "@types/web": "^0.0.142",
     "@vitejs/plugin-react-swc": "^3.6.0",
     "autoprefixer": "^10.4.19",

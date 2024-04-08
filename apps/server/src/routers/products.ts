@@ -1,4 +1,4 @@
-import { omit } from 'remeda';
+import * as R from 'remeda'
 import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
 import { getProductQuantityInfo } from '../lib/shared';
@@ -68,7 +68,7 @@ export const productsRouter = router({
     });
 
     const returnData = products.map((product) => ({
-      ...omit(product, ['rentOutItems']),
+      ...R.omit(product, ['rentOutItems']),
       ...getProductQuantityInfo(product),
     }));
 
