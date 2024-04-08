@@ -11,6 +11,7 @@ $.cwd(import.meta.dirname);
 
 await $`rm -rf ./dist`;
 await $`cp -r ${serverPath}/dist  .`;
+await $`cp -r ${serverPath}/prisma  ./dist`;
 await $`mkdir -p ./dist/data`;
 await $`cp -r ${webPath}/dist  ./dist/data`;
 await $`mv ./dist/data/dist ./dist/data/static`;
