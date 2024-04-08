@@ -13,7 +13,7 @@ export function useCamera() {
           width: { ideal: 4096 },
           height: { ideal: 2160 },
           frameRate: { ideal: 60 },
-          zoom: { exact: 0 },
+          zoom: { ideal: 0 },
         },
       })
       .then((stream) => {
