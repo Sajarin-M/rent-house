@@ -1,5 +1,11 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
+import { $ } from 'bun';
+import { env } from './env';
+
+if (env.AUTO_MIGRATE) {
+  await $`bunx prisma migrate deploy`.cwd(process.cwd());
+}
 
 export const prisma = new PrismaClient();
 export * from '@prisma/client';

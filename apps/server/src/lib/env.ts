@@ -7,6 +7,7 @@ const schema = z.object({
   STATIC_DIRECTORY: z.string().min(1),
   PASSWORD_FILE: z.string().min(1),
   NODE_ENV: z.enum(['development', 'production']).default('development'),
+  AUTO_MIGRATE: z.enum(['true', 'false']).transform((value) => value === 'true'),
 });
 
 export const env = schema.parse(process.env);

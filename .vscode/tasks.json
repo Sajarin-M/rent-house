@@ -4,45 +4,41 @@
     {
       "type": "shell",
       "label": "Prisma Generate",
-      "command": "bunx prisma generate",
+      "detail": "generate prisma models",
+      "command": "bun run prisma-generate",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
-      "detail": "generate prisma models",
       "problemMatcher": []
     },
     {
       "type": "shell",
       "label": "Prisma Studio",
-      "command": "bunx prisma studio",
+      "detail": "start prisma studio",
+      "command": "bun run prisma-studio",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
-      "isBackground": true,
-      "detail": "start prisma studio",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "never"
-      }
+      "problemMatcher": []
     },
     {
       "type": "shell",
-      "label": "Prisma Migrate",
-      "command": "bunx prisma migrate dev --name ${input:migrationName}",
+      "label": "Prisma Generate Migration",
+      "detail": "create database migration",
+      "command": "bun run prisma-migration --name ${input:migrationName}",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
-      "detail": "migrate database",
       "problemMatcher": []
     },
     {
       "type": "shell",
       "label": "Prisma Push",
-      "command": "bunx prisma db push ${input:pushOptions}",
+      "detail": "push changes to database",
+      "command": "bun run prisma-push ${input:pushOptions}",
       "options": {
         "cwd": "${cwd}/apps/server"
       },
-      "detail": "push changes to database",
       "problemMatcher": []
     },
     {
@@ -51,13 +47,6 @@
       "problemMatcher": [],
       "label": "Install Deps",
       "detail": "bun install"
-    },
-    {
-      "type": "bun",
-      "script": "outdated",
-      "problemMatcher": [],
-      "label": "Check Deps Update",
-      "detail": "bun outdated"
     },
     {
       "type": "bun",
@@ -71,6 +60,13 @@
       "detail": "setup repo",
       "dependsOn": ["Install Deps", "Prisma Generate"],
       "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "type": "shell",
+      "label": "Setup Repo",
+      "detail": "setup repo",
+      "command": "bun run setup",
       "problemMatcher": []
     },
     {

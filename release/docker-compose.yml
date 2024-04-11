@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16.2-bookworm
+    container_name: rent_house_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yEjJFzZJ0M5wpDh
+      - POSTGRES_DB=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - default
+  server:
+    image: ${APP_IMAGE}
+    container_name: rent_house_server
+    depends_on:
+      - db
+    ports:
+      - '3001:3001'
+    volumes:
+      - server_data:/rent-house-data
+    restart: unless-stopped
+    networks:
+      - default
+
+volumes:
+  db_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${DB_DATA_PATH}
+  server_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${SERVER_DATA_PATH}
