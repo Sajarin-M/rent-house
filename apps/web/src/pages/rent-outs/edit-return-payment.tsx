@@ -1,7 +1,9 @@
 import { useForm } from 'react-hook-form';
-import { Stack } from '@mantine/core';
+import { Collapse, Stack } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { PriceInput, TextInput, validation, Watcher } from '@/components/form';
 import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
+import RevealButton from '@/components/reveal-button';
 import { formatCurrency, numberOrZero } from '@/utils/fns';
 
 export type ReturnPaymentFormValues = {
@@ -24,6 +26,8 @@ function EditReturnPaymentForm({ onClose, onSubmit, defaultValues }: EditReturnP
       ...defaultValues,
     },
   });
+
+  const [moreOpened, moreHandlers] = useDisclosure(false);
 
   return (
     <Modal.Form
@@ -57,36 +61,47 @@ function EditReturnPaymentForm({ onClose, onSubmit, defaultValues }: EditReturnP
           )}
         />
 
-        <Watcher
-          control={control}
-          name={['totalAmount']}
-          render={([totalAmount]) => (
-            <PriceInput
-              min={0}
-              control={control}
-              name='discountAmount'
-              label='Discount Amount'
-              max={numberOrZero(totalAmount)}
-              disabled={numberOrZero(totalAmount) <= 0}
-              classNames={{ input: 'text-end' }}
-            />
-          )}
+        <RevealButton
+          className='ml-auto'
+          revealed={moreOpened}
+          onClick={() => {
+            moreHandlers.toggle();
+          }}
         />
+        <Collapse in={moreOpened}>
+          <Stack>
+            <Watcher
+              control={control}
+              name={['totalAmount']}
+              render={([totalAmount]) => (
+                <PriceInput
+                  min={0}
+                  control={control}
+                  name='discountAmount'
+                  label='Discount Amount'
+                  max={numberOrZero(totalAmount)}
+                  disabled={numberOrZero(totalAmount) <= 0}
+                  classNames={{ input: 'text-end' }}
+                />
+              )}
+            />
 
-        <TextInput control={control} name='description' label='Description' />
+            <TextInput control={control} name='description' label='Description' />
 
-        <div className='flex justify-between'>
-          <div className='text-sm font-semibold'>Received Amount</div>
-          <Watcher
-            control={control}
-            name={['totalAmount', 'discountAmount']}
-            render={([totalAmount, discountAmount]) => (
-              <div className='pr-[calc(1.875rem/3)] text-end text-sm font-semibold'>
-                {formatCurrency(numberOrZero(totalAmount) - numberOrZero(discountAmount))}
-              </div>
-            )}
-          />
-        </div>
+            <div className='flex justify-between'>
+              <div className='text-sm font-semibold'>Received Amount</div>
+              <Watcher
+                control={control}
+                name={['totalAmount', 'discountAmount']}
+                render={([totalAmount, discountAmount]) => (
+                  <div className='pr-[calc(1.875rem/3)] text-end text-sm font-semibold'>
+                    {formatCurrency(numberOrZero(totalAmount) - numberOrZero(discountAmount))}
+                  </div>
+                )}
+              />
+            </div>
+          </Stack>
+        </Collapse>
       </Stack>
     </Modal.Form>
   );
