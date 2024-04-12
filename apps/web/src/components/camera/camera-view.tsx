@@ -9,7 +9,7 @@ export type CameraViewProps = {
   onCapture?: (image: File) => void;
 };
 
-export const cameraPortal = document.createElement('div');
+const cameraPortal = document.createElement('div');
 cameraPortal.id = 'camera-portal';
 document.body.appendChild(cameraPortal);
 

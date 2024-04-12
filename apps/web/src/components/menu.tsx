@@ -21,7 +21,7 @@ export type MenuProps = MMenuProps & {
   dropDownProps?: MenuDropdownProps;
 };
 
-export const menuPortal = document.createElement('div');
+const menuPortal = document.createElement('div');
 menuPortal.id = 'menu-portal';
 document.body.appendChild(menuPortal);
 
