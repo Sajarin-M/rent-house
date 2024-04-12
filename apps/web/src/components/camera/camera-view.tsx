@@ -14,10 +14,11 @@ cameraPortal.id = 'camera-portal';
 document.body.appendChild(cameraPortal);
 
 export default function CameraView({ onCapture }: CameraViewProps) {
-  const { videoRef, captureImage } = useCamera();
+  const { videoRef, captureImage, permissionGranted } = useCamera();
   const [fullScreen, setFullScreen] = useState(false);
 
   async function handleCapture() {
+    if (!permissionGranted) return;
     try {
       const imageFile = await captureImage();
       onCapture?.(imageFile);
@@ -35,6 +36,7 @@ export default function CameraView({ onCapture }: CameraViewProps) {
         className={cn(
           'bg-dark-6 fixed bottom-4 right-4 z-[calc(var(--mantine-z-index-modal)+1)] aspect-video w-[10rem] origin-bottom-right rounded-sm transition-all duration-200',
           fullScreen && 'bottom-0 right-0 h-screen w-screen rounded-none',
+          !permissionGranted && 'pointer-events-none hidden',
         )}
         onClick={() => {
           if (!fullScreen) setFullScreen(true);

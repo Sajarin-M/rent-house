@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function useCamera() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const imageCaptureRef = useRef<ImageCapture | null>(null);
+  const [permissionGranted, setPermissionGranted] = useState(false);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -17,6 +18,7 @@ export function useCamera() {
         },
       })
       .then((stream) => {
+        setPermissionGranted(true);
         streamRef.current = stream;
         imageCaptureRef.current = new ImageCapture(streamRef.current.getVideoTracks()[0]);
         if (videoRef.current) {
@@ -30,6 +32,9 @@ export function useCamera() {
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+      if (imageCaptureRef.current) {
+        imageCaptureRef.current.track.stop();
       }
     };
   }, []);
@@ -48,5 +53,5 @@ export function useCamera() {
     return new File([imageBlob], 'image.png', { type: 'image/png', lastModified: Date.now() });
   }
 
-  return { videoRef, captureImage };
+  return { videoRef, captureImage, permissionGranted };
 }
