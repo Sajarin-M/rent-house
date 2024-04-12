@@ -35,7 +35,7 @@ export default function Sidebar() {
       >
         <div className='flex-grow'>
           <div className='border-default-border py-sm mb-sm -mt-sm h-toolbar flex items-center justify-between border-b border-solid'>
-            {/* <MantineLogo size={28} /> */}
+            <img src='/logo.png' className='h-8' />
             <Code fw={700}>v1.0.0</Code>
           </div>
           {sidebarItems.map((item) => {

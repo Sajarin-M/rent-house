@@ -8,7 +8,8 @@
     "lint": "bunx --bun tsc",
     "preview": "vite preview",
     "build": "tsc && vite build",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist && rm -f tsconfig.tsbuildinfo"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist && rm -f tsconfig.tsbuildinfo",
+    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/favicon.png"
   },
   "dependencies": {
     "@mantine/core": "^7.7.1",
@@ -40,6 +41,7 @@
     "@types/react-dom": "^18.2.24",
     "@types/w3c-image-capture": "^1.0.10",
     "@types/web": "^0.0.142",
+    "@vite-pwa/assets-generator": "^0.2.4",
     "@vitejs/plugin-react-swc": "^3.6.0",
     "autoprefixer": "^10.4.19",
     "husky": "^9.0.11",
@@ -51,6 +53,7 @@
     "ts-toolbelt": "^9.6.0",
     "typescript": "^5.4.4",
     "vite": "^5.2.8",
+    "vite-plugin-pwa": "^0.19.8",
     "vite-tsconfig-paths": "^4.3.2"
   }
 }
