@@ -5,7 +5,7 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "build": "turbo build",
-    "clean": "turbo clean && rm -rf node_modules && rm -rf .turbo",
+    "clean": "turbo clean && rm -rf node_modules && rm -rf .turbo && rm -rf ./scripts/dist && rm -rf ./scripts/bundle",
     "setup": "bun install && turbo run setup",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepare": "husky || true"

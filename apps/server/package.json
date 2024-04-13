@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "lint": "bunx --bun tsc",
-    "build": "bun build ./src/index.ts --outdir ./dist --target bun --format esm",
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun --format esm --external '@prisma/client'",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist && rm -f tsconfig.tsbuildinfo",
     "prisma-generate": "bunx prisma@5.12.1 generate",
     "prisma-push": "bunx prisma@5.12.1 db push --skip-generate",

@@ -43,7 +43,7 @@ services:
       - PORT=${RENT_HOUSE_SERVER_PORT}
       - DATABASE_URL=postgresql://${RENT_HOUSE_DB_USER}:${RENT_HOUSE_DB_PASSWORD}@db:${RENT_HOUSE_DB_PORT}/${RENT_HOUSE_DB_NAME}?schema=public
       - IMAGES_DIRECTORY=/rent-house-data/images
-      - STATIC_DIRECTORY=/rent-house/scripts/dist/static
+      - STATIC_DIRECTORY=/rent-house/static
       - PASSWORD_FILE=/rent-house-data/password.txt
       - AUTO_MIGRATE=${RENT_HOUSE_AUTO_MIGRATE}
 

@@ -8,7 +8,7 @@ if (env.AUTO_MIGRATE) {
 }
 
 export const prisma = new PrismaClient();
-export * from '@prisma/client';
+export type * from '@prisma/client';
 
 export const createNotFound = (entityName: string) => (error: unknown) => {
   if (
