@@ -1,8 +1,19 @@
-import { Control, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useState } from 'react';
+import { Control, Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { FaPlus } from 'react-icons/fa6';
-import { TbCheck, TbInfoTriangle } from 'react-icons/tb';
+import { TbCheck, TbInfoTriangle, TbSettings } from 'react-icons/tb';
 import { Fragment } from 'react/jsx-runtime';
-import { ActionIcon, Divider, HoverCard, Input, Loader, Tooltip } from '@mantine/core';
+import {
+  ActionIcon,
+  Button,
+  Divider,
+  HoverCard,
+  Input,
+  Loader,
+  Popover,
+  Switch,
+  Tooltip,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { trpc } from '@/context/trpc';
@@ -22,6 +33,8 @@ import { formatCurrency, getFormTItle, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
 import { RouterOutput } from '@/types';
 import EditCustomer from '../customers/edit-customer';
+import { ReturnPaymentFormValues } from './edit-return-payment';
+import RentOutAddPayment from './rent-out-add-payment';
 
 type CreateRentOutFormProps = ModalCommonProps & {};
 
@@ -34,27 +47,31 @@ type CreateRentOutFormValues = {
     rentPerDay: string | number;
     product: RouterOutput['products']['getAllProductsWithQuantityInfo'][number];
   }[];
+  withPayment: boolean;
+  payment: ReturnPaymentFormValues | null;
 };
 
 function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
   const utils = trpc.useUtils();
 
-  // const [paymentDefaultValues, setPaymentDefaultValues] =
-  //   useState<Partial<ReturnPaymentFormValues>>();
+  const [paymentDefaultValues, setPaymentDefaultValues] =
+    useState<Partial<ReturnPaymentFormValues>>();
   const [opened, handlers] = useDisclosure(false);
-  // const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
+  const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
+  const [settingsPopoverOpened, settingsPopoverHandlers] = useDisclosure(false);
 
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
   const { data: products = [] } = trpc.products.getAllProductsWithQuantityInfo.useQuery();
 
-  const { control, handleSubmit, setFocus, setValue, watch } = useForm<CreateRentOutFormValues>({
-    defaultValues: {
-      date: new Date().toISOString(),
-      description: '',
-      customerId: '',
-      rentOutItems: [],
-    },
-  });
+  const { control, handleSubmit, setFocus, setValue, watch, getValues } =
+    useForm<CreateRentOutFormValues>({
+      defaultValues: {
+        date: new Date().toISOString(),
+        description: '',
+        customerId: '',
+        rentOutItems: [],
+      },
+    });
 
   const customerId = useWatch({ control, name: 'customerId' });
 
@@ -100,7 +117,8 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
           setValue('customerId', customer.id, { shouldDirty: true });
         }}
       />
-      {/* <EditReturnPayment
+
+      <RentOutAddPayment
         defaultValues={paymentDefaultValues}
         modalProps={{
           onClose: paymentModalHandlers.close,
@@ -110,7 +128,7 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
           setValue('payment', values);
           paymentModalHandlers.close();
         }}
-      /> */}
+      />
 
       <Modal.Form
         control={control}
@@ -172,33 +190,56 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
             await onSubmit(values);
           } catch (error) {}
         })}
-        // footer={
-        //   <div className='space-y-sm'>
-        //     <Controller
-        //       control={control}
-        //       name='withPayment'
-        //       render={({}) => (
-        //         <div className='gap-xl flex items-center'>
-        //           <Button
-        //             size='compact-sm'
-        //             variant='outline'
-        //             onClick={() => {
-        //               const values = getValues();
+        footer={
+          <Popover
+            withArrow
+            position='top-start'
+            opened={settingsPopoverOpened}
+            onChange={settingsPopoverHandlers.toggle}
+          >
+            <Popover.Target>
+              <ActionIcon variant='default' size='lg' onClick={settingsPopoverHandlers.toggle}>
+                <TbSettings />
+              </ActionIcon>
+            </Popover.Target>
 
-        //               console.log(values.payment, 'dddddd');
-        //               setPaymentDefaultValues(values.payment);
-
-        //               // }
-        //               paymentModalHandlers.open();
-        //             }}
-        //           >
-        //             <span className='text-xs'>Add Payment</span>
-        //           </Button>
-        //         </div>
-        //       )}
-        //     />
-        //   </div>
-        // }
+            <Popover.Dropdown>
+              <div className='space-y-sm'>
+                <Controller
+                  control={control}
+                  name='withPayment'
+                  render={({ field }) => (
+                    <div className='gap-xl flex items-center'>
+                      <Switch
+                        checked={field.value}
+                        onChange={field.onChange}
+                        label='Receive Payment'
+                      />
+                      <Button
+                        size='compact-sm'
+                        disabled={!field.value}
+                        variant='outline'
+                        onClick={() => {
+                          const values = getValues();
+                          if (values.payment === null) {
+                            setPaymentDefaultValues({
+                              // totalAmount: getGrandTotal(values.returnItems),
+                            });
+                          } else {
+                            setPaymentDefaultValues(values.payment);
+                          }
+                          paymentModalHandlers.open();
+                        }}
+                      >
+                        <span className='text-xs'>Edit Payment</span>
+                      </Button>
+                    </div>
+                  )}
+                />
+              </div>
+            </Popover.Dropdown>
+          </Popover>
+        }
       >
         <div className='-m-md p-md gap-md grid h-[calc(100vh-2*4.2rem)] grow grid-cols-[1fr_25rem] grid-rows-[auto_1fr]'>
           <div className='border-default-border p-md gap-md grid grid-cols-[6.5rem_1fr_var(--mantine-spacing-sm)_6.5rem_1fr] grid-rows-[1fr_1fr] items-center rounded-sm border'>
