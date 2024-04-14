@@ -59,8 +59,6 @@ function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerFormPr
   const { mutateAsync: createCustomer } = trpc.customers.createCustomer.useMutation();
   const { mutateAsync: editCustomer } = trpc.customers.editCustomer.useMutation();
 
-  console.log(imageUpload.files);
-
   return (
     <Modal.Form
       control={control}
