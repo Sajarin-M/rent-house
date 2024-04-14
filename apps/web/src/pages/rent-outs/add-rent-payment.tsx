@@ -21,6 +21,8 @@ type FormValues = {
 };
 
 function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
+  const utils = trpc.useUtils();
+
   const { control, handleSubmit, setValue } = useForm<FormValues>({
     defaultValues: {
       date: new Date().toISOString(),
@@ -65,6 +67,8 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
             receivedAmount: numberOrZero(values.totalAmount) - numberOrZero(values.discountAmount),
           });
           notification.created('Payment');
+          utils.rentOuts.getRentOuts.invalidate();
+          utils.customers.getCustomerStatus.invalidate({ customerId: rentAmountInfo!.customerId });
           onClose();
         } catch (error) {}
       })}

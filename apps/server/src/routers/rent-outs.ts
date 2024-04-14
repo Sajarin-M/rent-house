@@ -174,9 +174,9 @@ export const rentOutsRouter = router({
 
       const isFullyPaying =
         rentOut.status === 'Returned' &&
-        input.totalAmount >=
-          rentOut.rentReturns.reduce((sum, returnItem) => sum + returnItem.totalAmount, 0) -
-            rentOut.rentPayments.reduce((sum, paymentItem) => sum + paymentItem.totalAmount, 0);
+        rentOut.rentPayments.reduce((sum, paymentItem) => sum + paymentItem.totalAmount, 0) +
+          input.totalAmount >=
+          rentOut.rentReturns.reduce((sum, returnItem) => sum + returnItem.totalAmount, 0);
 
       await prisma.$transaction([
         prisma.rentOut.update({
@@ -233,6 +233,7 @@ export const rentOutsRouter = router({
           where: { id: input.rentOutId, deletedAt: null },
           select: {
             status: true,
+            customerId: true,
             paymentStatus: true,
             rentReturns: { select: { totalAmount: true } },
             rentPayments: { select: { totalAmount: true } },
@@ -242,6 +243,7 @@ export const rentOutsRouter = router({
 
       return {
         status: rentOut.status,
+        customerId: rentOut.customerId,
         paymentStatus: rentOut.paymentStatus,
         ...getRentOutPaymentInfo(rentOut),
       };
@@ -354,10 +356,10 @@ export const rentOutsRouter = router({
 
       const isFullyPaying =
         isFullyReturning &&
-        input.withPayment &&
-        (input.payment === null || input.payment.totalAmount >= input.totalAmount) &&
-        rentOut.rentPayments.reduce((sum, paymentItem) => sum + paymentItem.totalAmount, 0) >=
-          rentOut.rentReturns.reduce((sum, returnItem) => sum + returnItem.totalAmount, 0);
+        rentOut.rentPayments.reduce((sum, paymentItem) => sum + paymentItem.totalAmount, 0) +
+          (input.payment ? input.payment.totalAmount : 0) >=
+          rentOut.rentReturns.reduce((sum, returnItem) => sum + returnItem.totalAmount, 0) +
+            input.totalAmount;
 
       await prisma.$transaction(async (tx) => {
         await tx.rentOut
