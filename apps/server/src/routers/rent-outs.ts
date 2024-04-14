@@ -76,6 +76,7 @@ export const rentOutsRouter = router({
               create: input.advance
                 ? {
                     date: input.date,
+                    type: 'Advance',
                     discountAmount: input.advance.discountAmount,
                     receivedAmount: input.advance.receivedAmount,
                     totalAmount: input.advance.totalAmount,
