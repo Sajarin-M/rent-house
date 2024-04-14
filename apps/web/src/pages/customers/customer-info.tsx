@@ -25,22 +25,15 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
     <Drawer.Content isLoading={isPending} title='Customer Details'>
       {customer && customerStatus && (
         <div>
-          {(customer.image || customer.documentImage) && (
-            <div className='gap-md mb-md flex items-center'>
-              {customer.image && (
+          {customer.images.length > 0 && (
+            <div className='gap-md mb-md flex flex-wrap items-center'>
+              {customer.images.map((image) => (
                 <img
-                  className='border-default-border aspect-auto h-[8rem] rounded-sm object-contain'
-                  src={getImageUrl(customer.image)}
-                  alt='Customer Image'
-                />
-              )}
-              {customer.documentImage && (
-                <img
-                  src={getImageUrl(customer.documentImage)}
-                  alt='Customer Image'
+                  key={image}
+                  src={getImageUrl(image)}
                   className='border-default-border aspect-auto h-[8rem] rounded-sm object-contain'
                 />
-              )}
+              ))}
             </div>
           )}
           <div className='gap-y-sm grid grid-cols-[10rem_1fr] items-center'>

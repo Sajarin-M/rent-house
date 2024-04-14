@@ -4,9 +4,10 @@ import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import { CameraView } from '@/components/camera';
 import { NumberInput, PriceInput, TextInput, validation } from '@/components/form';
+import ImageUpload from '@/components/image-upload';
 import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
-import { ImageUpload, useImageUpload } from '@/utils/images';
+import { useImageUpload } from '@/utils/images';
 import notification from '@/utils/notification';
 
 type EditProductFormProps = ModalCommonProps & {
@@ -21,7 +22,7 @@ function EditProductForm({ id, onClose }: EditProductFormProps) {
     { enabled: isEditing },
   );
 
-  const imageUpload = useImageUpload({ initialValue: data?.image });
+  const imageUpload = useImageUpload({ initialValues: data && data.image ? [data.image] : [null] });
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -46,6 +47,8 @@ function EditProductForm({ id, onClose }: EditProductFormProps) {
   const { mutateAsync: createProduct } = trpc.products.createProduct.useMutation();
   const { mutateAsync: editProduct } = trpc.products.editProduct.useMutation();
 
+  const { url, revokeUrl, setUploadRef, onChange, onClear } = imageUpload.getImageProps(0);
+
   return (
     <Modal.Form
       control={control}
@@ -56,13 +59,13 @@ function EditProductForm({ id, onClose }: EditProductFormProps) {
       checkDirty={(formDirty) => formDirty || imageUpload.isDirty}
       onSubmit={handleSubmit(async (values) => {
         try {
-          if (!imageUpload.validate()) {
+          if (!imageUpload.validateAll()) {
             return;
           }
-          const imageInfo = await imageUpload.upload();
+          const imageInfo = await imageUpload.uploadAll();
           const submitValues = {
             ...values,
-            image: imageInfo,
+            image: imageInfo[0] || null,
             quantity: Number(values.quantity),
             rentPerDay: Number(values.rentPerDay),
           };
@@ -83,16 +86,16 @@ function EditProductForm({ id, onClose }: EditProductFormProps) {
     >
       <CameraView
         onCapture={(imageFile) => {
-          imageUpload.setFile(imageFile);
+          imageUpload.onChange(0, imageFile);
         }}
       />
       <Stack>
         <ImageUpload.Wrapper
           label='Product Image'
-          error={imageUpload.error}
-          preview={<imageUpload.Preview />}
-          clear={<imageUpload.ClearButton />}
-          select={<imageUpload.SelectButton />}
+          error={imageUpload.errors[0]}
+          clear={<ImageUpload.ClearButton onClick={onClear} />}
+          select={<ImageUpload.SelectButton ref={setUploadRef} onChange={onChange} />}
+          preview={<ImageUpload.Preview src={url} onLoad={revokeUrl} />}
         />
 
         <TextInput

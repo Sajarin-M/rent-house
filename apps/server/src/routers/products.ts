@@ -1,4 +1,4 @@
-import * as R from 'remeda'
+import * as R from 'remeda';
 import { z } from 'zod';
 import { createNotFound, Prisma, prisma } from '../lib/prisma';
 import { getProductQuantityInfo } from '../lib/shared';
@@ -55,6 +55,7 @@ export const productsRouter = router({
   getAllProducts: publicProcedure.query(async () => {
     const products = await prisma.product.findMany({
       select: productSelect,
+      orderBy: { createdAt: 'asc' },
     });
     return products;
   }),
@@ -65,6 +66,7 @@ export const productsRouter = router({
         ...productSelect,
         ...getProductQuantityInfo.select,
       },
+      orderBy: { createdAt: 'asc' },
     });
 
     const returnData = products.map((product) => ({

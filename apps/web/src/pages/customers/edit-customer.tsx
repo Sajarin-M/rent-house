@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Stack } from '@mantine/core';
 import { trpc } from '@/context/trpc';
+import AddButton from '@/components/add-button';
 import { CameraView } from '@/components/camera';
 import { TextInput, validation } from '@/components/form';
+import ImageUpload from '@/components/image-upload';
 import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components/modal';
 import { getFormTItle } from '@/utils/fns';
-import { ImageUpload, useImageUpload } from '@/utils/images';
+import { useImageUpload } from '@/utils/images';
 import notification from '@/utils/notification';
 import { RouterOutput } from '@/types';
 
@@ -18,15 +20,17 @@ type EditCustomerFormProps = ModalCommonProps & {
 function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerFormProps) {
   const isEditing = id !== undefined;
 
-  const { data, isLoading } = trpc.customers.getCustomer.useQuery(
+  const { data, isPending } = trpc.customers.getCustomer.useQuery(
     { id: id! },
     { enabled: isEditing },
   );
 
-  const imageUpload = useImageUpload({ initialValue: data?.image });
-  const documentImageUpload = useImageUpload({ initialValue: data?.documentImage });
+  const imageUpload = useImageUpload({
+    required: (index) => index > 0,
+    initialValues: data && data.images.length > 0 ? data.images : [null],
+  });
 
-  const [selectedImage, setSelectedImage] = useState<'image' | 'documentImage' | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -55,26 +59,26 @@ function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerFormPr
   const { mutateAsync: createCustomer } = trpc.customers.createCustomer.useMutation();
   const { mutateAsync: editCustomer } = trpc.customers.editCustomer.useMutation();
 
+  console.log(imageUpload.files);
+
   return (
     <Modal.Form
       control={control}
       onCancel={onClose}
       disableOnFresh={isEditing}
-      isLoading={isEditing && isLoading}
+      isLoading={isEditing && isPending}
       title={getFormTItle('Customer', isEditing)}
       checkDirty={(formDirty) => formDirty || imageUpload.isDirty}
       onSubmit={handleSubmit(async (values) => {
         try {
-          if (!imageUpload.validate() || !documentImageUpload.validate()) {
+          if (!imageUpload.validateAll()) {
             return;
           }
-          const imageInfo = await imageUpload.upload();
-          const documentImageInfo = await documentImageUpload.upload();
+          const imagesInfo = await imageUpload.uploadAll();
 
           const submitValues = {
             ...values,
-            image: imageInfo,
-            documentImage: documentImageInfo,
+            images: imagesInfo.filter(Boolean),
           };
 
           if (isEditing) {
@@ -95,50 +99,60 @@ function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerFormPr
     >
       <CameraView
         onCapture={(imageFile) => {
-          if (selectedImage === 'image') {
-            imageUpload.setFile(imageFile);
-            setSelectedImage(null);
-          } else if (selectedImage === 'documentImage') {
-            documentImageUpload.setFile(imageFile);
-            setSelectedImage(null);
-          } else if (imageUpload.file === null) {
-            imageUpload.setFile(imageFile);
-          } else if (documentImageUpload.file === null) {
-            documentImageUpload.setFile(imageFile);
-          } else {
-            imageUpload.setFile(imageFile);
+          if (selectedImageIndex === null) {
+            if (imageUpload.files.length > 0) {
+              const nextImageIndex = imageUpload.files.findIndex(
+                (file, index) =>
+                  file === null && (!imageUpload.imageNames[index] || imageUpload.cleared[index]),
+              );
+              if (nextImageIndex !== -1) {
+                return imageUpload.onChange(nextImageIndex, imageFile);
+              }
+            }
+            return imageUpload.addImage(imageFile);
           }
+
+          imageUpload.onChange(selectedImageIndex, imageFile);
+          setSelectedImageIndex(null);
         }}
       />
       <Stack>
-        <ImageUpload.Wrapper
-          label='Profile Image'
-          error={imageUpload.error}
-          clear={<imageUpload.ClearButton />}
-          select={<imageUpload.SelectButton />}
-          preview={
-            <imageUpload.Preview
-              isSelected={selectedImage === 'image'}
-              onClick={() => {
-                setSelectedImage('image');
-              }}
-            />
-          }
-        />
-        <ImageUpload.Wrapper
-          label='Document Image'
-          error={documentImageUpload.error}
-          clear={<documentImageUpload.ClearButton />}
-          select={<documentImageUpload.SelectButton />}
-          preview={
-            <documentImageUpload.Preview
-              isSelected={selectedImage === 'documentImage'}
-              onClick={() => {
-                setSelectedImage('documentImage');
-              }}
-            />
-          }
-        />
+        <ImageUpload.Group label='Images' error={imageUpload.errors.find(Boolean) ?? undefined}>
+          {imageUpload.files.map((_, index) => {
+            const { url, revokeUrl, setUploadRef, onChange, onClear, onDelete } =
+              imageUpload.getImageProps(index);
+            return (
+              <ImageUpload.Wrapper
+                key={index}
+                clear={<ImageUpload.ClearButton onClick={onClear} />}
+                select={<ImageUpload.SelectButton ref={setUploadRef} onChange={onChange} />}
+                preview={
+                  <ImageUpload.Preview
+                    src={url}
+                    onLoad={revokeUrl}
+                    isSelected={selectedImageIndex === index}
+                    onClick={() => {
+                      setSelectedImageIndex(index);
+                    }}
+                  />
+                }
+                delete={
+                  imageUpload.files.length === 1 && index === 0 ? undefined : (
+                    <ImageUpload.DeleteButton onClick={onDelete} />
+                  )
+                }
+              />
+            );
+          })}
+        </ImageUpload.Group>
+        <AddButton
+          className='self-start'
+          onClick={() => {
+            imageUpload.addImage();
+          }}
+        >
+          Add Image
+        </AddButton>
 
         <TextInput
           withAsterisk

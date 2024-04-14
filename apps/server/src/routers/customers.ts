@@ -10,8 +10,7 @@ const customerSchema = z.object({
   addressLine1: z.string().trim().transform(emptyStringToNull).nullish(),
   addressLine2: z.string().trim().transform(emptyStringToNull).nullish(),
   city: z.string().trim().transform(emptyStringToNull).nullish(),
-  image: z.string().transform(emptyStringToNull).nullish(),
-  documentImage: z.string().transform(emptyStringToNull).nullish(),
+  images: z.array(z.string().trim().min(1)).transform((arr) => arr.filter(Boolean)),
 });
 
 export const customerSelect = {
@@ -21,8 +20,7 @@ export const customerSelect = {
   addressLine2: true,
   city: true,
   phoneNumber: true,
-  image: true,
-  documentImage: true,
+  images: true,
   createdAt: true,
 } satisfies Prisma.CustomerSelect;
 
