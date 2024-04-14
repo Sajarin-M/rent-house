@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import * as R from "remeda"
+import * as R from 'remeda';
 import { z } from 'zod';
 import { createNotFound, prisma } from '../lib/prisma';
 import {
@@ -12,58 +12,83 @@ import { confirmedProcedure, publicProcedure, router } from '../trpc';
 import { customerSelect } from './customers';
 import { productSelect } from './products';
 
-const rentOutSchema = z.object({
-  date: z.string(),
-  customerId: z.string().min(1),
-  description: z.string().trim().transform(emptyStringToNull).nullish(),
-  rentOutItems: z.array(
-    z.object({
-      productId: z.string().min(1),
-      quantity: z.number().positive(),
-      rentPerDay: z.number().nonnegative(),
-    }),
-  ),
-});
-
 export const rentOutsRouter = router({
-  createRentOut: publicProcedure.input(rentOutSchema).mutation(async ({ input }) => {
-    const products = await prisma.product.findMany({
-      where: { id: { in: input.rentOutItems.map((item) => item.productId) } },
-      select: { id: true, name: true, ...getProductQuantityInfo.select },
-    });
+  createRentOut: publicProcedure
+    .input(
+      z.object({
+        date: z.string(),
+        customerId: z.string().min(1),
+        description: z.string().trim().transform(emptyStringToNull).nullish(),
+        rentOutItems: z.array(
+          z.object({
+            productId: z.string().min(1),
+            quantity: z.number().positive(),
+            rentPerDay: z.number().nonnegative(),
+          }),
+        ),
+        advance: z
+          .object({
+            receivedAmount: z.number().nonnegative(),
+            discountAmount: z.number().nonnegative().optional().default(0),
+            totalAmount: z.number().nonnegative(),
+            description: z.string().trim().transform(emptyStringToNull).nullish(),
+          })
+          .nullable(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const products = await prisma.product.findMany({
+        where: { id: { in: input.rentOutItems.map((item) => item.productId) } },
+        select: { id: true, name: true, ...getProductQuantityInfo.select },
+      });
 
-    if (products.length !== input.rentOutItems.length) {
-      throw new TRPCError({ code: 'BAD_REQUEST', message: 'One or more products do not exist' });
-    }
-
-    // check if product is in stock
-    for (const rentOutItem of input.rentOutItems) {
-      const product = products.find((product) => product.id === rentOutItem.productId);
-      if (!product) {
+      if (products.length !== input.rentOutItems.length) {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'One or more products do not exist' });
       }
 
-      const { remainingQuantity } = getProductQuantityInfo(product);
-      if (remainingQuantity < rentOutItem.quantity) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: `Product ${product.name} is out of stock`,
-        });
-      }
-    }
+      // check if product is in stock
+      for (const rentOutItem of input.rentOutItems) {
+        const product = products.find((product) => product.id === rentOutItem.productId);
+        if (!product) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'One or more products do not exist',
+          });
+        }
 
-    await prisma.rentOut
-      .create({
-        data: {
-          date: input.date,
-          description: input.description,
-          rentOutItems: { create: input.rentOutItems },
-          customer: { connect: { id: input.customerId, deletedAt: null } },
-        },
-        select: { id: true },
-      })
-      .catch(createNotFound('Customer'));
-  }),
+        const { remainingQuantity } = getProductQuantityInfo(product);
+        if (remainingQuantity < rentOutItem.quantity) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Product ${product.name} is out of stock`,
+          });
+        }
+      }
+
+      await prisma.rentOut
+        .create({
+          data: {
+            date: input.date,
+            description: input.description,
+            rentOutItems: { create: input.rentOutItems },
+            customer: { connect: { id: input.customerId, deletedAt: null } },
+            rentPayments: {
+              create: input.advance
+                ? {
+                    date: input.date,
+                    discountAmount: input.advance.discountAmount,
+                    receivedAmount: input.advance.receivedAmount,
+                    totalAmount: input.advance.totalAmount,
+                    description: input.advance.description,
+                  }
+                : undefined,
+            },
+            paymentStatus: input.advance ? 'Partially_Paid' : undefined,
+          },
+          select: { id: true },
+        })
+        .catch(createNotFound('Customer'));
+    }),
 
   deleteRentOut: confirmedProcedure
     .input(z.object({ id: z.string().min(1) }))

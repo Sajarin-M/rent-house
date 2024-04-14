@@ -93,7 +93,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
         isLoading={isRentOutDataPending || isRenOutPaymentInfoPending}
         onSubmit={handleSubmit(async (values) => {
           try {
-            const submitValues: Parameters<typeof createRentReturn>[0] = {
+            await createRentReturn({
               ...values,
               rentOutId: rentOutId,
               returnItems: values.returnItems.map((item) => ({
@@ -114,8 +114,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                       numberOrZero(values.payment.discountAmount),
                   }
                 : null,
-            };
-            await createRentReturn(submitValues);
+            });
             notification.created('Return', { id: notificationId });
             utils.rentOuts.getRentOuts.invalidate();
             utils.rentOuts.getRentOutInfo.invalidate({ id: rentOutId });

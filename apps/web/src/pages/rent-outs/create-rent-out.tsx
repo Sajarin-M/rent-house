@@ -89,15 +89,25 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
   const notificationId = 'rent-out-form-notification';
 
   async function onSubmit(values: CreateRentOutFormValues) {
-    const submitValues = {
+    await createRentOut({
       ...values,
       rentOutItems: values.rentOutItems.map((item) => ({
         productId: item.product.id,
         quantity: Number(item.quantity),
         rentPerDay: Number(item.rentPerDay),
       })),
-    };
-    await createRentOut(submitValues);
+      advance:
+        values.advance === null || !values.withAdvance
+          ? null
+          : {
+              totalAmount: numberOrZero(values.advance.totalAmount),
+              discountAmount: numberOrZero(values.advance.discountAmount),
+              description: values.advance.description,
+              receivedAmount:
+                numberOrZero(values.advance.totalAmount) -
+                numberOrZero(values.advance.discountAmount),
+            },
+    });
     notification.created('Rent out', { id: notificationId });
     utils.rentOuts.getRentOuts.invalidate();
     utils.products.getAllProductsWithQuantityInfo.invalidate();

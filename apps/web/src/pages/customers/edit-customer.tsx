@@ -74,7 +74,9 @@ function EditCustomerForm({ id, onClose, onCustomerCreated }: EditCustomerFormPr
           }
           const imagesInfo = await imageUpload.uploadAll();
 
-          const submitValues = {
+          const submitValues:
+            | Parameters<typeof createCustomer>[0]
+            | Parameters<typeof editCustomer>[0]['data'] = {
             ...values,
             images: imagesInfo.filter(Boolean),
           };

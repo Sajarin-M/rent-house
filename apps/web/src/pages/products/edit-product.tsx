@@ -63,7 +63,9 @@ function EditProductForm({ id, onClose }: EditProductFormProps) {
             return;
           }
           const imageInfo = await imageUpload.uploadAll();
-          const submitValues = {
+          const submitValues:
+            | Parameters<typeof createProduct>[0]
+            | Parameters<typeof editProduct>[0]['data'] = {
             ...values,
             image: imageInfo[0] || null,
             quantity: Number(values.quantity),
