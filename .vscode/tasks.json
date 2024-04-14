@@ -42,6 +42,16 @@
       "problemMatcher": []
     },
     {
+      "type": "shell",
+      "label": "Prisma Reset",
+      "detail": "reset database",
+      "command": "bun run prisma-reset",
+      "options": {
+        "cwd": "${cwd}/apps/server"
+      },
+      "problemMatcher": []
+    },
+    {
       "type": "bun",
       "script": "install",
       "problemMatcher": [],
