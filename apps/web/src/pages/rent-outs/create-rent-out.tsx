@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Control, Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { FaPlus } from 'react-icons/fa6';
 import { TbCheck, TbInfoTriangle, TbSettings } from 'react-icons/tb';
@@ -33,8 +32,7 @@ import { formatCurrency, getFormTItle, numberOrZero } from '@/utils/fns';
 import notification from '@/utils/notification';
 import { RouterOutput } from '@/types';
 import EditCustomer from '../customers/edit-customer';
-import { ReturnPaymentFormValues } from './edit-return-payment';
-import RentOutAddPayment from './rent-out-add-payment';
+import EditAdvancePayment, { AdvancePaymentFormValues } from './edit-advance-payment';
 
 type CreateRentOutFormProps = ModalCommonProps & {};
 
@@ -47,15 +45,13 @@ type CreateRentOutFormValues = {
     rentPerDay: string | number;
     product: RouterOutput['products']['getAllProductsWithQuantityInfo'][number];
   }[];
-  withPayment: boolean;
-  payment: ReturnPaymentFormValues | null;
+  withAdvance: boolean;
+  advance: AdvancePaymentFormValues | null;
 };
 
 function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
   const utils = trpc.useUtils();
 
-  const [paymentDefaultValues, setPaymentDefaultValues] =
-    useState<Partial<ReturnPaymentFormValues>>();
   const [opened, handlers] = useDisclosure(false);
   const [paymentModalOpened, paymentModalHandlers] = useDisclosure(false);
   const [settingsPopoverOpened, settingsPopoverHandlers] = useDisclosure(false);
@@ -63,15 +59,17 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
   const { data: customers = [] } = trpc.customers.getAllCustomers.useQuery();
   const { data: products = [] } = trpc.products.getAllProductsWithQuantityInfo.useQuery();
 
-  const { control, handleSubmit, setFocus, setValue, watch, getValues } =
-    useForm<CreateRentOutFormValues>({
+  const { control, handleSubmit, setFocus, setValue, getValues } = useForm<CreateRentOutFormValues>(
+    {
       defaultValues: {
         date: new Date().toISOString(),
         description: '',
         customerId: '',
         rentOutItems: [],
+        advance: null,
       },
-    });
+    },
+  );
 
   const customerId = useWatch({ control, name: 'customerId' });
 
@@ -107,8 +105,6 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
     onClose();
   }
 
-  console.log(watch('customerId'));
-
   return (
     <>
       <EditCustomer
@@ -118,16 +114,27 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
         }}
       />
 
-      <RentOutAddPayment
-        defaultValues={paymentDefaultValues}
-        modalProps={{
-          onClose: paymentModalHandlers.close,
-          opened: paymentModalOpened,
-        }}
-        onSubmit={(values) => {
-          setValue('payment', values);
-          paymentModalHandlers.close();
-        }}
+      <Watcher
+        control={control}
+        name={['advance']}
+        render={([advance]) => (
+          <EditAdvancePayment
+            defaultValues={advance === null ? undefined : advance}
+            modalProps={{
+              opened: paymentModalOpened,
+              onClose: () => {
+                paymentModalHandlers.close();
+                if (getValues().advance === null) {
+                  setValue('withAdvance', false);
+                }
+              },
+            }}
+            onSubmit={(values) => {
+              setValue('advance', values);
+              paymentModalHandlers.close();
+            }}
+          />
+        )}
       />
 
       <Modal.Form
@@ -207,27 +214,27 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
               <div className='space-y-sm'>
                 <Controller
                   control={control}
-                  name='withPayment'
+                  name='withAdvance'
                   render={({ field }) => (
                     <div className='gap-xl flex items-center'>
                       <Switch
                         checked={field.value}
-                        onChange={field.onChange}
-                        label='Receive Payment'
+                        label='Receive Advance'
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (e.target.checked) {
+                            paymentModalHandlers.open();
+                          } else {
+                            paymentModalHandlers.close();
+                            setValue('advance', null);
+                          }
+                        }}
                       />
                       <Button
                         size='compact-sm'
                         disabled={!field.value}
                         variant='outline'
                         onClick={() => {
-                          const values = getValues();
-                          if (values.payment === null) {
-                            setPaymentDefaultValues({
-                              // totalAmount: getGrandTotal(values.returnItems),
-                            });
-                          } else {
-                            setPaymentDefaultValues(values.payment);
-                          }
                           paymentModalHandlers.open();
                         }}
                       >
@@ -396,7 +403,10 @@ type GrandTotalProps = {
 };
 
 function GrandTotal({ control }: GrandTotalProps) {
-  const rentOutItems = useWatch({ control, name: 'rentOutItems' });
+  const [rentOutItems, advance] = useWatch({
+    control,
+    name: ['rentOutItems', 'advance'],
+  });
 
   const total = rentOutItems.reduce(
     (acc, item) => acc + numberOrZero(item.quantity) * numberOrZero(item.rentPerDay),
@@ -404,9 +414,19 @@ function GrandTotal({ control }: GrandTotalProps) {
   );
 
   return (
-    <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border font-semibold'>
-      <span>Total</span>
-      <span className='pr-[calc(1.875rem/3)] text-end'>{formatCurrency(total)} / Day</span>
+    <div className='border-default-border p-sm gap-y-xs grid grid-cols-2 items-center rounded-sm border'>
+      <span className='font-semibold'>Total</span>
+      <span className='pr-[calc(1.875rem/3)] text-end font-semibold'>
+        {formatCurrency(total)} / Day
+      </span>
+      {advance !== null && (
+        <>
+          <span className='text-sm'>Advance Amount</span>
+          <span className='pr-[calc(1.875rem/3)] text-end text-sm'>
+            {formatCurrency(numberOrZero(advance.totalAmount))}
+          </span>
+        </>
+      )}
     </div>
   );
 }

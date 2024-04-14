@@ -144,8 +144,14 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                     <div className='gap-xl flex items-center'>
                       <Switch
                         checked={field.value}
-                        onChange={field.onChange}
                         label='Receive Payment'
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (!e.target.checked) {
+                            paymentModalHandlers.close();
+                            setValue('payment', null);
+                          }
+                        }}
                       />
                       <Button
                         size='compact-sm'

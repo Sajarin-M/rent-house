@@ -6,19 +6,19 @@ import { GenerateModalWrapperProps, Modal, ModalCommonProps } from '@/components
 import RevealButton from '@/components/reveal-button';
 import { formatCurrency, numberOrZero } from '@/utils/fns';
 
-export type ReturnPaymentFormValues = {
+export type AdvancePaymentFormValues = {
   totalAmount: string | number;
   discountAmount: string | number;
   description: string;
 };
 
-export type EditReturnPaymentFormProps = ModalCommonProps & {
-  defaultValues?: Partial<ReturnPaymentFormValues>;
-  onSubmit: (values: ReturnPaymentFormValues) => void;
+export type EditAdvancePaymentFormProps = ModalCommonProps & {
+  defaultValues?: Partial<AdvancePaymentFormValues>;
+  onSubmit: (values: AdvancePaymentFormValues) => void;
 };
 
-function EditReturnPaymentForm({ onClose, onSubmit, defaultValues }: EditReturnPaymentFormProps) {
-  const { control, handleSubmit, setValue } = useForm<ReturnPaymentFormValues>({
+function EditAdvancePaymentForm({ onClose, onSubmit, defaultValues }: EditAdvancePaymentFormProps) {
+  const { control, handleSubmit, setValue } = useForm<AdvancePaymentFormValues>({
     defaultValues: {
       totalAmount: '',
       discountAmount: '',
@@ -109,12 +109,12 @@ function EditReturnPaymentForm({ onClose, onSubmit, defaultValues }: EditReturnP
   );
 }
 
-export default function EditReturnPayment(
-  props: GenerateModalWrapperProps<EditReturnPaymentFormProps>,
+export default function EditAdvancePayment(
+  props: GenerateModalWrapperProps<EditAdvancePaymentFormProps>,
 ) {
   return (
     <Modal.Wrapper
-      component={EditReturnPaymentForm}
+      component={EditAdvancePaymentForm}
       size='calc(30rem*var(--mantine-scale))'
       {...props}
     />
