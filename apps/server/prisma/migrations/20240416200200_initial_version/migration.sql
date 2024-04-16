@@ -4,6 +4,9 @@ CREATE TYPE "RentOutStatus" AS ENUM ('Pending', 'Partially_Returned', 'Returned'
 -- CreateEnum
 CREATE TYPE "RentOutPaymentStatus" AS ENUM ('Pending', 'Partially_Paid', 'Paid');
 
+-- CreateEnum
+CREATE TYPE "RentPaymentType" AS ENUM ('Advance', 'Normal');
+
 -- CreateTable
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
@@ -25,8 +28,7 @@ CREATE TABLE "Customer" (
     "addressLine1" TEXT,
     "addressLine2" TEXT,
     "city" TEXT,
-    "image" TEXT,
-    "documentImage" TEXT,
+    "images" TEXT[],
     "deletedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -53,6 +55,7 @@ CREATE TABLE "RentOut" (
 CREATE TABLE "RentPayment" (
     "id" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
+    "type" "RentPaymentType" NOT NULL DEFAULT 'Normal',
     "rentOutId" TEXT NOT NULL,
     "rentReturnId" TEXT,
     "description" TEXT,
