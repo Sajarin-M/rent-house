@@ -27,7 +27,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.3",
-    "react-icons": "^5.0.1",
+    "react-icons": "^5.1.0",
     "react-router-dom": "^6.22.3",
     "react-virtuoso": "^4.7.8",
     "tailwind-merge": "^2.2.2"
@@ -36,10 +36,10 @@
     "@devoss/tailwind-plugin-mantine": "^2.1.0",
     "@hookform/devtools": "^4.3.1",
     "@types/lodash": "^4.17.0",
-    "@types/react": "^18.2.77",
+    "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "@types/w3c-image-capture": "^1.0.10",
-    "@types/web": "^0.0.142",
+    "@types/web": "^0.0.143",
     "@vitejs/plugin-react-swc": "^3.6.0",
     "autoprefixer": "^10.4.19",
     "husky": "^9.0.11",
@@ -50,7 +50,7 @@
     "tailwindcss-animate": "^1.0.7",
     "ts-toolbelt": "^9.6.0",
     "typescript": "^5.4.5",
-    "vite": "^5.2.8",
+    "vite": "^5.2.9",
     "vite-plugin-pwa": "^0.19.8",
     "vite-tsconfig-paths": "^4.3.2"
   }
