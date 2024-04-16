@@ -9,6 +9,11 @@ const { values } = parseArgs({
       type: 'string',
       short: 'v',
     },
+    export: {
+      type: 'boolean',
+      default: false,
+      short: 'e',
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -51,7 +56,9 @@ await $`cp -r ${rootPath}/release .`;
 
 $.cwd(`${import.meta.dirname}/release`);
 
-await $`docker save -o rent-house-image.tar ${imageName}`;
+if (values.export) {
+  await $`docker save -o rent-house-image.tar ${imageName}`;
+}
 await $`mkdir data`;
 await $`mkdir data/db`;
 await $`mkdir data/server`;
