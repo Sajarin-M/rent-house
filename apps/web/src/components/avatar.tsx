@@ -1,5 +1,4 @@
-import { ComponentPropsWithoutRef } from 'react';
-import { Avatar as MAvatar, AvatarProps as MAvatarProps } from '@mantine/core';
+import { useState } from 'react';
 import { cn } from '@/utils/fns';
 import { getImageUrl } from '@/utils/images';
 
@@ -24,25 +23,41 @@ function getRandomColor(letter?: string) {
   return colors[index];
 }
 
-export type AvatarProps = MAvatarProps &
-  Omit<ComponentPropsWithoutRef<'div'>, keyof MAvatarProps> & {
-    text?: string;
-    name?: string;
-  };
+export type AvatarProps = {
+  name?: string;
+  src?: string;
+  text?: string;
+  className?: string;
+};
 
-export default function Avatar({ text, name, src, size = 46, className, ...rest }: AvatarProps) {
-  src = name ? getImageUrl(name) : src;
+export default function Avatar({ name, src, text, className }: AvatarProps) {
+  const [error, setError] = useState(false);
+
+  if (!error && (name || src)) {
+    return (
+      <img
+        alt={text}
+        src={src || getImageUrl(name!)}
+        className={cn('size-[46px] rounded-full', className)}
+        onLoad={() => {
+          if (error) setError(false);
+        }}
+        onError={() => {
+          setError(true);
+        }}
+      />
+    );
+  }
 
   return (
-    <MAvatar
-      {...rest}
-      src={src}
-      size={size}
-      radius='xl'
-      className={cn('border-default-border border border-solid', className)}
-      classNames={{ placeholder: cn(getRandomColor(text), 'text-lg text-white') }}
+    <div
+      className={cn(
+        'border-default-border flex size-[46px] shrink-0 items-center justify-center rounded-full border text-lg font-semibold text-white',
+        getRandomColor(text),
+        className,
+      )}
     >
       {text?.charAt(0).toUpperCase()}
-    </MAvatar>
+    </div>
   );
 }

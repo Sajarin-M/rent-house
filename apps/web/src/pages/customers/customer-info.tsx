@@ -1,4 +1,4 @@
-import { Badge } from '@mantine/core';
+import { Table } from '@mantine/core';
 import { trpc } from '@/context/trpc';
 import Avatar from '@/components/avatar';
 import { Drawer, GenerateDrawerWrapperProps } from '@/components/drawer';
@@ -73,20 +73,33 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
           {customerStatus.pendingItems.length > 0 && (
             <>
               <div className='my-sm font-semibold'>Pending Items</div>
-              <div className='divide-default-border border-default-border bg-gray-1 dark:bg-dark-6/50 divide-y rounded-sm border'>
-                {customerStatus.pendingItems.map((item) => {
-                  return (
-                    <div key={item.id} className='p-md'>
-                      <div className='gap-x-md flex items-center'>
-                        <Avatar text={item.name} name={item.image ?? ''} size={50} />
-                        <div className='truncate text-sm font-semibold'>{item.name}</div>
-                        <Badge size='lg' variant='default' className='ml-auto'>
-                          {item.remainingQuantity}
-                        </Badge>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className='border-default-border overflow-hidden rounded-sm border'>
+                <Table>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th className='w-0'>No</Table.Th>
+                      <Table.Th className='w-0'></Table.Th>
+                      <Table.Th>Product</Table.Th>
+                      <Table.Th className='text-end'>Quantity</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {customerStatus.pendingItems.map((item, index) => (
+                      <Table.Tr key={item.id}>
+                        <Table.Td className='w-0'>{index + 1}</Table.Td>
+                        <Table.Td className='w-0'>
+                          <Avatar
+                            text={item.name}
+                            name={item.image ?? ''}
+                            className='size-[35px] text-sm'
+                          />
+                        </Table.Td>
+                        <Table.Td>{item.name}</Table.Td>
+                        <Table.Td className='text-end'>{item.remainingQuantity}</Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
               </div>
             </>
           )}

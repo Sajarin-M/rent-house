@@ -274,9 +274,9 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                     render={([rentOutItem]) => (
                       <>
                         <Avatar
+                          className='size-[40px]'
                           text={rentOutItem.product.name}
                           name={rentOutItem.product.image ?? ''}
-                          size={40}
                         />
                         <div>{rentOutItem.product.name}</div>
                       </>

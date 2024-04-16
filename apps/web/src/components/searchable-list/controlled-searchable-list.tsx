@@ -125,7 +125,11 @@ export default function SearchableList<T>({
                   onClick={() => onItemClicked?.(item)}
                   data-hovered={hovered === index}
                 >
-                  <Avatar name={avatar.image?.(item)} text={avatar.name(item)} size={40} />
+                  <Avatar
+                    className='size-[40px]'
+                    name={avatar.image?.(item)}
+                    text={avatar.name(item)}
+                  />
                   <div className='truncate'>
                     <div className='truncate text-sm' title={itemTitle}>
                       {itemTitle}

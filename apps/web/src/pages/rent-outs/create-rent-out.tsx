@@ -334,7 +334,11 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
                     name={[`rentOutItems.${index}.product`]}
                     render={([product]) => (
                       <>
-                        <Avatar text={product.name} name={product.image ?? ''} size={40} />
+                        <Avatar
+                          className='size-[40px]'
+                          text={product.name}
+                          name={product.image ?? ''}
+                        />
                         <div>{product.name}</div>
                       </>
                     )}
