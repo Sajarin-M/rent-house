@@ -12,7 +12,7 @@ import Toolbar from '@/components/toolbar';
 import CreateRentOut from '@/pages/rent-outs/create-rent-out';
 import { formatDateWithTime } from '@/utils/fns';
 import notification from '@/utils/notification';
-import { useConfirmedDeletion, useDebouncedQuery } from '@/utils/queries';
+import { getNextPageParam, useConfirmedDeletion, useDebouncedQuery } from '@/utils/queries';
 import AddRentPayment from './add-rent-payment';
 import CreateRentReturn from './create-rent-return';
 import RentOutDaysCountBadge from './rent-out-days-count-badge';
@@ -35,7 +35,7 @@ export default function RentOuts() {
     trpc.rentOuts.getRentOuts,
     { searchQuery },
     {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      getNextPageParam,
     },
   );
 

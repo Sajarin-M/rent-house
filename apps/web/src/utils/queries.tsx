@@ -5,6 +5,7 @@ import { closeAllModals, openModal } from '@mantine/modals';
 import { getQueryKey } from '@trpc/react-query';
 import { queryClient } from '@/context/trpc';
 import { PasswordInput, SubmitButton, validation } from '@/components/form';
+import type { CursorPaginationMeta } from '@/types';
 
 export function useDebouncedQuery<TQueryFn extends (input: any, opts: any) => any>(
   tRouter: { useInfiniteQuery: TQueryFn },
@@ -93,4 +94,11 @@ export type PageVm<T> = {
 
 export function getCombinedData<T>(pages?: PageVm<T>[]) {
   return pages?.flatMap((page) => page.items) || [];
+}
+
+export function getNextPageParam(lastPage: { meta: CursorPaginationMeta }) {
+  if (!lastPage.meta.hasNextPage) {
+    return undefined;
+  }
+  return lastPage.meta.endCursor;
 }

@@ -19,7 +19,7 @@ const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
-export type { RentOutStatus, RentOutPaymentStatus } from './lib/prisma';
+export type { RentOutStatus, RentOutPaymentStatus, CursorPaginationMeta } from './lib/prisma';
 
 ensureDirExistsSync(env.IMAGES_DIRECTORY);
 ensureDirExistsSync(env.STATIC_DIRECTORY);

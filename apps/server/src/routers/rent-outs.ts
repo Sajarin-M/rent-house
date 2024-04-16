@@ -105,43 +105,47 @@ export const rentOutsRouter = router({
   getRentOuts: publicProcedure
     .input(infiniteSchema.merge(searchSchema))
     .query(async ({ input: { limit, cursor, searchQuery } }) => {
-      const rentOuts = await prisma.rentOut.findMany({
-        take: limit + 1,
-        select: {
-          id: true,
-          date: true,
-          status: true,
-          paymentStatus: true,
-          customer: { select: { name: true, phoneNumber: true } },
-        },
-        cursor: cursor ? { id: cursor } : undefined,
-        orderBy: [
-          {
-            date: 'desc',
+      const [rentOuts, meta] = await prisma.rentOut
+        .paginate({
+          select: {
+            id: true,
+            date: true,
+            status: true,
+            paymentStatus: true,
+            customer: { select: { name: true, phoneNumber: true } },
           },
-          {
-            createdAt: 'desc',
-          },
-        ],
-        where: {
-          deletedAt: null,
-          OR: searchQuery
-            ? [
-                { customer: { name: { contains: searchQuery, mode: 'insensitive' } } },
-                { customer: { addressLine1: { contains: searchQuery, mode: 'insensitive' } } },
-                { customer: { addressLine2: { contains: searchQuery, mode: 'insensitive' } } },
-                { customer: { city: { contains: searchQuery, mode: 'insensitive' } } },
-                { customer: { phoneNumber: { contains: searchQuery, mode: 'insensitive' } } },
-                {
-                  rentOutItems: {
-                    some: { product: { name: { contains: searchQuery, mode: 'insensitive' } } },
+          orderBy: [
+            {
+              date: 'desc',
+            },
+            {
+              createdAt: 'desc',
+            },
+          ],
+          where: {
+            deletedAt: null,
+            OR: searchQuery
+              ? [
+                  {
+                    description: { contains: searchQuery, mode: 'insensitive' },
                   },
-                },
-              ]
-            : undefined,
-        },
-      });
-      return infiniteResult(rentOuts, limit, 'id');
+                  { customer: { name: { contains: searchQuery, mode: 'insensitive' } } },
+                  { customer: { addressLine1: { contains: searchQuery, mode: 'insensitive' } } },
+                  { customer: { addressLine2: { contains: searchQuery, mode: 'insensitive' } } },
+                  { customer: { city: { contains: searchQuery, mode: 'insensitive' } } },
+                  { customer: { phoneNumber: { contains: searchQuery, mode: 'insensitive' } } },
+                  {
+                    rentOutItems: {
+                      some: { product: { name: { contains: searchQuery, mode: 'insensitive' } } },
+                    },
+                  },
+                ]
+              : undefined,
+          },
+        })
+        .withCursor({ limit, after: cursor });
+
+      return infiniteResult(rentOuts, meta);
     }),
 
   addRentPayment: publicProcedure
@@ -199,6 +203,9 @@ export const rentOutsRouter = router({
           select: {
             id: true,
             date: true,
+            status: true,
+            description: true,
+            paymentStatus: true,
             customer: { select: customerSelect },
             rentOutItems: {
               select: {
@@ -210,6 +217,24 @@ export const rentOutsRouter = router({
               },
             },
             rentPayments: { select: { id: true } },
+            rentReturns: {
+              select: {
+                id: true,
+                date: true,
+                description: true,
+                totalAmount: true,
+                returnItems: {
+                  select: {
+                    id: true,
+                    quantity: true,
+                    totalAmount: true,
+                    rentOutItem: {
+                      select: { product: { select: { name: true } } },
+                    },
+                  },
+                },
+              },
+            },
           },
         })
         .catch(createNotFound('Rent out'));

@@ -1,9 +1,10 @@
 import { existsSync, mkdirSync } from 'fs';
 import { z } from 'zod';
+import type { CursorPaginationMeta } from './prisma';
 
 export const infiniteSchema = z.object({
   limit: z.number().min(1).max(500).default(50),
-  cursor: z.string().nullish(),
+  cursor: z.string().optional(),
 });
 
 export const dateRangeSchema = z.object({
@@ -15,13 +16,8 @@ export const searchSchema = z.object({
   searchQuery: z.string().optional(),
 });
 
-export function infiniteResult<T>(items: T[], limit: number, key: keyof T) {
-  let nextCursor: string | undefined = undefined;
-  if (items.length > limit) {
-    const nextItem = items.pop();
-    nextCursor = nextItem![key] as string;
-  }
-  return { items, nextCursor };
+export function infiniteResult<T>(items: T[], meta: CursorPaginationMeta) {
+  return { items, meta };
 }
 
 export function ensureDirExistsSync(path: string) {
