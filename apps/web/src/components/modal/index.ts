@@ -18,9 +18,9 @@ export { default as ModalContent } from './modal-content';
 export { default as ModalFooter } from './modal-footer';
 export { default as ModalForm } from './modal-form';
 export { default as ModalHeader } from './modal-header';
+export { default as ModalRoot, type ModalRootProps, type ModalCommonProps } from './modal-root';
 export {
   default as ModalWrapper,
   type ModalWrapperProps,
   type GenerateModalWrapperProps,
 } from './modal-wrapper';
-export { default as ModalRoot, type ModalRootProps, type ModalCommonProps } from './modal-root';

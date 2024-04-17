@@ -14,6 +14,10 @@ type Props = Pick<SubmitButtonProps, 'disableOnFresh' | 'checkDirty'> &
     isSubmitting?: boolean;
     onSubmit: FormEventHandler<HTMLFormElement>;
     footer?: ReactNode;
+    buttonLabels?: {
+      submit?: string;
+      cancel?: string;
+    };
   };
 export default function ModalForm({
   title,
@@ -26,6 +30,7 @@ export default function ModalForm({
   disableOnFresh,
   checkDirty,
   footer,
+  buttonLabels,
 }: Props) {
   return (
     <>
@@ -40,7 +45,7 @@ export default function ModalForm({
             onClick={onCancel}
             type='button'
           >
-            Cancel
+            {buttonLabels?.cancel || 'Cancel'}
           </Button>
           {control ? (
             <SubmitButton
@@ -50,11 +55,11 @@ export default function ModalForm({
               checkDirty={checkDirty}
               disableOnFresh={disableOnFresh}
             >
-              Save
+              {buttonLabels?.submit || 'Save'}
             </SubmitButton>
           ) : (
             <Button className='w-action-btn' type='submit' loading={isSubmitting}>
-              Save
+              {buttonLabels?.submit || 'Save'}
             </Button>
           )}
         </ModalFooter>
