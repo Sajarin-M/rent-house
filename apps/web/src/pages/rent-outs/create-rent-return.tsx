@@ -120,11 +120,13 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                         numberOrZero(values.payment.totalAmount) -
                         numberOrZero(values.payment.discountAmount),
                     }
-                  : {
-                      totalAmount: currentPayableAmount,
-                      discountAmount: 0,
-                      receivedAmount: currentPayableAmount,
-                    }
+                  : currentPayableAmount > 0
+                    ? {
+                        totalAmount: currentPayableAmount,
+                        discountAmount: 0,
+                        receivedAmount: currentPayableAmount,
+                      }
+                    : null
                 : null,
             });
             notification.created('Return', { id: notificationId });
@@ -411,7 +413,8 @@ function getCurrentPayableAmount({
   previousTotalAmount: number;
   previousPaidAmount: number;
 }) {
-  return currentTotal + previousTotalAmount - previousPaidAmount;
+  const amount = currentTotal + previousTotalAmount - previousPaidAmount;
+  return amount < 0 ? 0 : amount;
 }
 
 type GrandTotalProps = {
