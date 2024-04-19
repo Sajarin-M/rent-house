@@ -117,7 +117,7 @@ export default function Table<TData extends Record<any, any>, TContext = unknown
         <Stack align='center'>
           <div>Something went wrong while loading the page</div>
           {resetError && (
-            <Button color='red.6' onClick={resetError}>
+            <Button color='red' onClick={resetError}>
               Retry
             </Button>
           )}

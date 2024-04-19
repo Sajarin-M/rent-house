@@ -56,7 +56,7 @@ export default function Sidebar() {
           variant='outline'
           onClick={() => toggleColorScheme()}
           leftSection={colorScheme === 'dark' ? <FaSun /> : <FaMoon />}
-          color={colorScheme === 'dark' ? 'yellow.7' : 'dark'}
+          color={colorScheme === 'dark' ? 'yellow' : 'dark'}
         >
           {colorScheme === 'dark' ? 'Light' : 'Dark'} Mode
         </Button>

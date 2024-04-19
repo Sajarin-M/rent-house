@@ -3,13 +3,13 @@ import { RentOutStatus } from '@/types';
 
 const colorMap: Record<RentOutStatus, MantineColor> = {
   Pending: 'red',
-  Partially_Returned: 'yellow',
+  Partially_Returned: 'indigo',
   Returned: 'green',
 };
 
 export default function RentOutStatusBadge({ status }: { status: RentOutStatus }) {
   return (
-    <Badge variant='outline' size='sm' color={colorMap[status]}>
+    <Badge size='sm' color={colorMap[status]}>
       {status.replaceAll('_', ' ')}
     </Badge>
   );

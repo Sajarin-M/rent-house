@@ -17,6 +17,7 @@ const selectProps = {
 export const defaultDateFormat = 'DD MMM YYYY';
 
 export const theme = createTheme({
+  primaryShade: 7,
   components: {
     Modal: Modal.extend({
       defaultProps: {

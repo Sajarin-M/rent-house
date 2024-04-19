@@ -62,7 +62,7 @@ export default function CameraView({ onCapture }: CameraViewProps) {
           <ActionIcon
             radius='xl'
             size='xl'
-            color='red.6'
+            color='red'
             className='ring-gray-5 ring-4'
             onClick={handleCapture}
           ></ActionIcon>

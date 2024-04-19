@@ -9,8 +9,7 @@ export default function RentOutDaysCountBadge({ date }: { date: string }) {
   return (
     <Badge
       size='sm'
-      variant='outline'
-      color={daysDifference > 5 ? 'red' : daysDifference > 2 ? 'yellow' : 'green'}
+      color={daysDifference > 5 ? 'red' : daysDifference > 2 ? 'indigo' : 'green'}
       title={daysDifference !== 0 ? `${daysDifference} days` : undefined}
     >
       {daysDifference === 0 ? 'Today' : rentDate.from(currentDate)}

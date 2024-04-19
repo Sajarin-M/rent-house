@@ -96,7 +96,7 @@ const LoadingMoreIndicator: ComponentType<{ context?: InfiniteTableContext }> = 
       {context!.loadMore.isError ? (
         <Group>
           <div className='text-sm'>Something went wrong while loading </div>
-          <Button size='xs' color='red.6' onClick={() => context!.loadMore.retry()}>
+          <Button size='xs' color='red' onClick={() => context!.loadMore.retry()}>
             Retry
           </Button>
         </Group>
