@@ -94,6 +94,11 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
         onSubmit={handleSubmit(async (values) => {
           try {
             const grandTotalAmount = getGrandTotal(values.returnItems);
+            const currentPayableAmount = getCurrentPayableAmount({
+              currentTotal: grandTotalAmount,
+              previousTotalAmount: renOutPaymentInfo?.totalAmount || 0,
+              previousPaidAmount: renOutPaymentInfo?.paidAmount || 0,
+            });
             await createRentReturn({
               ...values,
               rentOutId: rentOutId,
@@ -116,9 +121,9 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                         numberOrZero(values.payment.discountAmount),
                     }
                   : {
-                      totalAmount: grandTotalAmount,
+                      totalAmount: currentPayableAmount,
                       discountAmount: 0,
-                      receivedAmount: grandTotalAmount,
+                      receivedAmount: currentPayableAmount,
                     }
                 : null,
             });
@@ -150,7 +155,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                     <div className='gap-xl flex items-center'>
                       <Switch
                         checked={field.value}
-                        label='Receive Payment'
+                        label={'Receive Payment'}
                         onChange={(e) => {
                           field.onChange(e);
                           if (!e.target.checked) {
@@ -167,7 +172,11 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                           const values = getValues();
                           if (values.payment === null) {
                             setPaymentDefaultValues({
-                              totalAmount: getGrandTotal(values.returnItems),
+                              totalAmount: getCurrentPayableAmount({
+                                currentTotal: getGrandTotal(values.returnItems),
+                                previousTotalAmount: renOutPaymentInfo?.totalAmount || 0,
+                                previousPaidAmount: renOutPaymentInfo?.paidAmount || 0,
+                              }),
                             });
                           } else {
                             setPaymentDefaultValues(values.payment);
@@ -257,6 +266,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
           </div>
           <GrandTotal
             control={control}
+            previousTotalAmount={renOutPaymentInfo?.totalAmount || 0}
             previousPaidAmount={renOutPaymentInfo?.paidAmount || 0}
             previousPendingAmount={renOutPaymentInfo?.pendingAmount || 0}
           />
@@ -392,13 +402,31 @@ function getGrandTotal(returnItems: FormValues['returnItems']) {
   return returnItems.reduce((acc, item) => acc + getItemTotal(item), 0);
 }
 
+function getCurrentPayableAmount({
+  currentTotal,
+  previousTotalAmount,
+  previousPaidAmount,
+}: {
+  currentTotal: number;
+  previousTotalAmount: number;
+  previousPaidAmount: number;
+}) {
+  return currentTotal + previousTotalAmount - previousPaidAmount;
+}
+
 type GrandTotalProps = {
   control: Control<FormValues>;
+  previousTotalAmount: number;
   previousPaidAmount: number;
   previousPendingAmount: number;
 };
 
-function GrandTotal({ control, previousPaidAmount, previousPendingAmount }: GrandTotalProps) {
+function GrandTotal({
+  control,
+  previousTotalAmount,
+  previousPaidAmount,
+  previousPendingAmount,
+}: GrandTotalProps) {
   const [returnItems, withPayment, payment] = useWatch({
     control,
     name: ['returnItems', 'withPayment', 'payment'],
@@ -429,7 +457,15 @@ function GrandTotal({ control, previousPaidAmount, previousPendingAmount }: Gran
       <span className='text-sm'>Current Paying Amount</span>
       <span className='pr-[calc(1.875rem/3)] text-end text-sm'>
         {formatCurrency(
-          withPayment ? (payment === null ? total : numberOrZero(payment.totalAmount)) : 0,
+          withPayment
+            ? payment === null
+              ? getCurrentPayableAmount({
+                  currentTotal: total,
+                  previousTotalAmount,
+                  previousPaidAmount,
+                })
+              : numberOrZero(payment.totalAmount)
+            : 0,
         )}
       </span>
     </div>
