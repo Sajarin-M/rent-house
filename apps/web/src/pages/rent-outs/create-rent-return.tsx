@@ -93,6 +93,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
         isLoading={isRentOutDataPending || isRenOutPaymentInfoPending}
         onSubmit={handleSubmit(async (values) => {
           try {
+            const grandTotalAmount = getGrandTotal(values.returnItems);
             await createRentReturn({
               ...values,
               rentOutId: rentOutId,
@@ -103,16 +104,22 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                 quantity: numberOrZero(item.quantity),
                 usedDays: numberOrZero(item.usedDays),
               })),
-              totalAmount: getGrandTotal(values.returnItems),
-              payment: values.payment
-                ? {
-                    totalAmount: numberOrZero(values.payment.totalAmount),
-                    discountAmount: numberOrZero(values.payment.discountAmount),
-                    description: values.payment.description,
-                    receivedAmount:
-                      numberOrZero(values.payment.totalAmount) -
-                      numberOrZero(values.payment.discountAmount),
-                  }
+              totalAmount: grandTotalAmount,
+              payment: values.withPayment
+                ? values.payment
+                  ? {
+                      totalAmount: numberOrZero(values.payment.totalAmount),
+                      discountAmount: numberOrZero(values.payment.discountAmount),
+                      description: values.payment.description,
+                      receivedAmount:
+                        numberOrZero(values.payment.totalAmount) -
+                        numberOrZero(values.payment.discountAmount),
+                    }
+                  : {
+                      totalAmount: grandTotalAmount,
+                      discountAmount: 0,
+                      receivedAmount: grandTotalAmount,
+                    }
                 : null,
             });
             notification.created('Return', { id: notificationId });

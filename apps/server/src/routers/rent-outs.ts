@@ -291,7 +291,6 @@ export const rentOutsRouter = router({
             }),
           ),
           totalAmount: z.number().nonnegative(),
-          withPayment: z.boolean(),
           payment: z
             .object({
               receivedAmount: z.number().nonnegative(),
@@ -392,11 +391,7 @@ export const rentOutsRouter = router({
             where: { id: input.rentOutId },
             data: {
               status: isFullyReturning ? 'Returned' : 'Partially_Returned',
-              paymentStatus: isFullyPaying
-                ? 'Paid'
-                : input.withPayment
-                  ? 'Partially_Paid'
-                  : undefined,
+              paymentStatus: isFullyPaying ? 'Paid' : input.payment ? 'Partially_Paid' : undefined,
             },
           })
           .catch(createNotFound('Rent out'));
@@ -407,24 +402,16 @@ export const rentOutsRouter = router({
             rentOutId: input.rentOutId,
             totalAmount: input.totalAmount,
             description: input.description,
-            rentPayment: input.withPayment
+            rentPayment: input.payment
               ? {
-                  create: input.payment
-                    ? {
-                        date: input.date,
-                        rentOutId: input.rentOutId,
-                        discountAmount: input.payment.discountAmount,
-                        receivedAmount: input.payment.receivedAmount,
-                        totalAmount: input.payment.totalAmount,
-                        description: input.payment.description,
-                      }
-                    : {
-                        date: input.date,
-                        rentOutId: input.rentOutId,
-                        discountAmount: 0,
-                        receivedAmount: input.totalAmount,
-                        totalAmount: input.totalAmount,
-                      },
+                  create: {
+                    date: input.date,
+                    rentOutId: input.rentOutId,
+                    discountAmount: input.payment.discountAmount,
+                    receivedAmount: input.payment.receivedAmount,
+                    totalAmount: input.payment.totalAmount,
+                    description: input.payment.description,
+                  },
                 }
               : undefined,
             returnItems: {
