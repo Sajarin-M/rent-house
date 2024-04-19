@@ -8,7 +8,7 @@
     --h-toolbar: 4.2rem;
     --h-content: calc(100vh - var(--h-toolbar));
     --w-action-btn: 7rem;
-    --w-sidebar: 230px;
+    --w-sidebar: 210px;
     --w-scrollbar: 5px;
   }
 }
