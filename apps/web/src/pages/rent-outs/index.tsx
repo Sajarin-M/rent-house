@@ -98,7 +98,7 @@ export default function RentOuts() {
           infoModalHandlers.open();
         }}
         columns={[
-          { header: 'Date', cell: (r) => formatDateWithTime(r.date), cellWidth: '11rem' },
+          { header: 'Date', cell: (r) => formatDateWithTime(r.date), cellWidth: '10rem' },
           { header: 'Customer', cell: (r) => r.customer.name, cellWidth: '1fr' },
           {
             header: 'Phone',
