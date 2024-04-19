@@ -4,7 +4,7 @@ import { RentOutPaymentStatus } from '@/types';
 const colorMap: Record<RentOutPaymentStatus, MantineColor> = {
   Pending: 'red',
   Partially_Paid: 'indigo',
-  Paid: 'green',
+  Paid: 'green.8',
 };
 
 export default function RentOutPaymentStatusBadge({ status }: { status: RentOutPaymentStatus }) {
