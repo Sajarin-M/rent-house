@@ -41,12 +41,17 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
             <span>{customer.name}</span>
             <span className='self-start'>Phone Number </span>
             <span>{customer.phoneNumber}</span>
-            <span className='self-start'>Address</span>
-            <span>
-              {[customer.addressLine1, customer.addressLine2, customer.city]
-                .filter(Boolean)
-                .join(' , ')}
-            </span>
+
+            {customer.addressLine1 || customer.addressLine2 || customer.city ? (
+              <>
+                <span className='self-start'>Address</span>
+                <span>
+                  {[customer.addressLine1, customer.addressLine2, customer.city]
+                    .filter(Boolean)
+                    .join(' , ')}
+                </span>
+              </>
+            ) : null}
             <span className='self-start'>Registered On</span>
             <span>{formatDateWithTime(customer.createdAt)}</span>
             <span className='self-start'>About</span>
