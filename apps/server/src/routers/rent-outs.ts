@@ -148,52 +148,6 @@ export const rentOutsRouter = router({
       return infiniteResult(rentOuts, meta);
     }),
 
-  addRentPayment: publicProcedure
-    .input(
-      z
-        .object({
-          date: z.string(),
-          rentOutId: z.string().min(1),
-          receivedAmount: z.number().nonnegative(),
-          discountAmount: z.number().nonnegative().optional().default(0),
-          totalAmount: z.number().positive(),
-          description: z.string().trim().transform(emptyStringToNull).nullish(),
-        })
-        .refine((data) => data.receivedAmount + data.discountAmount === data.totalAmount, {
-          message: 'Total amount should be equal to received amount and discount amount',
-          path: ['receivedAmount', 'discountAmount', 'totalAmount'],
-        }),
-    )
-    .mutation(async ({ input }) => {
-      const rentOut = await prisma.rentOut
-        .findFirstOrThrow({
-          where: { id: input.rentOutId, deletedAt: null },
-          select: {
-            status: true,
-            rentReturns: { select: { totalAmount: true } },
-            rentPayments: { select: { totalAmount: true } },
-          },
-        })
-        .catch(createNotFound('Rent out'));
-
-      const isFullyPaying =
-        rentOut.status === 'Returned' &&
-        rentOut.rentPayments.reduce((sum, paymentItem) => sum + paymentItem.totalAmount, 0) +
-          input.totalAmount >=
-          rentOut.rentReturns.reduce((sum, returnItem) => sum + returnItem.totalAmount, 0);
-
-      await prisma.$transaction([
-        prisma.rentOut.update({
-          where: { id: input.rentOutId },
-          data: { paymentStatus: isFullyPaying ? 'Paid' : 'Partially_Paid' },
-        }),
-        prisma.rentPayment.create({
-          data: input,
-          select: { id: true },
-        }),
-      ]);
-    }),
-
   getRentOutInfo: publicProcedure
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ input }) => {

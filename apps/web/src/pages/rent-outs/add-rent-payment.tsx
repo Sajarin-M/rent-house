@@ -31,7 +31,7 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
     },
   });
 
-  const { mutateAsync: addRentPayment } = trpc.rentOuts.addRentPayment.useMutation();
+  const { mutateAsync: addRentPayment } = trpc.payments.addRentPayment.useMutation();
 
   const { data: rentAmountInfo, isPending } = trpc.rentOuts.getRentAmountInfo.useQuery(
     {
@@ -69,6 +69,8 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
           notification.created('Payment');
           utils.rentOuts.getRentOuts.invalidate();
           utils.customers.getCustomerStatus.invalidate({ customerId: rentAmountInfo!.customerId });
+          utils.rentOuts.getRentOutInfo.invalidate({ id: rentOutId });
+          utils.rentOuts.getRentAmountInfo.invalidate({ rentOutId });
           onClose();
         } catch (error) {}
       })}

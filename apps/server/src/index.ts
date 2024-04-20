@@ -7,6 +7,7 @@ import { env } from './lib/env';
 import { ensureDirExistsSync } from './lib/utils';
 import { authRouter } from './routers/auth';
 import { customersRouter } from './routers/customers';
+import { paymentsRouter } from './routers/payments';
 import { productsRouter } from './routers/products';
 import { rentOutsRouter } from './routers/rent-outs';
 import { rentReturnsRouter } from './routers/rent-returns';
@@ -18,6 +19,7 @@ const appRouter = router({
   customers: customersRouter,
   rentOuts: rentOutsRouter,
   rentReturns: rentReturnsRouter,
+  payments: paymentsRouter,
 });
 
 export type AppRouter = typeof appRouter;
