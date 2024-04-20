@@ -62,7 +62,7 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
 
   const utils = trpc.useUtils();
 
-  const { mutateAsync: createRentReturn } = trpc.rentOuts.createRentReturn.useMutation();
+  const { mutateAsync: createRentReturn } = trpc.rentReturns.createRentReturn.useMutation();
 
   function getDaysDifference() {
     return (

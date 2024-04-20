@@ -27,11 +27,11 @@ function RentOutInfoContent({ rentOutId }: RentOutInfoContentProps) {
             <span>{formatDate(rentOut.date)}</span>
             <span className='self-start'>Customer</span>
             <span>{rentOut.customer.name}</span>
-            <span className='self-start'>Phone Number </span>
+            <span className='self-start'>Phone Number</span>
             <span>{rentOut.customer.phoneNumber}</span>
             {rentOut.description && (
               <>
-                <span className='self-start'>Description </span>
+                <span className='self-start'>Description</span>
                 <span>{rentOut.description}</span>
               </>
             )}

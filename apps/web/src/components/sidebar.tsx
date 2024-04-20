@@ -1,5 +1,14 @@
 import { FaMoon, FaSun } from 'react-icons/fa6';
-import { TbChevronCompactLeft, TbHome, TbLogout, TbShoppingBag, TbUsers } from 'react-icons/tb';
+import {
+  TbChevronCompactLeft,
+  TbHammer,
+  TbHome,
+  TbLogout,
+  TbMoneybag,
+  TbRotateClockwise,
+  TbShoppingBag,
+  TbUsers,
+} from 'react-icons/tb';
 import { Link, useLocation } from 'react-router-dom';
 import { Button, Code, px, useMantineColorScheme } from '@mantine/core';
 import { useHotkeys, useLocalStorage, useMouse } from '@mantine/hooks';
@@ -9,7 +18,9 @@ const sidebarItems = [
   { href: '/', label: 'Home', icon: TbHome },
   { href: '/customers', label: 'Customers', icon: TbUsers, size: '1.3rem' },
   { href: '/products', label: 'Products', icon: TbShoppingBag },
-  { href: '/rent-outs', label: 'Rent Outs', icon: TbShoppingBag },
+  { href: '/rent-outs', label: 'Rent Outs', icon: TbHammer },
+  { href: '/rent-returns', label: 'Rent Returns', icon: TbRotateClockwise },
+  { href: '/payments', label: 'Payments', icon: TbMoneybag },
 ];
 export default function Sidebar() {
   const { pathname } = useLocation();

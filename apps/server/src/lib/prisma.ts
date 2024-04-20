@@ -19,6 +19,8 @@ const paginate = createPaginator({
 export const prisma = new PrismaClient().$extends({
   model: {
     rentOut: { paginate },
+    rentReturn: { paginate },
+    rentPayment: { paginate },
   },
 });
 

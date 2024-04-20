@@ -39,7 +39,7 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
           <div className='gap-y-sm grid grid-cols-[10rem_1fr] items-center'>
             <span className='self-start'>Name</span>
             <span>{customer.name}</span>
-            <span className='self-start'>Phone Number </span>
+            <span className='self-start'>Phone Number</span>
             <span>{customer.phoneNumber}</span>
 
             {customer.addressLine1 || customer.addressLine2 || customer.city ? (

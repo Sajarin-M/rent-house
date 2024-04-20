@@ -9,6 +9,7 @@ import { authRouter } from './routers/auth';
 import { customersRouter } from './routers/customers';
 import { productsRouter } from './routers/products';
 import { rentOutsRouter } from './routers/rent-outs';
+import { rentReturnsRouter } from './routers/rent-returns';
 import { router } from './trpc';
 
 const appRouter = router({
@@ -16,6 +17,7 @@ const appRouter = router({
   products: productsRouter,
   customers: customersRouter,
   rentOuts: rentOutsRouter,
+  rentReturns: rentReturnsRouter,
 });
 
 export type AppRouter = typeof appRouter;
