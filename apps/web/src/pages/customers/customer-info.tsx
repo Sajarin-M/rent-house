@@ -82,10 +82,10 @@ function CustomerInfoContent({ customerId }: CustomerInfoProps) {
                 <Table>
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th className='w-0'>No</Table.Th>
-                      <Table.Th className='w-0'></Table.Th>
-                      <Table.Th>Product</Table.Th>
-                      <Table.Th className='text-end'>Quantity</Table.Th>
+                      <Table.Th className='py-xs w-0'>No</Table.Th>
+                      <Table.Th className='py-xs w-0'></Table.Th>
+                      <Table.Th className='py-xs'>Product</Table.Th>
+                      <Table.Th className='py-xs text-end'>Quantity</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>

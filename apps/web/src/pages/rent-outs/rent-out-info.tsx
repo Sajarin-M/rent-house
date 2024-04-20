@@ -69,11 +69,11 @@ function RentOutInfoContent({ rentOutId }: RentOutInfoContentProps) {
             <Table>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th className='w-0'>No</Table.Th>
-                  <Table.Th className='w-0'></Table.Th>
-                  <Table.Th>Product</Table.Th>
-                  <Table.Th className='w-0'>Quantity</Table.Th>
-                  <Table.Th className='text-end'>Rent / Day</Table.Th>
+                  <Table.Th className='py-xs w-0'>No</Table.Th>
+                  <Table.Th className='py-xs w-0'></Table.Th>
+                  <Table.Th className='py-xs'>Product</Table.Th>
+                  <Table.Th className='py-xs w-0'>Quantity</Table.Th>
+                  <Table.Th className='py-xs text-end'>Rent / Day</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
