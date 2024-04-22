@@ -72,7 +72,7 @@ CREATE TABLE "RentPayment" (
 CREATE TABLE "RentReturn" (
     "id" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
-    "rentOutId" TEXT,
+    "rentOutId" TEXT NOT NULL,
     "totalAmount" DOUBLE PRECISION NOT NULL,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -85,6 +85,8 @@ CREATE TABLE "RentReturn" (
 CREATE TABLE "ReturnItem" (
     "id" TEXT NOT NULL,
     "rentOutItemId" TEXT NOT NULL,
+    "usedDays" DOUBLE PRECISION NOT NULL,
+    "rentPerDay" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
     "totalAmount" DOUBLE PRECISION NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -99,7 +101,7 @@ CREATE TABLE "RentOutItem" (
     "productId" TEXT NOT NULL,
     "rentPerDay" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
-    "rentOutId" TEXT,
+    "rentOutId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -119,7 +121,7 @@ ALTER TABLE "RentPayment" ADD CONSTRAINT "RentPayment_rentOutId_fkey" FOREIGN KE
 ALTER TABLE "RentPayment" ADD CONSTRAINT "RentPayment_rentReturnId_fkey" FOREIGN KEY ("rentReturnId") REFERENCES "RentReturn"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RentReturn" ADD CONSTRAINT "RentReturn_rentOutId_fkey" FOREIGN KEY ("rentOutId") REFERENCES "RentOut"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "RentReturn" ADD CONSTRAINT "RentReturn_rentOutId_fkey" FOREIGN KEY ("rentOutId") REFERENCES "RentOut"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ReturnItem" ADD CONSTRAINT "ReturnItem_rentOutItemId_fkey" FOREIGN KEY ("rentOutItemId") REFERENCES "RentOutItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -131,4 +133,4 @@ ALTER TABLE "ReturnItem" ADD CONSTRAINT "ReturnItem_rentReturnId_fkey" FOREIGN K
 ALTER TABLE "RentOutItem" ADD CONSTRAINT "RentOutItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RentOutItem" ADD CONSTRAINT "RentOutItem_rentOutId_fkey" FOREIGN KEY ("rentOutId") REFERENCES "RentOut"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "RentOutItem" ADD CONSTRAINT "RentOutItem_rentOutId_fkey" FOREIGN KEY ("rentOutId") REFERENCES "RentOut"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
