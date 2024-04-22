@@ -261,9 +261,9 @@ function CreateRentReturnForm({ rentOutId, onClose }: CreateRentReturnFormProps)
                   }
                 }
               }}
-            />{' '}
+            />
             <div></div>
-            <Input.Label required>Description</Input.Label>
+            <Input.Label>Description</Input.Label>
             <TextInput control={control} name='description' />
           </div>
           <GrandTotal

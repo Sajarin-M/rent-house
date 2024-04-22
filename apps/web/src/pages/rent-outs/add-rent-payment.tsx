@@ -81,13 +81,11 @@ function AddRentPaymentForm({ rentOutId, onClose }: AddRentPaymentFormProps) {
             <div className='flex items-center gap-1'>
               <div>Total Rent Amount</div>
               <div className='text-xs'>
-                ({' '}
                 {rentAmountInfo.status === 'Returned'
                   ? 'Items fully returned'
                   : rentAmountInfo.status === 'Pending'
                     ? 'Items not returned Yet'
-                    : 'Items partially returned'}{' '}
-                )
+                    : 'Items partially returned'}
               </div>
             </div>
             <div>{formatCurrency(rentAmountInfo.totalAmount)}</div>

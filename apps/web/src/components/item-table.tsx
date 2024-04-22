@@ -12,7 +12,7 @@ function TableWrapper({
 }: PropsWithChildren & { gridTemplateColumns: string }) {
   return (
     <ItemTableContext.Provider value={{ gridTemplateColumns }}>
-      <div className='border-default-border flex flex-col rounded-sm border'>{children}</div>{' '}
+      <div className='border-default-border flex flex-col rounded-sm border'>{children}</div>
     </ItemTableContext.Provider>
   );
 }
