@@ -312,7 +312,7 @@ function CreateRentOutForm({ onClose }: CreateRentOutFormProps) {
                 </ActionIcon>
               </Tooltip>
             </div>
-            <Input.Label required>Description</Input.Label>
+            <Input.Label>Description</Input.Label>
             <TextInput control={control} name='description' />
           </div>
           <GrandTotal control={control} />
