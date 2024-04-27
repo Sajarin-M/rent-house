@@ -22,7 +22,7 @@
     "@elysiajs/trpc": "^1.0.2",
     "@prisma/client": "5.13.0",
     "@trpc/server": "next",
-    "elysia": "^1.0.14",
+    "elysia": "^1.0.15",
     "prisma": "5.13.0",
     "prisma-extension-pagination": "^0.7.3",
     "remeda": "^1.61.0",

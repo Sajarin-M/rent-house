@@ -5,7 +5,7 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "build": "turbo build",
-    "clean": "turbo clean && rm -rf node_modules && rm -rf .turbo && rm -rf ./scripts/dist && rm -rf ./scripts/bundle",
+    "clean": "turbo clean && rm -rf node_modules && rm -rf .turbo && rm -rf ./scripts/dist && rm -rf ./scripts/release",
     "setup": "bun install && turbo run setup",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepare": "husky || true"
@@ -14,7 +14,7 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.14",
-    "turbo": "^1.13.2"
+    "turbo": "^1.13.3"
   },
   "packageManager": "bun@1.1.4",
   "workspaces": [
