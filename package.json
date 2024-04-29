@@ -16,11 +16,8 @@
     "prettier-plugin-tailwindcss": "^0.5.14",
     "turbo": "^1.13.3"
   },
-  "packageManager": "bun@1.1.4",
+  "packageManager": "bun@1.1.6",
   "workspaces": [
     "apps/*"
-  ],
-  "dependencies": {
-    "dayjs": "^1.11.10"
-  }
+  ]
 }
