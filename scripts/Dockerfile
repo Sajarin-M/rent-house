@@ -1,4 +1,4 @@
-FROM oven/bun:1.1.9-debian
+FROM oven/bun:1.1.10-debian
 WORKDIR /rent-house
 COPY ./dist .
 RUN bun install
