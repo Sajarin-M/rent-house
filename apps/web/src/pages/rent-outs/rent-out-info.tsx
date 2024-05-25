@@ -57,7 +57,7 @@ function RentOutInfoContent({ rentOutId }: RentOutInfoContentProps) {
             )}
             {renOutPaymentInfo.pendingAmount > 0 && (
               <>
-                <span className='self-start'>Paid Amount</span>
+                <span className='self-start'>Pending Amount</span>
                 <span>{formatCurrency(renOutPaymentInfo.pendingAmount)}</span>
               </>
             )}
